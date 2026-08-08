@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  users     User[]
+  jobs      JobRequisition[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  name           String?
+  passwordHash   String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  roles          Role[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String // System Administrator, Recruitment Manager, Recruiter, Hiring Manager, Interviewer, Auditor
+  users       User[]
+  permissions String[] 
+}
+
+model JobRequisition {
+  id             String       @id @default(uuid())
+  title          String
+  department     String?
+  location       String?
+  employmentType String?
+  description    String
+  status         String       @default("DRAFT") // DRAFT, OPEN, CLOSED
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  rubrics        Rubric[]
+  applications   Application[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Rubric {
+  id        String      @id @default(uuid())
+  version   Int         @default(1)
+  status    String      @default("DRAFT") // DRAFT, REVIEW, APPROVED, ARCHIVED
+  jobId     String
+  job       JobRequisition @relation(fields: [jobId], references: [id])
+  criteria  Criterion[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Criterion {
+  id          String   @id @default(uuid())
+  category    String
+  description String
+  isRequired  Boolean  @default(false)
+  weight      Int      @default(1)
+  rubricId    String
+  rubric      Rubric   @relation(fields: [rubricId], references: [id])
+}
+
+model Candidate {
+  id           String        @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String        @unique
+  consentGiven Boolean       @default(false)
+  applications Application[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Application {
+  id          String         @id @default(uuid())
+  candidateId String
+  candidate   Candidate      @relation(fields: [candidateId], references: [id])
+  jobId       String
+  job         JobRequisition @relation(fields: [jobId], references: [id])
+  stage       String         @default("NEW") 
+  resumeUrl   String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
