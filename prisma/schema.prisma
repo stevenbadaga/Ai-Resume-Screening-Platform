@@ -8,24 +8,30 @@ generator client {
 }
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  users     User[]
-  jobs      JobRequisition[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(uuid())
+  name             String
+  retentionPolicy  String?  // JSON configuration
+  branding         String?  // JSON configuration
+  securitySettings String?  // JSON configuration
+  users            User[]
+  jobs             JobRequisition[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model User {
-  id             String       @id @default(uuid())
-  email          String       @unique
-  name           String?
-  passwordHash   String?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  roles          Role[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                     String       @id @default(uuid())
+  email                  String       @unique
+  name                   String?
+  passwordHash           String?
+  accessStatus           String       @default("ACTIVE") // ACTIVE, SUSPENDED
+  departmentRestrictions String[]     // Array of allowed departments
+  organizationId         String
+  organization           Organization @relation(fields: [organizationId], references: [id])
+  roles                  Role[]
+  applicationsAssigned   Application[] @relation("AssignedRecruiter")
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 }
 
 model Role {
@@ -52,14 +58,15 @@ model JobRequisition {
 }
 
 model Rubric {
-  id        String      @id @default(uuid())
-  version   Int         @default(1)
-  status    String      @default("DRAFT") // DRAFT, REVIEW, APPROVED, ARCHIVED
-  jobId     String
-  job       JobRequisition @relation(fields: [jobId], references: [id])
-  criteria  Criterion[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id           String      @id @default(uuid())
+  version      Int         @default(1)
+  status       String      @default("DRAFT") // DRAFT, REVIEW, APPROVED, ARCHIVED
+  changeReason String?
+  jobId        String
+  job          JobRequisition @relation(fields: [jobId], references: [id])
+  criteria     Criterion[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Criterion {
@@ -73,26 +80,48 @@ model Criterion {
 }
 
 model Candidate {
-  id           String        @id @default(uuid())
-  firstName    String
-  lastName     String
-  email        String        @unique
-  consentGiven Boolean       @default(false)
-  applications Application[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String        @unique
+  consentGiven    Boolean       @default(false)
+  source          String?       // E.g., LinkedIn, Career Page
+  tags            String[]
+  privacyRequests String?       // JSON tracking deletion/access requests
+  applications    Application[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model Application {
-  id          String         @id @default(uuid())
-  candidateId String
-  candidate   Candidate      @relation(fields: [candidateId], references: [id])
-  jobId       String
-  job         JobRequisition @relation(fields: [jobId], references: [id])
-  stage       String         @default("NEW") 
-  resumeUrl   String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id                  String         @id @default(uuid())
+  candidateId         String
+  candidate           Candidate      @relation(fields: [candidateId], references: [id])
+  jobId               String
+  job                 JobRequisition @relation(fields: [jobId], references: [id])
+  assignedRecruiterId String?
+  assignedRecruiter   User?          @relation("AssignedRecruiter", fields: [assignedRecruiterId], references: [id])
+  stage               String         @default("NEW") 
+  status              String         @default("ACTIVE")
+  notes               String?        // JSON or text
+  decisionHistory     String?        // JSON tracking previous/new stages
+  resumeDocument      ResumeDocument?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model ResumeDocument {
+  id               String       @id @default(uuid())
+  applicationId    String       @unique
+  application      Application  @relation(fields: [applicationId], references: [id])
+  fileReference    String       // Path or URL to S3
+  processingStatus String       @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED, NEEDS_REVIEW
+  extractedText    String?
+  checksum         String?
+  safeMetadata     String?      // JSON
+  accessHistory    String?      // JSON
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model AuditEvent {
