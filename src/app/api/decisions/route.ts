@@ -21,9 +21,12 @@ export async function POST(req: NextRequest) {
       prisma.recruitmentDecision.create({
         data: {
           applicationId,
-          reviewerId: 'SYSTEM_USER', // TODO: Replace with authenticated user ID from Auth.js session
-          decision,
-          rationale
+          actorId: 'SYSTEM_USER', // TODO: Replace with authenticated user ID from Auth.js session
+          humanAction: 'DECISION_MADE',
+          decisionType: decision,
+          reason: rationale,
+          previousStage: 'UNKNOWN',
+          newStage: stage
         }
       }),
       // 2. Update Application Stage

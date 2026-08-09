@@ -19,7 +19,7 @@ export default async function CandidatesDashboard() {
     }
   });
 
-  const applications = applicationsData.map(app => ({
+  const applications = applicationsData.map((app: any) => ({
     id: app.id,
     name: `${app.candidate.firstName} ${app.candidate.lastName}`,
     job: app.job.title,
@@ -54,7 +54,7 @@ export default async function CandidatesDashboard() {
                   No candidates have applied yet.
                 </td>
               </tr>
-            ) : applications.map((app) => (
+            ) : applications.map((app: any) => (
               <tr key={app.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '1rem', fontWeight: 500 }}>{app.name}</td>
                 <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{app.job}</td>

@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import OpenAI from 'openai';
-import pdfParse from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

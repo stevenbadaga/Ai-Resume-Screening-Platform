@@ -13,7 +13,7 @@ export default async function CandidateProfilePage({ params }: { params: { id: s
       resumeDocument: true,
       parsedProfile: true,
       screeningRuns: {
-        include: { criterionAssessments: { include: { criterion: true } } },
+        include: { assessments: { include: { criterion: true } } },
         orderBy: { createdAt: 'desc' },
         take: 1
       }
@@ -37,7 +37,7 @@ export default async function CandidateProfilePage({ params }: { params: { id: s
 
   const screeningResultsData = screeningRun ? {
     totalScore: screeningRun.totalResult || 0,
-    assessments: screeningRun.criterionAssessments.map(ca => ({
+    assessments: screeningRun.assessments.map((ca: any) => ({
       criterion: ca.criterion.description,
       result: ca.result,
       evidence: ca.supportingEvidence || 'No evidence provided.',

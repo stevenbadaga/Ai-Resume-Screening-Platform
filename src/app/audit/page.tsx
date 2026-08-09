@@ -36,7 +36,7 @@ export default async function AuditDashboard() {
                   No audit events recorded yet.
                 </td>
               </tr>
-            ) : auditLogs.map((log) => (
+            ) : auditLogs.map((log: any) => (
               <tr key={log.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                   {log.timestamp.toLocaleString()}

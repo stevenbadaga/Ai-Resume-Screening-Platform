@@ -39,7 +39,7 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
         },
         { 
           role: "user", 
-          content: `Candidate Profile:\n${JSON.stringify(profile)}\n\nRubric Criteria:\n${JSON.stringify(rubric.criteria)}` 
+          content: `Candidate Profile:\n${JSON.stringify(profile)}\n\nRubric Criteria:\n${JSON.stringify(rubric.criteria.map((c: { id: string; description: string; weight: number }) => ({ id: c.id, description: c.description, weight: c.weight })))}` 
         }
       ],
       response_format: {
@@ -82,7 +82,7 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
     let maxScore = 0;
 
     for (const assessment of parsedAssessments.assessments) {
-      const criteria = rubric.criteria.find(c => c.id === assessment.criterionId);
+      const criteria = rubric.criteria.find((c: any) => c.id === assessment.criterionId);
       if (!criteria) continue;
 
       let scoreContribution = 0;
