@@ -2,14 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient } from '@prisma/client';
+import { processResume } from '@/lib/resumeProcessor';
+
+const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
     const data = await req.formData();
     const file: File | null = data.get('resume') as unknown as File;
+    const firstName = data.get('firstName') as string;
+    const lastName = data.get('lastName') as string;
+    const email = data.get('email') as string;
+    const consent = data.get('consent') === 'on';
 
-    if (!file) {
-      return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
+    if (!file || !firstName || !lastName || !email) {
+      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
     // Week 3 Requirement: Secure validation
@@ -34,16 +42,52 @@ export async function POST(req: NextRequest) {
     
     await writeFile(path, buffer);
 
-    // TODO: In a real environment, we would save to Prisma here:
-    // 1. Create Application
-    // 2. Create ResumeDocument with status QUEUED
-    // 3. Trigger background worker
+    // 1. Duplicate Review & Candidate Creation
+    let candidate = await prisma.candidate.findUnique({ where: { email } });
+    if (!candidate) {
+      candidate = await prisma.candidate.create({
+        data: { firstName, lastName, email, consentGiven: consent }
+      });
+    }
 
-    // For now, we simulate success
+    // Fetch a generic job for now since the UI doesn't pass one
+    // In production, the apply form would be scoped to a jobId.
+    let defaultJob = await prisma.jobRequisition.findFirst();
+    if (!defaultJob) {
+      const org = await prisma.organization.create({ data: { name: 'Default Org' } });
+      const user = await prisma.user.create({ data: { email: 'admin@example.com', organizationId: org.id } });
+      defaultJob = await prisma.jobRequisition.create({
+        data: { title: 'General Application', description: 'General', organizationId: org.id, ownerId: user.id }
+      });
+    }
+
+    // 2. Create Application
+    const application = await prisma.application.create({
+      data: {
+        candidateId: candidate.id,
+        jobId: defaultJob.id,
+        stage: 'NEW'
+      }
+    });
+
+    // 3. Create ResumeDocument with status QUEUED
+    const resumeDoc = await prisma.resumeDocument.create({
+      data: {
+        applicationId: application.id,
+        fileReference: path,
+        processingStatus: 'QUEUED'
+      }
+    });
+
+    // 4. Trigger background processing asynchronously
+    // Note: In Next.js serverless this might be terminated early. 
+    // BullMQ is better for production, but this works for development without Redis.
+    processResume(application.id, resumeDoc.id, path).catch(console.error);
+
     return NextResponse.json({ 
       success: true, 
-      message: 'File uploaded successfully',
-      fileReference: path 
+      message: 'File uploaded successfully and processing started',
+      applicationId: application.id 
     });
 
   } catch (error) {

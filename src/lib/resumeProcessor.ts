@@ -75,7 +75,10 @@ export async function processResume(applicationId: string, resumeDocumentId: str
                   required: ["institution", "degree", "fieldOfStudy", "graduationDate"],
                   additionalProperties: false
                 }
-              }
+              },
+              certifications: { type: "array", items: { type: "string" } },
+              languages: { type: "array", items: { type: "string" } },
+              projects: { type: "array", items: { type: "string" } }
             },
             required: ["skills", "employment", "education"],
             additionalProperties: false
@@ -96,6 +99,9 @@ export async function processResume(applicationId: string, resumeDocumentId: str
         skills: JSON.stringify(profileData.skills),
         employment: JSON.stringify(profileData.employment),
         education: JSON.stringify(profileData.education),
+        certifications: profileData.certifications ? JSON.stringify(profileData.certifications) : null,
+        languages: profileData.languages ? JSON.stringify(profileData.languages) : null,
+        projects: profileData.projects ? JSON.stringify(profileData.projects) : null,
       }
     });
 
