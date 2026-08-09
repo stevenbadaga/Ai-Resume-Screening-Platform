@@ -3,7 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaClient } from '@prisma/client';
-import { processResume } from '@/lib/resumeProcessor';
+import { resumeQueue } from '@/lib/queue';
 
 const prisma = new PrismaClient();
 
@@ -79,10 +79,12 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // 4. Trigger background processing asynchronously
-    // Note: In Next.js serverless this might be terminated early. 
-    // BullMQ is better for production, but this works for development without Redis.
-    processResume(application.id, resumeDoc.id, path).catch(console.error);
+    // 4. Trigger background processing asynchronously via BullMQ Message Queue
+    await resumeQueue.add('process-resume', {
+      applicationId: application.id,
+      resumeDocumentId: resumeDoc.id,
+      filePath: path
+    });
 
     return NextResponse.json({ 
       success: true, 
