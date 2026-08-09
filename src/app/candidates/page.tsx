@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 // In Next.js App Router, this forces the page to dynamically render on every request
 export const dynamic = 'force-dynamic';

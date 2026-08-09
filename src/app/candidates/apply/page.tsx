@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import ApplyForm from './ApplyForm';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function ApplyPage() {

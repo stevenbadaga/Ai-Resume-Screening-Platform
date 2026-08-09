@@ -1,12 +1,12 @@
-import { PrismaClient } from '@prisma/client';
 import CandidateProfileClient from './CandidateProfileClient';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
-export default async function CandidateProfilePage({ params }: { params: { id: string } }) {
+export default async function CandidateProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const application = await prisma.application.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     include: {
       candidate: true,
       job: true,

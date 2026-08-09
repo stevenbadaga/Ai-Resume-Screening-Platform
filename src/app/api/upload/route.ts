@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaClient } from '@prisma/client';
 import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {

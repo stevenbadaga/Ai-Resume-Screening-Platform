@@ -1,9 +1,8 @@
 import fs from 'fs/promises';
 import OpenAI from 'openai';
 const pdfParse = require('pdf-parse');
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 const openai = new OpenAI(); // Automatically uses OPENAI_API_KEY from .env
 
 export async function processResume(applicationId: string, resumeDocumentId: string, filePath: string) {

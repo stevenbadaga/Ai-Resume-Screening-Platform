@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 const openai = new OpenAI();
 
 export async function scoreCandidateProfile(applicationId: string, rubricId: string) {
