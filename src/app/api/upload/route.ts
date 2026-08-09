@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
     const firstName = data.get('firstName') as string;
     const lastName = data.get('lastName') as string;
     const email = data.get('email') as string;
+    const jobId = data.get('jobId') as string;
     const consent = data.get('consent') === 'on';
 
-    if (!file || !firstName || !lastName || !email) {
+    if (!file || !firstName || !lastName || !email || !jobId) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -50,22 +51,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Fetch a generic job for now since the UI doesn't pass one
-    // In production, the apply form would be scoped to a jobId.
-    let defaultJob = await prisma.jobRequisition.findFirst();
-    if (!defaultJob) {
-      const org = await prisma.organization.create({ data: { name: 'Default Org' } });
-      const user = await prisma.user.create({ data: { email: 'admin@example.com', organizationId: org.id } });
-      defaultJob = await prisma.jobRequisition.create({
-        data: { title: 'General Application', description: 'General', organizationId: org.id, ownerId: user.id }
-      });
-    }
-
     // 2. Create Application
     const application = await prisma.application.create({
       data: {
         candidateId: candidate.id,
-        jobId: defaultJob.id,
+        jobId: jobId,
         stage: 'NEW'
       }
     });

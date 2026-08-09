@@ -1,12 +1,31 @@
 import Link from 'next/link';
+import { PrismaClient } from '@prisma/client';
 
-export default function CandidatesDashboard() {
-  // Simulating data for UI demonstration
-  const applications = [
-    { id: '1', name: 'Alice Smith', job: 'Senior Frontend Engineer', status: 'COMPLETED', date: 'Oct 24, 2026' },
-    { id: '2', name: 'Bob Jones', job: 'Backend Developer', status: 'PROCESSING', date: 'Oct 24, 2026' },
-    { id: '3', name: 'Charlie Brown', job: 'Product Manager', status: 'FAILED', date: 'Oct 23, 2026' },
-  ];
+const prisma = new PrismaClient();
+
+// In Next.js App Router, this forces the page to dynamically render on every request
+export const dynamic = 'force-dynamic';
+
+export default async function CandidatesDashboard() {
+  // Fetch real applications from the database
+  const applicationsData = await prisma.application.findMany({
+    include: {
+      candidate: true,
+      job: true,
+      resumeDocument: true,
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+
+  const applications = applicationsData.map(app => ({
+    id: app.id,
+    name: `${app.candidate.firstName} ${app.candidate.lastName}`,
+    job: app.job.title,
+    status: app.resumeDocument?.processingStatus || 'UNKNOWN',
+    date: app.createdAt.toLocaleDateString(),
+  }));
 
   return (
     <div className="animate-in">
@@ -29,7 +48,13 @@ export default function CandidatesDashboard() {
             </tr>
           </thead>
           <tbody>
-            {applications.map((app) => (
+            {applications.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No candidates have applied yet.
+                </td>
+              </tr>
+            ) : applications.map((app) => (
               <tr key={app.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '1rem', fontWeight: 500 }}>{app.name}</td>
                 <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{app.job}</td>
