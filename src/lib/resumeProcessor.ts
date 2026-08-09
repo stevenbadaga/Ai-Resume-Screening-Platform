@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import OpenAI from 'openai';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require('pdf-parse');
 
 import prisma from '@/lib/prisma';

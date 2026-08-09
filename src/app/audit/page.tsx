@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import prisma from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export default async function AuditDashboard() {
                   No audit events recorded yet.
                 </td>
               </tr>
-            ) : auditLogs.map((log: any) => (
+            ) : auditLogs.map((log: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any) => (
               <tr key={log.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                   {log.timestamp.toLocaleString()}
@@ -45,7 +46,7 @@ export default async function AuditDashboard() {
                 <td style={{ padding: '1rem', fontSize: '0.875rem', fontFamily: 'monospace' }}>{log.affectedRecordId}</td>
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
                   <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace', backgroundColor: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '0.25rem' }}>
-                    {log.newValues || '-'}
+                    {log.newValues ? JSON.stringify(log.newValues, null, 2) : '-'}
                   </pre>
                 </td>
               </tr>

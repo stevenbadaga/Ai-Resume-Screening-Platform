@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -18,9 +19,9 @@ export default function RootLayout({
           {/* Sidebar */}
           <aside className="glass-panel" style={{ width: '250px', padding: '2rem', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem', borderRadius: 0 }}>
             <h2 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>RecruitAI</h2>
-            <a href="/" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Dashboard</a>
-            <a href="/jobs" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Jobs & Rubrics</a>
-            <a href="/candidates" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Candidates</a>
+            <Link href="/" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Dashboard</Link>
+            <Link href="/jobs" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Jobs & Rubrics</Link>
+            <Link href="/candidates" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Candidates</Link>
           </aside>
           
           {/* Main Content */}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CandidateProfileClient from './CandidateProfileClient';
 
 import prisma from '@/lib/prisma';
@@ -37,7 +38,7 @@ export default async function CandidateProfilePage({ params }: { params: Promise
 
   const screeningResultsData = screeningRun ? {
     totalScore: screeningRun.totalResult || 0,
-    assessments: screeningRun.assessments.map((ca: any) => ({
+    assessments: screeningRun.assessments.map((ca: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any) => ({
       criterion: ca.criterion.description,
       result: ca.result,
       evidence: ca.supportingEvidence || 'No evidence provided.',

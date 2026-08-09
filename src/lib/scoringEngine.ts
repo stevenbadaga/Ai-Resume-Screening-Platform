@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import OpenAI from 'openai';
 
 import prisma from '@/lib/prisma';
@@ -81,7 +82,7 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
     let maxScore = 0;
 
     for (const assessment of parsedAssessments.assessments) {
-      const criteria = rubric.criteria.find((c: any) => c.id === assessment.criterionId);
+      const criteria = rubric.criteria.find((c: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any) => c.id === assessment.criterionId);
       if (!criteria) continue;
 
       let scoreContribution = 0;

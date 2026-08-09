@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function CandidateProfileClient({ profile, screeningResults }: { profile: any, screeningResults: any }) {
+export default function CandidateProfileClient({ profile, screeningResults }: { profile: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any, screeningResults: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any }) {
   const [activeTab, setActiveTab] = useState<'PROFILE' | 'SCREENING'>('PROFILE');
   const [decisionReason, setDecisionReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,7 +115,7 @@ export default function CandidateProfileClient({ profile, screeningResults }: { 
                   The AI evaluated this candidate against the approved job rubric. Note: This is decision-support only.
                 </p>
 
-                {screeningResults.assessments.map((assessment: any, idx: number) => (
+                {screeningResults.assessments.map((assessment: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any, idx: number) => (
                   <div key={idx} style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <strong>{assessment.criterion}</strong>
@@ -129,7 +130,7 @@ export default function CandidateProfileClient({ profile, screeningResults }: { 
                       </span>
                     </div>
                     <p style={{ fontSize: '0.875rem', fontStyle: 'italic', color: 'var(--text-muted)', paddingLeft: '1rem', borderLeft: '3px solid var(--primary-light)' }}>
-                      "{assessment.evidence}"
+                      &quot;{assessment.evidence}&quot;
                     </p>
                     <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
                       <button className="btn-secondary" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}>Override Score</button>

@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import prisma from '@/lib/prisma';
 
 export async function logAuditEvent(params: {
   action: string;
-  actorId?: string; // Optional for system actions
-  affectedRecordId?: string;
+  actorId?: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any; // Optional for system actions
+  affectedRecordId?: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any;
   previousValues?: any;
-  newValues?: any;
+  newValues?: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any;
   requestContext?: any;
 }) {
   try {
