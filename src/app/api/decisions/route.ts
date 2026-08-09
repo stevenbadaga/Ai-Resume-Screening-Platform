@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { logAuditEvent } from '@/lib/auditLogger';
 
 const prisma = new PrismaClient();
 
@@ -31,6 +32,14 @@ export async function POST(req: NextRequest) {
         data: { stage }
       })
     ]);
+
+    // 3. Write Audit Log
+    await logAuditEvent({
+      action: 'RECRUITMENT_DECISION_MADE',
+      actorId: 'SYSTEM_USER',
+      affectedRecordId: applicationId,
+      newValues: { decision, rationale, stage }
+    });
 
     return NextResponse.json({ success: true, stage });
   } catch (error) {

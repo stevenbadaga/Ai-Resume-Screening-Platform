@@ -4,6 +4,7 @@ import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaClient } from '@prisma/client';
 import { resumeQueue } from '@/lib/queue';
+import { logAuditEvent } from '@/lib/auditLogger';
 
 const prisma = new PrismaClient();
 
@@ -74,6 +75,14 @@ export async function POST(req: NextRequest) {
       applicationId: application.id,
       resumeDocumentId: resumeDoc.id,
       filePath: path
+    });
+
+    // 5. Audit Log
+    await logAuditEvent({
+      action: 'APPLICATION_SUBMITTED',
+      actorId: 'SYSTEM_USER',
+      affectedRecordId: application.id,
+      newValues: { jobId: application.jobId, candidateId: application.candidateId }
     });
 
     return NextResponse.json({ 
