@@ -21,6 +21,7 @@ model Organization {
 }
 
 model User {
+  notifications Notification[]
   id                     String       @id @default(uuid())
   email                  String       @unique
   name                   String?
@@ -278,4 +279,18 @@ model AuditEvent {
   organizationId   String?
   organization     Organization? @relation(fields: [organizationId], references: [id])
   requestContext   String?  // JSON
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("JOB_POSTED")
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

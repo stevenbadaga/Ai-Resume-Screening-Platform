@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
-interface RubricCriterion {
+interface Criterion {
   category: string;
   description: string;
   isRequired: boolean;
@@ -10,235 +11,401 @@ interface RubricCriterion {
 }
 
 export default function JobsPage() {
-  const [isDrafting, setIsDrafting] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'explore' | 'create'>('explore');
   const [jobs, setJobs] = useState<any[]>([]);
-  
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDept, setSelectedDept] = useState('ALL');
+
+  // Form State for creating a requisition
   const [title, setTitle] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState('Engineering');
   const [description, setDescription] = useState('');
-  const [rubricCriteria, setRubricCriteria] = useState<RubricCriterion[]>([
-    { category: 'Technical Skills', description: '', isRequired: true, weight: 5 },
-    { category: 'Experience', description: '', isRequired: true, weight: 3 },
+  const [criteria, setCriteria] = useState<Criterion[]>([
+    { category: 'Technical Skills', description: '5+ years experience in TypeScript, React, and Node.js', isRequired: true, weight: 5 },
+    { category: 'Database', description: 'Strong PostgreSQL knowledge and relational schema design', isRequired: true, weight: 4 },
+    { category: 'Cloud / DevOps', description: 'Experience with Docker containers and CI/CD pipelines', isRequired: false, weight: 3 }
   ]);
+  const [submitting, setSubmitting] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/jobs');
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(data || []);
+      }
+    } catch (e) {
+      console.error('Failed to load jobs', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchJobs();
   }, []);
 
-  const fetchJobs = async () => {
-    try {
-      const res = await fetch('/api/jobs');
-      const data = await res.json();
-      if (Array.isArray(data)) setJobs(data);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleAddCriterion = () => {
+    setCriteria([...criteria, { category: '', description: '', isRequired: false, weight: 3 }]);
   };
 
-  const handleCreateJob = async () => {
-    setIsSubmitting(true);
+  const handleRemoveCriterion = (idx: number) => {
+    setCriteria(criteria.filter((_, i) => i !== idx));
+  };
+
+  const handleCriterionChange = (idx: number, field: keyof Criterion, val: any) => {
+    const updated = [...criteria];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setCriteria(updated);
+  };
+
+  const handleCreateJob = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setCreateError(null);
+    setCreateSuccess(false);
+
     try {
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          department,
-          description,
-          criteria: rubricCriteria
-        })
+        body: JSON.stringify({ title, department, description, criteria })
       });
-      
-      if (!res.ok) throw new Error('Failed to save job');
-      
-      setIsDrafting(false);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create requisition');
+      }
+
+      setCreateSuccess(true);
       setTitle('');
-      setDepartment('');
       setDescription('');
-      setRubricCriteria([
-        { category: 'Technical Skills', description: '', isRequired: true, weight: 5 },
-        { category: 'Experience', description: '', isRequired: true, weight: 3 }
-      ]);
-      fetchJobs();
-    } catch (err) {
-      alert('Failed to save job');
+      await fetchJobs();
+    } catch (err: any) {
+      setCreateError(err.message || 'Error occurred while saving requisition');
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
+  const filteredJobs = jobs.filter((job) => {
+    const matchesDept = selectedDept === 'ALL' || job.department === selectedDept;
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.department.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesDept && matchesSearch;
+  });
+
+  const departments = ['ALL', 'Engineering', 'Data & AI', 'Product', 'Design', 'Operations'];
+
   return (
-    <div className="animate-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1>Job Requisitions & Rubrics</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Manage open positions and configure AI evaluation rubrics.</p>
-        </div>
-        <button className="btn-primary" onClick={() => setIsDrafting(true)}>+ Create New Job</button>
-      </div>
-
-      {isDrafting ? (
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '1.5rem' }}>Draft New Job Requisition</h2>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2.5rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.4rem' }}>Job Title</label>
-              <input className="input-field" placeholder="e.g. Senior Full-Stack Engineer" value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: '100%' }} />
-            </div>
-            
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.4rem' }}>Department</label>
-              <input className="input-field" placeholder="e.g. Engineering / Product" value={department} onChange={(e) => setDepartment(e.target.value)} style={{ width: '100%' }} />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.4rem' }}>Job Description</label>
-              <textarea className="input-field" placeholder="Detailed role description, responsibilities, and qualifications..." rows={4} value={description} onChange={(e) => setDescription(e.target.value)} style={{ width: '100%' }} />
-            </div>
+    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Title */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">Job Board & Requisitions</h1>
+            <p className="text-sm text-slate-400 mt-1">
+              Explore live open positions, review AI criteria rubrics, or post new requisitions with instant candidate notifications.
+            </p>
           </div>
 
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>AI Screening Rubric Builder</h3>
-            <div style={{ padding: '1rem', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderRadius: '0.5rem', border: '1px solid rgba(59, 130, 246, 0.2)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
-              <strong>[Guide] How Rubric Weights Work:</strong>
-              <p style={{ margin: '0.3rem 0 0 0', color: 'var(--text-muted)' }}>
-                The <strong>Priority Weight (1 to 5)</strong> dictates how heavily each criterion affects the candidate's final <strong>Match Score (0-100%)</strong>. High-weight items (4-5) carry the most influence, while low-weight items (1-2) act as bonus criteria.
-              </p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 3fr 1.5fr 2.5fr 40px', gap: '0.75rem', marginBottom: '0.5rem', padding: '0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <span>Category</span>
-              <span>Requirement Description</span>
-              <span>Requirement Type</span>
-              <span>Priority Weight (Scoring Impact)</span>
-              <span></span>
-            </div>
-
-            {rubricCriteria.map((criterion, index) => (
-              <div key={index} style={{ display: 'grid', gridTemplateColumns: '1.5fr 3fr 1.5fr 2.5fr 40px', gap: '0.75rem', marginBottom: '1rem', alignItems: 'center' }}>
-                <input 
-                  className="input-field" 
-                  placeholder="e.g. Skill / Education" 
-                  value={criterion.category}
-                  onChange={(e) => {
-                    const newC = [...rubricCriteria];
-                    newC[index].category = e.target.value;
-                    setRubricCriteria(newC);
-                  }}
-                />
-                <input 
-                  className="input-field" 
-                  placeholder="e.g. 5+ years building distributed React/Node applications" 
-                  value={criterion.description}
-                  onChange={(e) => {
-                    const newC = [...rubricCriteria];
-                    newC[index].description = e.target.value;
-                    setRubricCriteria(newC);
-                  }}
-                />
-                <select 
-                  className="input-field" 
-                  value={criterion.isRequired ? 'required' : 'preferred'}
-                  onChange={(e) => {
-                    const newC = [...rubricCriteria];
-                    newC[index].isRequired = e.target.value === 'required';
-                    setRubricCriteria(newC);
-                  }}
-                >
-                  <option value="required">Required (Must Have)</option>
-                  <option value="preferred">Preferred (Nice to Have)</option>
-                </select>
-                
-                <select
-                  className="input-field"
-                  value={criterion.weight}
-                  onChange={(e) => {
-                    const newC = [...rubricCriteria];
-                    newC[index].weight = parseInt(e.target.value, 10) || 1;
-                    setRubricCriteria(newC);
-                  }}
-                >
-                  <option value={5}>5 - Critical Priority (Highest Weight)</option>
-                  <option value={4}>4 - High Priority</option>
-                  <option value={3}>3 - Medium Priority</option>
-                  <option value={2}>2 - Moderate Priority</option>
-                  <option value={1}>1 - Low / Bonus Skill</option>
-                </select>
-
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (rubricCriteria.length > 1) {
-                      setRubricCriteria(rubricCriteria.filter((_, i) => i !== index));
-                    }
-                  }}
-                  disabled={rubricCriteria.length <= 1}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: rubricCriteria.length <= 1 ? 'var(--border)' : 'var(--accent)', 
-                    cursor: rubricCriteria.length <= 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '1.2rem'
-                  }}
-                  title="Remove Criterion"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
-            
-            <button 
-              type="button"
-              className="btn-secondary" 
-              style={{ marginTop: '0.5rem', marginBottom: '2rem' }}
-              onClick={() => setRubricCriteria([...rubricCriteria, { category: 'Skills', description: '', isRequired: true, weight: 3 }])}
+          {/* Tab Switcher */}
+          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-2xl p-1.5 self-start md:self-auto shadow-inner">
+            <button
+              onClick={() => setActiveTab('explore')}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                activeTab === 'explore'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
             >
-              + Add Another Criterion
+              <span>🔍</span>
+              <span>Explore Jobs ({jobs.length})</span>
             </button>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-            <button className="btn-secondary" onClick={() => setIsDrafting(false)}>Cancel</button>
-            <button className="btn-primary" onClick={handleCreateJob} disabled={isSubmitting || !title || !description}>
-              {isSubmitting ? 'Saving...' : 'Save Job & Rubric'}
+            <button
+              onClick={() => setActiveTab('create')}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                activeTab === 'create'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>➕</span>
+              <span>Post New Requisition</span>
             </button>
           </div>
         </div>
-      ) : (
-        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
-          {jobs.map((job) => (
-            <div key={job.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <h3 style={{ margin: 0 }}>{job.title}</h3>
-                  <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', backgroundColor: job.status === 'OPEN' ? 'var(--secondary)' : 'var(--text-muted)', color: 'white', borderRadius: '1rem', fontWeight: 600 }}>
-                    {job.status}
-                  </span>
+
+        {/* Tab 1: Explore Jobs Feed */}
+        {activeTab === 'explore' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Filter Bar */}
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl">
+              {/* Search */}
+              <div className="relative w-full md:w-80">
+                <input
+                  type="text"
+                  placeholder="Search roles, skills, keywords..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+                <span className="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
+              </div>
+
+              {/* Department Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+                {departments.map((dept) => (
+                  <button
+                    key={dept}
+                    onClick={() => setSelectedDept(dept)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap ${
+                      selectedDept === dept
+                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-semibold'
+                        : 'bg-slate-950/60 text-slate-400 border border-slate-800 hover:text-white'
+                    }`}
+                  >
+                    {dept === 'ALL' ? 'All Roles' : dept}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Jobs List */}
+            {loading ? (
+              <div className="p-12 text-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+                <p className="text-xs text-slate-500 mt-4">Loading open positions...</p>
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="p-12 text-center bg-slate-900/50 border border-slate-800 rounded-3xl">
+                <p className="text-base font-semibold text-slate-300">No matching jobs found</p>
+                <p className="text-xs text-slate-500 mt-1">Try adjusting your filters or post a new job requisition.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {filteredJobs.map((job) => {
+                  const criteriaList = job.rubrics?.[0]?.criteria || [];
+                  return (
+                    <div
+                      key={job.id}
+                      className="bg-slate-900/80 border border-slate-800 hover:border-slate-700/80 rounded-3xl p-6 transition shadow-xl hover:shadow-2xl backdrop-blur-xl group"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-2.5">
+                            <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                              {job.department}
+                            </span>
+                            <span className="text-xs text-slate-400 font-medium">
+                              🏢 {job.organization?.name || 'RecruitAI Tech'}
+                            </span>
+                            <span className="text-xs text-slate-500 font-mono">
+                              • Posted {new Date(job.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          <h2 className="text-xl font-bold text-white group-hover:text-indigo-400 transition">
+                            {job.title}
+                          </h2>
+
+                          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2 max-w-3xl">
+                            {job.description || 'No detailed description provided.'}
+                          </p>
+
+                          {/* Criteria Badges */}
+                          {criteriaList.length > 0 && (
+                            <div className="pt-2 flex flex-wrap gap-2 items-center">
+                              <span className="text-[11px] text-slate-400 font-medium mr-1">AI Evaluates:</span>
+                              {criteriaList.slice(0, 3).map((c: any) => (
+                                <span
+                                  key={c.id}
+                                  className="text-[11px] bg-slate-950 border border-slate-800 text-slate-300 px-2.5 py-1 rounded-lg"
+                                >
+                                  {c.category}: {c.description.slice(0, 35)}... (w:{c.weight})
+                                </span>
+                              ))}
+                              {criteriaList.length > 3 && (
+                                <span className="text-[11px] text-indigo-400 font-medium">
+                                  +{criteriaList.length - 3} more criteria
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex sm:flex-col items-end justify-between sm:justify-start gap-3 shrink-0 pt-2 md:pt-0 border-t sm:border-t-0 border-slate-800">
+                          <Link
+                            href={`/jobs/${job.id}/apply`}
+                            className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-indigo-600/30 text-center flex items-center justify-center gap-1.5"
+                          >
+                            <span>Apply Now</span>
+                            <span>&rarr;</span>
+                          </Link>
+                          <span className="text-[11px] text-slate-500 font-mono">
+                            {job._count?.applications || 0} applicants
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: Create Requisition */}
+        {activeTab === 'create' && (
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200">
+            <h2 className="text-xl font-bold text-white mb-2">Create New Job Requisition & Rubric</h2>
+            <p className="text-xs text-slate-400 mb-6">
+              When published, this job will immediately trigger an in-app broadcast alert to candidates across the platform.
+            </p>
+
+            {createSuccess && (
+              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-sm flex items-center gap-3">
+                <span>✓</span>
+                <span>Job Requisition published and broadcasted to candidate feeds successfully!</span>
+              </div>
+            )}
+
+            {createError && (
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-sm flex items-center gap-3">
+                <span>⚠️</span>
+                <span>{createError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateJob} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Job Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Lead Distributed Systems Engineer"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500"
+                  />
                 </div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>{job.department || 'General'} - Full-time</p>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '1rem' }}>
-                  {job.description}
-                </p>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Department *
+                  </label>
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="Engineering">Engineering</option>
+                    <option value="Data & AI">Data & AI</option>
+                    <option value="Product">Product</option>
+                    <option value="Design">Design</option>
+                    <option value="Operations">Operations</option>
+                  </select>
+                </div>
               </div>
 
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                <span>Rubric Criteria: {job.rubrics?.[0]?.criteria?.length || 0}</span>
-                <span style={{ fontWeight: 600, color: 'var(--primary)' }}>
-                  {job._count?.applications || 0} applicants
-                </span>
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  Job Description
+                </label>
+                <textarea
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Outline key responsibilities, team context, and role mission..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500"
+                ></textarea>
               </div>
-            </div>
-          ))}
-          {jobs.length === 0 && (
-            <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', gridColumn: '1 / -1' }}>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>No job requisitions created yet.</p>
-              <button className="btn-primary" onClick={() => setIsDrafting(true)}>Create Your First Job</button>
-            </div>
-          )}
-        </div>
-      )}
+
+              {/* Rubric Criteria Builder */}
+              <div className="pt-4 border-t border-slate-800">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">AI Screening Rubric Criteria</h3>
+                    <p className="text-xs text-slate-400">
+                      Configure evaluation criteria and weights (1 to 5) for deterministic LLM score calculations.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCriterion}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 text-xs font-semibold transition"
+                  >
+                    + Add Criterion
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {criteria.map((c, i) => (
+                    <div
+                      key={i}
+                      className="p-4 bg-slate-950/80 border border-slate-800 rounded-2xl flex flex-col md:flex-row gap-3 items-start md:items-center"
+                    >
+                      <input
+                        type="text"
+                        placeholder="Category (e.g. Technical Skills)"
+                        value={c.category}
+                        onChange={(e) => handleCriterionChange(i, 'category', e.target.value)}
+                        className="w-full md:w-1/4 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Specific Requirement Description"
+                        value={c.description}
+                        onChange={(e) => handleCriterionChange(i, 'description', e.target.value)}
+                        className="w-full md:flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                      />
+                      <div className="flex items-center gap-3 w-full md:w-auto justify-between">
+                        <select
+                          value={c.weight}
+                          onChange={(e) => handleCriterionChange(i, 'weight', Number(e.target.value))}
+                          className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-indigo-400 font-semibold"
+                        >
+                          <option value={5}>5 - Critical</option>
+                          <option value={4}>4 - High</option>
+                          <option value={3}>3 - Medium</option>
+                          <option value={2}>2 - Low</option>
+                          <option value={1}>1 - Optional</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCriterion(i)}
+                          className="text-red-400 hover:text-red-300 text-xs p-2"
+                          title="Remove criterion"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold text-sm transition shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2"
+              >
+                {submitting ? 'Publishing & Broadcasting Notification...' : 'Publish Job & Broadcast Alert 📢'}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
