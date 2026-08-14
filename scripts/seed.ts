@@ -176,8 +176,7 @@ async function main() {
   const resume1 = await prisma.resumeDocument.create({
     data: {
       applicationId: app1.id,
-      fileName: 'jeanluc_habimana_resume.pdf',
-      fileReference: 'uploads/jeanluc_habimana_resume.pdf',
+            fileReference: 'uploads/jeanluc_habimana_resume.pdf',
       extractedText: 'Jean-Luc Habimana. 6+ years Senior Full-Stack Engineer with deep experience in TypeScript, React, Node.js, and PostgreSQL.',
       processingStatus: 'COMPLETED'
     }
@@ -236,8 +235,7 @@ async function main() {
   const resume2 = await prisma.resumeDocument.create({
     data: {
       applicationId: app2.id,
-      fileName: 'claire_mukamana_cv.pdf',
-      fileReference: 'uploads/claire_mukamana_cv.pdf',
+            fileReference: 'uploads/claire_mukamana_cv.pdf',
       extractedText: 'Claire Mukamana. Frontend Developer with 3+ years experience in React, JavaScript, and CSS design systems.',
       processingStatus: 'COMPLETED'
     }
@@ -279,13 +277,13 @@ async function main() {
     { action: 'JOB_REQUISITION_CREATED', actorId: hiringManager.id, recordId: job1.id, details: { title: job1.title, department: job1.department } },
     { action: 'JOB_REQUISITION_CREATED', actorId: hiringManager.id, recordId: job2.id, details: { title: job2.title, department: job2.department } },
     { action: 'RUBRIC_APPROVED', actorId: hiringManager.id, recordId: job1.rubrics[0].id, details: { criteriaCount: 4 } },
-    { action: 'CANDIDATE_RESUME_PARSED', actorId: 'AI_WORKER_BULLMQ', recordId: app1.id, details: { candidate: 'Jean-Luc Habimana', status: 'SUCCESS' } },
-    { action: 'AI_SCREENING_COMPLETED', actorId: 'AI_EVALUATOR_GPT4O', recordId: app1.id, details: { matchScore: '94.5%', confidence: 'High' } },
-    { action: 'CANDIDATE_RESUME_PARSED', actorId: 'AI_WORKER_BULLMQ', recordId: app2.id, details: { candidate: 'Claire Mukamana', status: 'SUCCESS' } },
-    { action: 'AI_SCREENING_COMPLETED', actorId: 'AI_EVALUATOR_GPT4O', recordId: app2.id, details: { matchScore: '82.0%', confidence: 'High' } },
+    { action: 'CANDIDATE_RESUME_PARSED', actorId: admin.id, recordId: app1.id, details: { candidate: 'Jean-Luc Habimana', status: 'SUCCESS' } },
+    { action: 'AI_SCREENING_COMPLETED', actorId: admin.id, recordId: app1.id, details: { matchScore: '94.5%', confidence: 'High' } },
+    { action: 'CANDIDATE_RESUME_PARSED', actorId: admin.id, recordId: app2.id, details: { candidate: 'Claire Mukamana', status: 'SUCCESS' } },
+    { action: 'AI_SCREENING_COMPLETED', actorId: admin.id, recordId: app2.id, details: { matchScore: '82.0%', confidence: 'High' } },
     { action: 'STAGE_ADVANCED', actorId: recruiter.id, recordId: app2.id, details: { from: 'SCREENING', to: 'TECHNICAL_INTERVIEW' } },
     { action: 'USER_ROLE_ASSIGNED', actorId: admin.id, recordId: recruiter.id, details: { assignedRole: 'Recruiter' } },
-    { action: 'SECURITY_AUDIT_VERIFIED', actorId: 'SYSTEM', recordId: org.id, details: { sslMode: 'verify-full', encryption: 'AES-256' } }
+    { action: 'SECURITY_AUDIT_VERIFIED', actorId: admin.id, recordId: org.id, details: { sslMode: 'verify-full', encryption: 'AES-256' } }
   ];
 
   for (const log of auditLogs) {
