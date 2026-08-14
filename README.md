@@ -1,26 +1,46 @@
-# AI Resume Screening Platform
+# RecruitAI - Enterprise AI Resume Screening Platform
 
-This repository contains the codebase for the AI Resume Screening Platform, built as part of the internship program.
+An evidence-based recruitment and candidate screening platform built with Next.js 16, PostgreSQL, Prisma, BullMQ, Upstash Redis, and OpenAI `gpt-4o`.
 
-## Architecture
-- **Framework**: Next.js (App Router)
-- **Database**: PostgreSQL (managed via Prisma ORM)
-- **Authentication**: Auth.js (NextAuth) for Role-Based Access Control (RBAC)
-- **Styling**: Vanilla CSS (Custom Design System with Glassmorphism)
+## Key Features
+- **Multi-Tenant Architecture**: Secure multi-tenant organization boundaries and immutable Primary Owner protection.
+- **Explainable AI Matching**: PII-redacted structured profile extraction and weighted rubric evaluation (Weights 1-5).
+- **Recruiter Feedback Loop**: Recruiter score overrides with mandatory rationale capture.
+- **Audit & Compliance**: Searchable, immutable audit logging (`/audit`) for all critical actions.
+- **Privacy Self-Service**: GDPR / CCPA candidate "Right to be Forgotten" self-service portal (`/privacy`).
+- **Resilient AI Worker**: BullMQ queue with exponential backoff retries and Dead-Letter Queue (DLQ).
 
-## Getting Started
+## Pre-Seeded Default Accounts
 
-1. Copy `.env.example` to `.env` and fill in your local PostgreSQL credentials and other secrets.
-2. Run `npm install` to install dependencies.
-3. Run `npx prisma migrate dev --name init` to initialize the database schema.
-4. Run `npm run dev` to start the development server.
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin (Primary Owner)** | `admin@codafriqa.rw` | `password123` |
+| **Lead Recruiter** | `recruiter@codafriqa.rw` | `password123` |
+| **Hiring Manager** | `manager@codafriqa.rw` | `password123` |
+| **Interviewer** | `interviewer@codafriqa.rw` | `password123` |
+| **Compliance Auditor** | `auditor@codafriqa.rw` | `password123` |
 
-## Data Model
-- Organizations, Users, and Roles
-- Job Requisitions and Screening Rubrics
-- Candidates, Applications, and Resume Documents
-- Audit Events for tamper-evident logging
+## Quick Start
 
-## Security & Responsible AI
-- Secrets are not committed to source control.
-- AI is strictly used as decision-support. All final decisions require human authority and are recorded in the Audit log.
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Configure Environment:**
+   Copy `.env.example` to `.env` and provide your database credentials.
+
+3. **Seed Database:**
+   ```bash
+   npx tsx scripts/seed.ts
+   ```
+
+4. **Start Web Application:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Start Background AI Processing Worker:**
+   ```bash
+   npx tsx src/lib/worker.ts
+   ```
