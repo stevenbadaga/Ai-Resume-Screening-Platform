@@ -4,6 +4,26 @@ import OpenAI from 'openai';
 import prisma from '@/lib/prisma';
 const openai = new OpenAI();
 
+export function calculateTotalScore(assessments: any[], criteriaList: any[]) {
+  let totalScore = 0;
+  let maxScore = 0;
+
+  for (const assessment of assessments) {
+    const criteria = criteriaList.find((c: any) => c.id === assessment.criterionId);
+    if (!criteria) continue;
+
+    let scoreContribution = 0;
+    if (assessment.result === 'MATCH') scoreContribution = criteria.weight;
+    if (assessment.result === 'PARTIAL') scoreContribution = criteria.weight * 0.5;
+    
+    totalScore += scoreContribution;
+    maxScore += criteria.weight;
+  }
+
+  const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+  return { totalScore, maxScore, percentage };
+}
+
 export async function scoreCandidateProfile(applicationId: string, rubricId: string) {
   try {
     // 1. Fetch Profile and Rubric
@@ -78,19 +98,15 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
     const parsedAssessments = JSON.parse(assessmentContent);
 
     // 4. Calculate Scores and Save
-    let totalScore = 0;
-    let maxScore = 0;
+    const calc = calculateTotalScore(parsedAssessments.assessments, rubric.criteria);
 
     for (const assessment of parsedAssessments.assessments) {
-      const criteria = rubric.criteria.find((c: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any) => c.id === assessment.criterionId);
+      const criteria = rubric.criteria.find((c: any) => c.id === assessment.criterionId);
       if (!criteria) continue;
 
       let scoreContribution = 0;
       if (assessment.result === 'MATCH') scoreContribution = criteria.weight;
       if (assessment.result === 'PARTIAL') scoreContribution = criteria.weight * 0.5;
-      
-      totalScore += scoreContribution;
-      maxScore += criteria.weight;
 
       await prisma.criterionAssessment.create({
         data: {
@@ -104,13 +120,11 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
       });
     }
 
-    const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
-
     await prisma.screeningRun.update({
       where: { id: screeningRun.id },
       data: { 
         status: "COMPLETED",
-        totalResult: percentage 
+        totalResult: calc.percentage 
       }
     });
 

@@ -17,6 +17,7 @@ model Organization {
   auditEvents      AuditEvent[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  primaryOwnerId   String?
 }
 
 model User {
@@ -95,7 +96,7 @@ model Candidate {
   id              String        @id @default(uuid())
   firstName       String
   lastName        String
-  email           String        @unique
+  email           String
   consentGiven    Boolean       @default(false)
   source          String?       // E.g., LinkedIn, Career Page
   tags            String[]

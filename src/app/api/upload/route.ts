@@ -44,14 +44,46 @@ export async function POST(req: NextRequest) {
     await writeFile(path, buffer);
 
     // 1. Duplicate Review & Candidate Creation
-    let candidate = await prisma.candidate.findUnique({ where: { email } });
-    if (!candidate) {
-      candidate = await prisma.candidate.create({
-        data: { firstName, lastName, email, consentGiven: consent }
-      });
+    const existingCandidates = await prisma.candidate.findMany({ where: { email } });
+    const isDuplicate = existingCandidates.length > 0;
+    
+    // Always create a new candidate record for the new application
+    const candidate = await prisma.candidate.create({
+      data: { 
+        firstName, 
+        lastName, 
+        email, 
+        consentGiven: consent,
+        tags: isDuplicate ? ['POTENTIAL_DUPLICATE'] : []
+      }
+    });
+
+    // Tag existing candidates as potential duplicates as well
+    if (isDuplicate) {
+      for (const existing of existingCandidates) {
+        if (!existing.tags.includes('POTENTIAL_DUPLICATE')) {
+          await prisma.candidate.update({
+            where: { id: existing.id },
+            data: { tags: { push: 'POTENTIAL_DUPLICATE' } }
+          });
+        }
+      }
     }
 
-    // 2. Create Application
+    // 2. Malware Scanning Simulation (Week 3 Requirement)
+    // In a real system, this would call an external AV scanner like ClamAV.
+    const isMalware = file.name.toLowerCase().includes('malware') || file.name.toLowerCase().includes('virus');
+    if (isMalware) {
+      await logAuditEvent({
+        action: 'MALWARE_DETECTED',
+        actorId: 'SYSTEM_USER',
+        affectedRecordId: candidate.id,
+        newValues: { filename: file.name }
+      });
+      return NextResponse.json({ success: false, error: 'Upload rejected by security scanner. Malicious content detected.' }, { status: 403 });
+    }
+
+    // 3. Create Application
     const application = await prisma.application.create({
       data: {
         candidateId: candidate.id,
@@ -60,7 +92,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // 3. Create ResumeDocument with status QUEUED
+    // 4. Create ResumeDocument with status QUEUED
     const resumeDoc = await prisma.resumeDocument.create({
       data: {
         applicationId: application.id,

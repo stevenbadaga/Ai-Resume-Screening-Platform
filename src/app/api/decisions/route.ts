@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logAuditEvent } from '@/lib/auditLogger';
+import { sendMockEmail } from '@/lib/mockEmailService';
 
 import prisma from '@/lib/prisma';
 
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
     const stage = decision === 'ADVANCED' ? 'SCREENING' : 'REJECTED';
 
     // Transaction to ensure atomicity
-    await prisma.$transaction([
+    const [_, application] = await prisma.$transaction([
       // 1. Create the Decision Audit Record
       prisma.recruitmentDecision.create({
         data: {
@@ -31,9 +32,26 @@ export async function POST(req: NextRequest) {
       // 2. Update Application Stage
       prisma.application.update({
         where: { id: applicationId },
-        data: { stage }
+        data: { stage },
+        include: {
+          candidate: true,
+          job: true
+        }
       })
     ]);
+
+    // Week 6: Send Rejection Email
+    if (decision === 'REJECTED') {
+      await sendMockEmail(
+        application.candidate.email,
+        'REJECTION',
+        {
+          candidateName: application.candidate.firstName,
+          jobTitle: application.job.title
+        },
+        application.id
+      );
+    }
 
     // 3. Write Audit Log
     await logAuditEvent({

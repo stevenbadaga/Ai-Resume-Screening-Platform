@@ -1,42 +1,44 @@
-import Link from 'next/link';
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "@/components/Providers";
+import Navigation from "@/components/Navigation";
+import UserNav from "@/components/UserNav";
+
+import { getServerSession } from "next-auth/next";
 
 export const metadata: Metadata = {
   title: "AI Resume Screening Platform",
   description: "Evidence-based recruitment and candidate matching.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession();
+  
   return (
     <html lang="en">
       <body>
-        <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
-          {/* Sidebar */}
-          <aside className="glass-panel" style={{ width: '250px', padding: '2rem', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem', borderRadius: 0 }}>
-            <h2 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>RecruitAI</h2>
-            <Link href="/" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Dashboard</Link>
-            <Link href="/jobs" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Jobs & Rubrics</Link>
-            <Link href="/candidates" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Candidates</Link>
-          </aside>
-          
-          {/* Main Content */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <header style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span>Intern (Recruiter)</span>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>I</div>
-              </div>
-            </header>
-            <main style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
-              {children}
-            </main>
+        <Providers>
+          <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+            {/* Sidebar - only show if logged in */}
+            {session && <Navigation />}
+            
+            {/* Main Content */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              {session && (
+                <header style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', backgroundColor: 'var(--surface)' }}>
+                  <UserNav userName={session.user?.name} userEmail={session.user?.email} />
+                </header>
+              )}
+              <main style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </Providers>
       </body>
     </html>
   );

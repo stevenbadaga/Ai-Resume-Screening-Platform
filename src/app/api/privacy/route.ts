@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email is required for privacy requests' }, { status: 400 });
     }
 
-    const candidate = await prisma.candidate.findUnique({
+    const candidate = await prisma.candidate.findFirst({
       where: { email },
       include: { applications: { include: { resumeDocument: true } } }
     });
@@ -71,3 +71,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to process privacy request' }, { status: 500 });
   }
 }
+
