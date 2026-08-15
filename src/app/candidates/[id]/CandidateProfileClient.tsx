@@ -1,311 +1,353 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function CandidateProfileClient({ profile, screeningResults }: { profile: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any, screeningResults: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any }) {
-  const [activeTab, setActiveTab] = useState<'PROFILE' | 'SCREENING'>('PROFILE');
-  const [decisionReason, setDecisionReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editedSkills, setEditedSkills] = useState(profile.skills.join(', '));
-  const [editedExperience, setEditedExperience] = useState(profile.experience);
-  
-  const [overridingAssessmentId, setOverridingAssessmentId] = useState<string | null>(null);
-  const [overrideResult, setOverrideResult] = useState<'MATCH' | 'PARTIAL' | 'MISSING'>('MATCH');
-  const [overrideRationale, setOverrideRationale] = useState('');
+export default function CandidateProfileClient({
+  profile,
+  screeningResults
+}: {
+  profile: any;
+  screeningResults: any;
+}) {
+  const [resumeSearch, setResumeSearch] = useState('');
+  const [activeLeftTab, setActiveLeftTab] = useState<'DOCUMENT' | 'SKILLS' | 'EXPERIENCE'>('DOCUMENT');
+  const [isOverriding, setIsOverriding] = useState(false);
+  const [overrideScore, setOverrideScore] = useState(screeningResults?.totalScore || 85);
+  const [overrideReason, setOverrideReason] = useState('');
+  const [submittingOverride, setSubmittingOverride] = useState(false);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [submittingAction, setSubmittingAction] = useState(false);
 
-  
   const router = useRouter();
 
-  const handleSaveProfile = async () => {
-    setIsSubmitting(true);
+  const handleStageAction = async (newStage: string, newStatus?: string) => {
+    setSubmittingAction(true);
+    setActionMessage(null);
     try {
-      const res = await fetch(`/api/candidates/${profile.id}/profile`, {
-        method: 'POST',
+      const res = await fetch('/api/candidates/stage', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          skills: editedSkills.split(',').map((s: string) => s.trim()),
-          experience: editedExperience
-        })
+        body: JSON.stringify({ applicationId: profile.id, newStage, newStatus })
       });
-      if (!res.ok) throw new Error('Failed to save profile');
-      alert('Profile updated successfully!');
-      setIsEditingProfile(false);
+
+      if (!res.ok) {
+        throw new Error('Failed to update stage');
+      }
+
+      setActionMessage(`Candidate stage advanced to ${newStage}!`);
       router.refresh();
-    } catch (err) {
-      console.error(err);
-      alert('Error saving profile');
+    } catch (err: any) {
+      alert(err.message || 'Error updating stage');
     } finally {
-      setIsSubmitting(false);
+      setSubmittingAction(false);
     }
   };
 
-  const handleDecision = async (decision: 'ADVANCED' | 'REJECTED') => {
-    setIsSubmitting(true);
+  const handleSaveOverride = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!overrideReason.trim()) {
+      alert('Please provide a mandatory justification for overriding AI score.');
+      return;
+    }
+
+    setSubmittingOverride(true);
     try {
       const res = await fetch('/api/decisions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           applicationId: profile.id,
-          decision,
-          rationale: decisionReason
+          decisionType: 'OVERRIDE',
+          reason: overrideReason,
+          newScore: Number(overrideScore)
         })
       });
-      
-      if (!res.ok) throw new Error('Failed to save decision');
-      
-      alert(`Candidate successfully ${decision.toLowerCase()}!`);
-      router.push('/candidates');
-    } catch (err) {
-      console.error(err);
-      alert('Error saving decision.');
+
+      if (!res.ok) throw new Error('Failed to record override decision');
+
+      alert('Human override saved and logged to audit trail!');
+      setIsOverriding(false);
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message || 'Failed to save override');
     } finally {
-      setIsSubmitting(false);
+      setSubmittingOverride(false);
     }
   };
 
-  const handleOverrideScore = async (assessmentId: string) => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/decisions/override', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assessmentId,
-          newResult: overrideResult,
-          rationale: overrideRationale
-        })
-      });
-      
-      if (!res.ok) throw new Error('Failed to save override');
-      
-      alert('Override saved successfully.');
-      setOverridingAssessmentId(null);
-      setOverrideRationale('');
-      router.refresh();
-    } catch (err) {
-      console.error(err);
-      alert('Error saving override.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Function to highlight search terms in the resume text
+  const renderHighlightedText = (text: string, highlight: string) => {
+    if (!highlight.trim()) return text;
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return parts.map((part, i) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <mark key={i} className="bg-amber-400/30 text-amber-200 px-0.5 rounded">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
   };
+
+  const totalScore = screeningResults?.totalScore || 0;
 
   return (
-    <div className="animate-in">
-      <Link href="/candidates" style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Back to Pipeline
-      </Link>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1>{profile.name}</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Applied for: {profile.job}</p>
+    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-6 space-y-6">
+      {/* Top Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 backdrop-blur-xl">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/candidates"
+              className="text-xs text-slate-400 hover:text-white transition flex items-center gap-1"
+            >
+              &larr; Back to Pipeline
+            </Link>
+            <span className="text-slate-600">•</span>
+            <span className="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-full text-[11px] font-bold">
+              {profile.job}
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">{profile.name}</h1>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
-            className={activeTab === 'PROFILE' ? "btn-primary" : "btn-secondary"}
-            onClick={() => setActiveTab('PROFILE')}
+
+        {/* Quick Action Decision Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => handleStageAction('SHORTLISTED')}
+            disabled={submittingAction}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-indigo-600/30"
           >
-            Profile View
+            ⭐ Shortlist
           </button>
-          <button 
-            className={activeTab === 'SCREENING' ? "btn-primary" : "btn-secondary"}
-            onClick={() => setActiveTab('SCREENING')}
+          <Link
+            href={`/candidates/${profile.id}/interview`}
+            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-cyan-600/30 flex items-center gap-1.5"
           >
-            AI Screening Results
-          </button>
-          <Link href={`/candidates/${profile.id}/interview`}>
-            <button className="btn-secondary" style={{ backgroundColor: 'var(--accent)', color: 'white', border: 'none' }}>
-              Interviews
-            </button>
+            <span>🎯</span>
+            <span>Schedule Interview</span>
           </Link>
+          <button
+            onClick={() => handleStageAction('OFFERED', 'OFFER')}
+            disabled={submittingAction}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/30"
+          >
+            🏆 Extend Offer
+          </button>
+          <button
+            onClick={() => handleStageAction('REJECTED', 'REJECTED')}
+            disabled={submittingAction}
+            className="px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 font-bold text-xs rounded-xl transition"
+          >
+            ❌ Reject
+          </button>
         </div>
       </div>
 
-      {activeTab === 'PROFILE' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          {/* Left Column: Parsed Structured Data */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ color: 'var(--primary)' }}>Parsed Profile</h2>
-              {!isEditingProfile ? (
-                <button className="btn-secondary" onClick={() => setIsEditingProfile(true)}>Edit Profile</button>
-              ) : (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn-secondary" onClick={() => setIsEditingProfile(false)}>Cancel</button>
-                  <button className="btn-primary" onClick={handleSaveProfile} disabled={isSubmitting}>Save</button>
-                </div>
-              )}
-            </div>
-            
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>Extracted Skills</h3>
-              {!isEditingProfile ? (
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {profile.skills.map((skill: string) => (
-                    <span key={skill} style={{ padding: '0.25rem 0.75rem', backgroundColor: 'var(--surface-hover)', border: '1px solid var(--border)', borderRadius: '1rem', fontSize: '0.875rem' }}>
-                      {skill.trim()}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <textarea 
-                  className="input-field" 
-                  value={editedSkills} 
-                  onChange={(e) => setEditedSkills(e.target.value)}
-                  rows={3}
-                  style={{ width: '100%' }}
-                />
-              )}
-            </div>
-
-            <div>
-              <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>Employment History</h3>
-              {!isEditingProfile ? (
-                <div style={{ padding: '1rem', backgroundColor: 'var(--surface-hover)', borderRadius: '0.5rem', fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
-                  {profile.experience}
-                </div>
-              ) : (
-                <textarea 
-                  className="input-field" 
-                  value={editedExperience} 
-                  onChange={(e) => setEditedExperience(e.target.value)}
-                  rows={10}
-                  style={{ width: '100%' }}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: Raw Evidence */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
-            <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-muted)' }}>Source Evidence (Raw Text)</h2>
-            <div style={{ padding: '1rem', backgroundColor: '#f1f5f9', borderRadius: '0.5rem', fontSize: '0.875rem', whiteSpace: 'pre-wrap', height: '400px', overflowY: 'auto', fontFamily: 'var(--font-geist-mono), monospace' }}>
-              {profile.rawText}
-            </div>
-          </div>
+      {actionMessage && (
+        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-xs font-semibold flex items-center gap-2">
+          <span>✓</span>
+          <span>{actionMessage}</span>
         </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-          {/* Screening Results */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
-            {!screeningResults ? (
-              <p>AI Screening is still processing or has failed.</p>
-            ) : (
-              <>
-                <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>AI Match Score</span>
-                  <span style={{ color: screeningResults.totalScore > 75 ? 'var(--secondary)' : 'var(--accent)' }}>
-                    {Math.round(screeningResults.totalScore)}%
-                  </span>
-                </h2>
-                
-                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-                  The AI evaluated this candidate against the approved job rubric. Note: This is decision-support only.
-                </p>
+      )}
 
-                {screeningResults.assessments.map((assessment: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any, idx: number) => (
-                  <div key={idx} style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <strong>{assessment.criterion}</strong>
-                      <span style={{ 
-                        padding: '0.25rem 0.5rem', 
-                        borderRadius: '0.25rem',
-                        fontSize: '0.875rem',
-                        backgroundColor: (assessment.reviewerCorrection ? assessment.reviewerCorrection.split('|')[0] : assessment.result) === 'MATCH' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                        color: (assessment.reviewerCorrection ? assessment.reviewerCorrection.split('|')[0] : assessment.result) === 'MATCH' ? 'var(--secondary)' : 'var(--accent)'
-                      }}>
-                        {assessment.reviewerCorrection ? `${assessment.reviewerCorrection.split('|')[0]} (Overridden)` : assessment.result}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '0.875rem', fontStyle: 'italic', color: 'var(--text-muted)', paddingLeft: '1rem', borderLeft: '3px solid var(--primary-light)' }}>
-                      &quot;{assessment.evidence}&quot;
-                    </p>
-                    
-                    {assessment.reviewerCorrection && (
-                      <p style={{ fontSize: '0.875rem', color: 'var(--accent)', marginTop: '0.5rem' }}>
-                        <strong>Human Rationale:</strong> {assessment.reviewerCorrection.split('|')[1]}
-                      </p>
-                    )}
+      {/* Split-Screen 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT PANE: Document Reader & Extracted CV (7 Cols) */}
+        <div className="lg:col-span-7 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl space-y-4">
+          {/* Sub-Header / Tabs / Search */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveLeftTab('DOCUMENT')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  activeLeftTab === 'DOCUMENT'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-950 text-slate-400 hover:text-white'
+                }`}
+              >
+                📄 Resume Document
+              </button>
+              <button
+                onClick={() => setActiveLeftTab('SKILLS')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  activeLeftTab === 'SKILLS'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-950 text-slate-400 hover:text-white'
+                }`}
+              >
+                ⚡ Parsed Skills ({profile.skills.length})
+              </button>
+              <button
+                onClick={() => setActiveLeftTab('EXPERIENCE')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  activeLeftTab === 'EXPERIENCE'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-950 text-slate-400 hover:text-white'
+                }`}
+              >
+                💼 Experience
+              </button>
+            </div>
 
-                    {overridingAssessmentId === assessment.id ? (
-                      <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'var(--surface-hover)', borderRadius: '0.5rem' }}>
-                        <h4 style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>Override AI Assessment</h4>
-                        <select 
-                          className="input-field" 
-                          value={overrideResult} 
-                          onChange={(e) => setOverrideResult(e.target.value as any)}
-                          style={{ marginBottom: '0.5rem', width: '100%' }}
-                        >
-                          <option value="MATCH">MATCH</option>
-                          <option value="PARTIAL">PARTIAL</option>
-                          <option value="MISSING">MISSING</option>
-                        </select>
-                        <textarea 
-                          className="input-field" 
-                          rows={2} 
-                          placeholder="Mandatory rationale for this override..."
-                          value={overrideRationale}
-                          onChange={(e) => setOverrideRationale(e.target.value)}
-                          style={{ marginBottom: '0.5rem', width: '100%' }}
-                        />
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                          <button className="btn-secondary" onClick={() => setOverridingAssessmentId(null)}>Cancel</button>
-                          <button className="btn-primary" disabled={!overrideRationale || isSubmitting} onClick={() => handleOverrideScore(assessment.id)}>Save Override</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-                        <button className="btn-secondary" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }} onClick={() => setOverridingAssessmentId(assessment.id)}>Override Score</button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </>
+            {/* In-Doc Search */}
+            {activeLeftTab === 'DOCUMENT' && (
+              <div className="relative w-full sm:w-48">
+                <input
+                  type="text"
+                  placeholder="Find in CV..."
+                  value={resumeSearch}
+                  onChange={(e) => setResumeSearch(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-7 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+                <span className="absolute left-2.5 top-1.5 text-slate-500 text-xs">🔍</span>
+              </div>
             )}
           </div>
 
-          {/* Final Decision Panel */}
-          <div className="glass-panel" style={{ padding: '2rem', height: 'fit-content' }}>
-            <h2 style={{ marginBottom: '1.5rem' }}>Final Decision</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-              As a human recruiter, you make the authoritative decision based on the evidence above.
-            </p>
-            
-            <textarea 
-              className="input-field" 
-              rows={4} 
-              placeholder="Mandatory rationale for your decision..."
-              value={decisionReason}
-              onChange={(e) => setDecisionReason(e.target.value)}
-              style={{ marginBottom: '1rem' }}
-            />
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <button 
-                className="btn-primary" 
-                disabled={!decisionReason || isSubmitting}
-                onClick={() => handleDecision('ADVANCED')}
-              >
-                Shortlist & Advance
-              </button>
-              <button 
-                className="btn-secondary" 
-                disabled={!decisionReason || isSubmitting} 
-                onClick={() => handleDecision('REJECTED')}
-                style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
-              >
-                Reject Candidate
-              </button>
+          {/* Left Content View */}
+          {activeLeftTab === 'DOCUMENT' && (
+            <div className="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-5 max-h-[680px] overflow-y-auto font-mono text-xs text-slate-300 leading-relaxed whitespace-pre-wrap selection:bg-indigo-500 selection:text-white">
+              {renderHighlightedText(profile.rawText, resumeSearch)}
+            </div>
+          )}
+
+          {activeLeftTab === 'SKILLS' && (
+            <div className="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-5 min-h-[300px] space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Extracted Competencies & Tools
+              </h3>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {profile.skills.map((skill: string, i: number) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 rounded-xl text-xs font-semibold"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeLeftTab === 'EXPERIENCE' && (
+            <div className="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-5 min-h-[300px] space-y-3 font-mono text-xs text-slate-300 whitespace-pre-wrap">
+              {profile.experience}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT PANE: AI Rubric Evidence & Evaluation (5 Cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Score Header Card */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  AI Fit Assessment
+                </p>
+                <h2 className="text-xl font-extrabold text-white mt-0.5">Weighted Match Score</h2>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-mono">
+                  {totalScore}%
+                </div>
+                <span className="text-[10px] text-slate-400 uppercase font-semibold">
+                  Deterministic Rubric
+                </span>
+              </div>
+            </div>
+
+            {/* Recruiter Override Button */}
+            <button
+              onClick={() => setIsOverriding(!isOverriding)}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 text-xs font-bold transition flex items-center justify-center gap-2"
+            >
+              <span>⚖️</span>
+              <span>{isOverriding ? 'Close Override Form' : 'Recalibrate / Override Score'}</span>
+            </button>
+
+            {/* Override Form */}
+            {isOverriding && (
+              <form onSubmit={handleSaveOverride} className="mt-4 p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                <h3 className="text-xs font-bold text-slate-200">Human Recalibration Form</h3>
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1">New Match Score (0 - 100)%</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={overrideScore}
+                    onChange={(e) => setOverrideScore(Number(e.target.value))}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1">Mandatory Recruiter Justification</label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={overrideReason}
+                    onChange={(e) => setOverrideReason(e.target.value)}
+                    placeholder="e.g. Candidate demonstrated deep Kafka experience in interview not reflected in initial parse."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={submittingOverride}
+                  className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition"
+                >
+                  {submittingOverride ? 'Saving to Audit Log...' : 'Confirm Score Recalibration'}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Detailed Criteria Citations List */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl space-y-4">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Explainability & Quoted Evidence
+            </h3>
+
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+              {screeningResults?.assessments?.map((a: any, i: number) => {
+                const isMatch = a.result === 'MATCH';
+                const isPartial = a.result === 'PARTIAL';
+
+                return (
+                  <div
+                    key={i}
+                    className="p-4 bg-slate-950/80 border border-slate-800 rounded-2xl space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-bold text-slate-200 flex-1">{a.criterion}</p>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
+                          isMatch
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            : isPartial
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                            : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                        }`}
+                      >
+                        {a.result}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 bg-slate-900/90 border border-slate-800/80 rounded-xl text-[11px] text-slate-300 italic">
+                      &ldquo;{a.evidence}&rdquo;
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
