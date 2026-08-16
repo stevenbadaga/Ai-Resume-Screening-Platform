@@ -3,11 +3,13 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import Navigation from "@/components/Navigation";
 import UserNav from "@/components/UserNav";
+import NotificationBell from "@/components/NotificationBell";
+import SupportWidget from "@/components/SupportWidget";
 
 import { getServerSession } from "next-auth/next";
 
 export const metadata: Metadata = {
-  title: "AI Resume Screening Platform",
+  title: "RecruitAI — AI Resume Screening & Talent ATS Platform",
   description: "Evidence-based recruitment and candidate matching.",
 };
 
@@ -29,7 +31,8 @@ export default async function RootLayout({
             {/* Main Content */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               {session && (
-                <header style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', backgroundColor: 'var(--surface)' }}>
+                <header style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem', backgroundColor: 'var(--surface)' }}>
+                  <NotificationBell />
                   <UserNav userName={session.user?.name} userEmail={session.user?.email} />
                 </header>
               )}
@@ -38,6 +41,8 @@ export default async function RootLayout({
               </main>
             </div>
           </div>
+          {/* Floating AI Customer Support Assistant */}
+          <SupportWidget />
         </Providers>
       </body>
     </html>

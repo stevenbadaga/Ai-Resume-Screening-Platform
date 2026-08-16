@@ -33,55 +33,72 @@ export default function PrivacyPortal() {
   };
 
   return (
-    <div className="animate-in" style={{ maxWidth: '600px', margin: '4rem auto' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/" style={{ color: 'var(--primary)', textDecoration: 'none' }}>&larr; Back to Home</Link>
-      </div>
+    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8 flex items-center justify-center">
+      <div className="max-w-xl w-full space-y-6">
+        <div>
+          <Link
+            href="/jobs"
+            className="text-xs text-slate-400 hover:text-white transition flex items-center gap-1.5"
+          >
+            &larr; Back to Job Board
+          </Link>
+        </div>
 
-      <div className="glass-panel" style={{ padding: '3rem' }}>
-        <h1 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>Candidate Privacy Portal</h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-          Under GDPR and relevant data protection laws, you have the "Right to be Forgotten".
-          Submit your email address below to permanently delete your physical resume files and anonymize your personal data from our screening platform.
-        </p>
-
-        {status === 'SUCCESS' ? (
-          <div style={{ padding: '2rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--secondary)', borderRadius: '4px', textAlign: 'center' }}>
-            <h2 style={{ color: 'var(--secondary)', marginBottom: '1rem' }}>Success!</h2>
-            <p>Your privacy request has been processed. Your personal identifiers have been scrubbed and physical documents deleted.</p>
-          </div>
-        ) : (
-          <form onSubmit={handleRequestDeletion} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-              <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Registered Email Address</label>
-              <input
-                id="email"
-                type="email"
-                className="input-field"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                style={{ width: '100%', padding: '0.75rem' }}
-              />
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl space-y-6">
+          <div className="space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-2xl">
+              🛡️
             </div>
-            
-            {status === 'ERROR' && (
-              <div style={{ color: 'var(--accent)', fontSize: '0.875rem' }}>
-                Error: {errorMessage}
-              </div>
-            )}
+            <h1 className="text-2xl font-extrabold text-white">
+              Candidate Privacy & GDPR Portal
+            </h1>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Under GDPR, CCPA, and global data sovereignty regulations, you retain full ownership of your data and the <strong>Right to be Forgotten</strong>.
+            </p>
+          </div>
 
-            <button 
-              type="submit" 
-              className="btn-primary" 
-              disabled={status === 'SUBMITTING'}
-              style={{ padding: '0.75rem', backgroundColor: 'var(--accent)', color: 'white', border: 'none' }}
-            >
-              {status === 'SUBMITTING' ? 'Processing...' : 'Permanently Delete My Data'}
-            </button>
-          </form>
-        )}
+          {status === 'SUCCESS' ? (
+            <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center space-y-2">
+              <span className="text-3xl block">✓</span>
+              <h2 className="text-base font-bold text-emerald-400">Data Deletion Complete</h2>
+              <p className="text-xs text-slate-300">
+                Your personal identifiers have been scrubbed from candidate records and uploaded resume documents have been permanently purged from our servers.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleRequestDeletion} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Your Registered Candidate Email *
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="e.g. yourname@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {status === 'ERROR' && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={status === 'SUBMITTING'}
+                className="w-full py-3.5 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2"
+              >
+                {status === 'SUBMITTING' ? 'Purging Personal Records...' : 'Execute Permanent Data Erasure 🗑️'}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

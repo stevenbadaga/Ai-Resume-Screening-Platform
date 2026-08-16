@@ -42,3 +42,7 @@ next-env.d.ts
 
 uploads/
 *.log
+
+AGENTS.md
+CLAUDE.md
+.system_generated/
