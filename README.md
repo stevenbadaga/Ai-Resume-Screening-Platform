@@ -54,11 +54,6 @@
 
 | Email | Password | Role | Primary View & Permissions |
 | :--- | :--- | :--- | :--- |
-| `admin@codafriqa.rw` | `password123` | **Admin / Primary Owner** | Full system control, Team management, Audit trails, Requisitions |
-| `recruiter@codafriqa.rw` | `password123` | **Lead Recruiter** | Full ATS Kanban, candidate screening, AI overrides, Job posting |
-| `manager@codafriqa.rw` | `password123` | **Hiring Manager** | Scoped strictly to departmental job requisitions & applicants |
-| `interviewer@codafriqa.rw` | `password123` | **Technical Interviewer** | Direct interview scorecards & candidate assessment grading |
-| `auditor@codafriqa.rw` | `password123` | **Compliance Auditor** | Read-only compliance verification & tamper-proof audit trails |
 
 ---
 
