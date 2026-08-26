@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
+import { requireAuth } from '@/lib/auth';
+import { safeRedirect, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
+    // SECURITY: Require authentication — retrying processing is a privileged operation
+    const auth = await requireAuth(['Admin', 'Recruiter']);
+    if (auth.error) return auth.error;
+
     const data = await req.formData();
     const applicationId = data.get('applicationId') as string;
 
@@ -14,10 +20,14 @@ export async function POST(req: NextRequest) {
 
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
-      include: { resumeDocument: true }
+      include: { resumeDocument: true, job: true }
     });
 
     if (!application || !application.resumeDocument) {
+      return NextResponse.json({ success: false, error: 'Application or Resume not found' }, { status: 404 });
+    }
+
+    if (application.job.organizationId !== auth.user.organizationId) {
       return NextResponse.json({ success: false, error: 'Application or Resume not found' }, { status: 404 });
     }
 
@@ -36,15 +46,15 @@ export async function POST(req: NextRequest) {
 
     await logAuditEvent({
       action: 'RESUME_PROCESSING_RETRIED',
-      actorId: 'SYSTEM_USER',
+      actorId: auth.user.id,
       affectedRecordId: application.id,
     });
 
-    // Redirect back to candidates page
-    return NextResponse.redirect(new URL('/candidates', req.url));
+    // SECURITY: Use safe redirect to prevent open redirect
+    return safeRedirect('/candidates');
 
   } catch (error) {
     console.error('Retry error:', error);
-    return NextResponse.json({ success: false, error: 'Server error during retry' }, { status: 500 });
+    return safeErrorResponse('Server error during retry');
   }
 }

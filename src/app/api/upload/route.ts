@@ -4,11 +4,22 @@ import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
-
 import prisma from '@/lib/prisma';
+import { validateFileMagicBytes, safeErrorResponse } from '@/lib/validation';
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting on uploads
+    const rateLimitKey = getRateLimitKey(req, 'upload');
+    const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.upload);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many upload attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
+      );
+    }
+
     const data = await req.formData();
     const file: File | null = data.get('resume') as unknown as File;
     const firstName = data.get('firstName') as string;
@@ -21,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Week 3 Requirement: Secure validation
+    // MIME type validation
     if (file.type !== 'application/pdf' && file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       return NextResponse.json({ success: false, error: 'Only PDF or DOCX files are allowed' }, { status: 400 });
     }
@@ -32,6 +43,15 @@ export async function POST(req: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+
+    // SECURITY: Magic-byte validation — MIME types are client-supplied and easily spoofed
+    const detectedType = validateFileMagicBytes(buffer);
+    if (!detectedType) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid file content. The file does not appear to be a valid PDF or DOCX document.' },
+        { status: 400 }
+      );
+    }
 
     // Save to local storage for dev (simulating S3)
     const uploadDir = process.env.STORAGE_LOCAL_PATH || './uploads';
@@ -124,6 +144,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ success: false, error: 'Server error during upload' }, { status: 500 });
+    return safeErrorResponse('Server error during upload');
   }
 }
