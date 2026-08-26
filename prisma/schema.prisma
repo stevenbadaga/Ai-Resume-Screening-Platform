@@ -172,6 +172,7 @@ model ScreeningRun {
   configuration    String?      // JSON
   status           String       @default("PROCESSING")
   totalResult      Float?
+  effectiveResult  Float?
   errorInformation String?
   assessments      CriterionAssessment[]
   decisions        RecruitmentDecision[]
@@ -186,6 +187,7 @@ model CriterionAssessment {
   criterionId        String
   criterion          Criterion    @relation(fields: [criterionId], references: [id])
   result             String       // e.g. MATCH, PARTIAL, MISSING
+  effectiveResult    String?
   supportingEvidence String?
   sourceLocation     String?      // e.g. bounding box or text snippet
   uncertainty        Boolean      @default(false)
