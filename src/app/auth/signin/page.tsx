@@ -125,11 +125,10 @@ export default function SignIn() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center py-8 px-2 sm:px-4">
-      <div className="relative max-w-lg w-full dark:bg-slate-900/75 bg-white/90 dark:border-slate-700/80 border-slate-200 border rounded-[1.75rem] p-5 sm:p-8 shadow-2xl shadow-slate-950/10 dark:shadow-black/30 space-y-6 backdrop-blur-xl transition overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-indigo-500 to-violet-500" />
+      <div className="relative max-w-lg w-full dark:bg-[#17242B]/95 bg-[#FFFDF8]/95 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 sm:p-8 shadow-xl shadow-slate-950/10 dark:shadow-black/25 space-y-6 backdrop-blur-sm transition overflow-hidden">
         {/* Brand Header */}
         <div className="text-center space-y-3 pt-1">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-500 to-violet-600 flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-indigo-500/25 ring-4 ring-indigo-500/10">
+          <div className="w-14 h-14 rounded-2xl bg-[#0F766E] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-teal-900/20 ring-4 ring-teal-700/10">
             R
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full dark:bg-emerald-400/10 bg-emerald-50 dark:text-emerald-300 text-emerald-700 border dark:border-emerald-400/20 border-emerald-200 text-[9px] font-bold uppercase tracking-[0.18em]">
@@ -199,7 +198,7 @@ export default function SignIn() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 hover:-translate-y-0.5"
+            className="w-full py-3 bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-teal-900/20 hover:-translate-y-0.5"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
