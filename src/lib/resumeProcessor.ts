@@ -111,8 +111,17 @@ export async function processResume(applicationId: string, resumeDocumentId: str
     const profileData = JSON.parse(parsedContent);
 
     // 4. Save the Parsed Profile
-    await prisma.parsedProfile.create({
-      data: {
+    await prisma.parsedProfile.upsert({
+      where: { applicationId },
+      update: {
+        skills: JSON.stringify(profileData.skills),
+        employment: JSON.stringify(profileData.employment),
+        education: JSON.stringify(profileData.education),
+        certifications: profileData.certifications ? JSON.stringify(profileData.certifications) : null,
+        languages: profileData.languages ? JSON.stringify(profileData.languages) : null,
+        projects: profileData.projects ? JSON.stringify(profileData.projects) : null,
+      },
+      create: {
         applicationId,
         skills: JSON.stringify(profileData.skills),
         employment: JSON.stringify(profileData.employment),
@@ -135,6 +144,7 @@ export async function processResume(applicationId: string, resumeDocumentId: str
       }
     });
 
+    return { status: profileData.confidenceScore < 80 ? 'NEEDS_REVIEW' : 'COMPLETED' };
   } catch (error) {
     console.error('Failed to process resume:', error);
     
@@ -146,5 +156,7 @@ export async function processResume(applicationId: string, resumeDocumentId: str
         safeMetadata: JSON.stringify({ error: String(error) })
       }
     });
+
+    throw error;
   }
 }
