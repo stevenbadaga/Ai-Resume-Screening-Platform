@@ -1,15 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { sendMockEmail } from '@/lib/mockEmailService';
-
 import prisma from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+import { decisionSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
-    const { applicationId, decision, rationale } = await req.json();
+    // Require authentication with appropriate roles
+    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    if (auth.error) return auth.error;
 
-    if (!applicationId || !decision || !rationale) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const body = await req.json();
+
+    // Validate input with Zod
+    const { data, error } = validateBody(decisionSchema, body);
+    if (error) return error;
+
+    const { applicationId, decision, rationale } = data;
+
+    const existingApplication = await prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { job: true }
+    });
+
+    if (!existingApplication || existingApplication.job.organizationId !== auth.user.organizationId) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
     // Determine the new application stage based on the decision
@@ -21,11 +37,11 @@ export async function POST(req: NextRequest) {
       prisma.recruitmentDecision.create({
         data: {
           applicationId,
-          actorId: 'SYSTEM_USER', // TODO: Replace with authenticated user ID from Auth.js session
+          actorId: auth.user.id,
           humanAction: 'DECISION_MADE',
           decisionType: decision,
           reason: rationale,
-          previousStage: 'UNKNOWN',
+          previousStage: existingApplication.stage,
           newStage: stage
         }
       }),
@@ -56,7 +72,7 @@ export async function POST(req: NextRequest) {
     // 3. Write Audit Log
     await logAuditEvent({
       action: 'RECRUITMENT_DECISION_MADE',
-      actorId: 'SYSTEM_USER',
+      actorId: auth.user.id,
       affectedRecordId: applicationId,
       newValues: { decision, rationale, stage }
     });
@@ -64,6 +80,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, stage });
   } catch (error) {
     console.error('Decision error:', error);
-    return NextResponse.json({ error: 'Failed to save decision' }, { status: 500 });
+    return safeErrorResponse('Failed to save decision');
   }
 }
