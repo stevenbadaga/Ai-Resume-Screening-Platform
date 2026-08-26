@@ -8,6 +8,7 @@ export async function logAuditEvent(params: {
   affectedRecordId?: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any;
   previousValues?: any;
   newValues?: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any;
+  organizationId?: string;
   requestContext?: any;
 }) {
   try {
@@ -18,6 +19,7 @@ export async function logAuditEvent(params: {
         affectedRecordId: params.affectedRecordId,
         previousValues: params.previousValues ? JSON.stringify(params.previousValues) : undefined,
         newValues: params.newValues ? JSON.stringify(params.newValues) : undefined,
+        organizationId: params.organizationId,
         requestContext: params.requestContext ? JSON.stringify(params.requestContext) : undefined,
       }
     });
