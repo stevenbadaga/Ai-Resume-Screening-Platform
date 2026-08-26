@@ -2,7 +2,7 @@
 import OpenAI from 'openai';
 
 import prisma from '@/lib/prisma';
-const openai = new OpenAI();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder-key' });
 
 export function calculateTotalScore(assessments: any[], criteriaList: any[]) {
   let totalScore = 0;
@@ -25,6 +25,7 @@ export function calculateTotalScore(assessments: any[], criteriaList: any[]) {
 }
 
 export async function scoreCandidateProfile(applicationId: string, rubricId: string) {
+  let screeningRunId: string | undefined;
   try {
     // 1. Fetch Profile and Rubric
     const profile = await prisma.parsedProfile.findUnique({
@@ -48,6 +49,7 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
         status: "PROCESSING"
       }
     });
+    screeningRunId = screeningRun.id;
 
     // 3. AI Evaluation via Structured Outputs
     const completion = await openai.chat.completions.create({
@@ -130,6 +132,12 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
 
   } catch (error) {
     console.error('Scoring error:', error);
-    // Note: In production, find the active screening run and mark it FAILED.
+    if (screeningRunId) {
+      await prisma.screeningRun.update({
+        where: { id: screeningRunId },
+        data: { status: 'FAILED', errorInformation: 'Screening failed. Review worker logs for details.' }
+      });
+    }
+    throw error;
   }
 }
