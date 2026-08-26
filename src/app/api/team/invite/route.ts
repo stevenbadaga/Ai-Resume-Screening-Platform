@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from "next-auth/next";
 import { sendMockEmail } from '@/lib/mockEmailService';
+import { requireAuth } from '@/lib/auth';
+import { teamInviteSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const user = session.user as any;
+    // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
+    const auth = await requireAuth(['Admin']);
+    if (auth.error) return auth.error;
     
-    // Check if current user is an Admin
+    // Verify caller has the right permissions from DB
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: auth.user.id },
       include: { roles: true }
     });
 
@@ -20,11 +20,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { email, roleName } = await req.json();
+    const body = await req.json();
 
-    if (!email || !roleName) {
-      return NextResponse.json({ error: 'Email and role are required' }, { status: 400 });
-    }
+    // Validate input with Zod — enforces email format and whitelisted role names
+    const { data, error } = validateBody(teamInviteSchema, body);
+    if (error) return error;
+
+    const { email, roleName } = data;
 
     // Create the role if it doesn't exist
     let role = await prisma.role.findFirst({ where: { name: roleName } });
@@ -52,16 +54,17 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Send invite email
+    // Send invite email — SECURITY: Use template literal properly
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     await sendMockEmail(email, 'TEAM_INVITATION', {
       inviterName: dbUser.name || 'Your Team',
       role: roleName,
-      joinLink: "http://localhost:3000/auth/signup?invite=${newUser.id}"
+      joinLink: `${baseUrl}/auth/signup?invite=${newUser.id}`
     });
 
     return NextResponse.json({ success: true, user: newUser });
   } catch (error) {
     console.error('Invite error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return safeErrorResponse('Internal server error');
   }
 }

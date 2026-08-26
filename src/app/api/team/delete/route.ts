@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from "next-auth/next";
+import { requireAuth } from '@/lib/auth';
+import { teamDeleteSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
+    const auth = await requireAuth(['Admin']);
+    if (auth.error) return auth.error;
 
-    const user = session.user as any;
+    const body = await req.json();
+
+    // Validate input
+    const { data, error } = validateBody(teamDeleteSchema, body);
+    if (error) return error;
+
+    const { targetUserId } = data;
     
-    // Check if current user is an Admin
+    // Verify caller has the right permissions from DB
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: auth.user.id },
       include: { roles: true }
     });
 
@@ -19,10 +27,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { targetUserId } = await req.json();
+    const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } });
+    if (!targetUser || targetUser.organizationId !== dbUser.organizationId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-    if (!targetUserId) {
-      return NextResponse.json({ error: 'Target User ID is required' }, { status: 400 });
+    // Prevent self-deletion
+    if (targetUserId === auth.user.id) {
+      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 
     // Check if target user is the Primary Owner
@@ -37,6 +49,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return safeErrorResponse('Internal server error');
   }
 }
