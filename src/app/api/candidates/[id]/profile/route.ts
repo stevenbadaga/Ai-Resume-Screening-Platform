@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from "next-auth/next";
 import { logAuditEvent } from '@/lib/auditLogger';
+import { requireAuth } from '@/lib/auth';
+import { profileUpdateSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
+    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    if (auth.error) return auth.error;
     
     const { id } = await params;
-    const { skills, experience } = await req.json();
+    const body = await req.json();
+
+    // Validate input
+    const { data, error } = validateBody(profileUpdateSchema, body);
+    if (error) return error;
+
+    const { skills, experience } = data;
 
     const application = await prisma.application.findUnique({
-      where: { id },
+      where: { id, job: { organizationId: auth.user.organizationId } },
       include: { parsedProfile: true }
     });
 
@@ -31,13 +39,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       data: {
         skills: JSON.stringify(skills),
         employment: JSON.stringify(experience),
-        manualCorrections: JSON.stringify({ correctedBy: (session.user as any).id, timestamp: new Date() })
+        manualCorrections: JSON.stringify({ correctedBy: auth.user.id, timestamp: new Date() })
       }
     });
 
     await logAuditEvent({
       action: 'CANDIDATE_PROFILE_CORRECTED',
-      actorId: (session.user as any).id,
+      actorId: auth.user.id,
       affectedRecordId: updatedProfile.id,
       previousValues,
       newValues: { skills, experience }
@@ -46,6 +54,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ success: true, updatedProfile });
   } catch (error) {
     console.error('Error saving profile:', error);
-    return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
+    return safeErrorResponse('Failed to save profile');
   }
 }

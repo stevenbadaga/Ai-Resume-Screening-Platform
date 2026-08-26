@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
+import { requireAuth } from '@/lib/auth';
+import { safeRedirect, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
+    // SECURITY: Require authentication — merging candidates is a privileged operation
+    const auth = await requireAuth(['Admin', 'Recruiter']);
+    if (auth.error) return auth.error;
+
     const data = await req.formData();
     const email = data.get('email') as string;
 
@@ -17,7 +23,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (duplicates.length <= 1) {
-      return NextResponse.redirect(new URL('/candidates', req.url));
+      // SECURITY: Use safe redirect instead of req.url-based redirect
+      return safeRedirect('/candidates');
     }
 
     const primaryCandidate = duplicates[0];
@@ -37,7 +44,7 @@ export async function POST(req: NextRequest) {
 
       await logAuditEvent({
         action: 'CANDIDATE_MERGED',
-        actorId: 'SYSTEM_USER',
+        actorId: auth.user.id,
         affectedRecordId: primaryCandidate.id,
         newValues: { mergedFrom: dup.id }
       });
@@ -53,10 +60,11 @@ export async function POST(req: NextRequest) {
       data: { tags: updatedTags }
     });
 
-    return NextResponse.redirect(new URL('/candidates', req.url));
+    // SECURITY: Use safe redirect to prevent open redirect
+    return safeRedirect('/candidates');
 
   } catch (error) {
     console.error('Merge error:', error);
-    return NextResponse.json({ success: false, error: 'Server error during merge' }, { status: 500 });
+    return safeErrorResponse('Server error during merge');
   }
 }

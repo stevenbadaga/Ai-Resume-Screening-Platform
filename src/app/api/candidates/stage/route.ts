@@ -1,24 +1,21 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
+import { requireAuth } from '@/lib/auth';
+import { stageChangeSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const userId = (session?.user as any)?.id;
-    const role = (session?.user as any)?.role;
+    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    if (auth.error) return auth.error;
 
-    if (!userId || (role !== 'Admin' && role !== 'Recruiter' && role !== 'Hiring Manager')) {
-      return NextResponse.json({ error: 'Unauthorized to change candidate stage' }, { status: 401 });
-    }
+    const body = await req.json();
 
-    const { applicationId, newStage, newStatus } = await req.json();
+    // Validate input with Zod
+    const { data, error } = validateBody(stageChangeSchema, body);
+    if (error) return error;
 
-    if (!applicationId || !newStage) {
-      return NextResponse.json({ error: 'Missing applicationId or newStage' }, { status: 400 });
-    }
+    const { applicationId, newStage, newStatus } = data;
 
     const existingApp = await prisma.application.findUnique({
       where: { id: applicationId },
@@ -29,6 +26,10 @@ export async function PATCH(req: Request) {
     });
 
     if (!existingApp) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    if (existingApp.job.organizationId !== auth.user.organizationId) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
@@ -75,7 +76,7 @@ export async function PATCH(req: Request) {
     // Log Audit Trail
     await logAuditEvent({
       action: 'CANDIDATE_STAGE_CHANGED',
-      actorId: userId,
+      actorId: auth.user.id,
       affectedRecordId: applicationId,
       previousValues: { stage: existingApp.stage, status: existingApp.status },
       newValues: { stage: newStage, status, candidateName: `${existingApp.candidate.firstName} ${existingApp.candidate.lastName}`, jobTitle: existingApp.job.title }
@@ -84,6 +85,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true, application: updatedApp });
   } catch (error: any) {
     console.error('Update stage error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to update candidate stage' }, { status: 500 });
+    // SECURITY: Never leak internal error details
+    return safeErrorResponse('Failed to update candidate stage');
   }
 }
