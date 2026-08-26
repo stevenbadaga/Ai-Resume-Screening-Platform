@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from "next-auth/next";
+import { requireAuth } from '@/lib/auth';
+import { escapeCsvCell, safeErrorResponse } from '@/lib/validation';
 
 export async function GET() {
-  const session = await getServerSession();
-  if (!session) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
+  // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
+  const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+  if (auth.error) return auth.error;
 
-  const role = (session.user as any)?.role || 'Recruiter';
-  const userId = (session.user as any)?.id;
-
-  const whereClause: any = {};
-  if (role === 'HiringManager' && userId) {
+  const whereClause: any = { job: { organizationId: auth.user.organizationId } };
+  if (auth.user.role === 'HiringManager') {
     whereClause.job = {
-      ownerId: userId
+      ownerId: auth.user.id
     };
   }
 
@@ -33,13 +30,13 @@ export async function GET() {
     }
   });
 
-  // Construct CSV string
+  // Construct CSV string — SECURITY: Escape all cells to prevent CSV formula injection
   let csvContent = 'Application ID,Candidate Name,Email,Job Title,Status,AI Match Score,Applied At\n';
 
   for (const app of applications) {
-    const score = app.screeningRuns[0]?.totalResult ?? 'N/A';
+    const score = app.screeningRuns[0]?.effectiveResult ?? app.screeningRuns[0]?.totalResult ?? 'N/A';
     const name = `${app.candidate.firstName} ${app.candidate.lastName}`;
-    csvContent += `"${app.id}","${name}","${app.candidate.email}","${app.job.title}","${app.status}","${score}","${app.createdAt.toISOString()}"\n`;
+    csvContent += `${escapeCsvCell(app.id)},${escapeCsvCell(name)},${escapeCsvCell(app.candidate.email)},${escapeCsvCell(app.job.title)},${escapeCsvCell(app.status)},${escapeCsvCell(String(score))},${escapeCsvCell(app.createdAt.toISOString())}\n`;
   }
 
   return new NextResponse(csvContent, {
