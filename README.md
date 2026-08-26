@@ -50,11 +50,6 @@
 
 ---
 
-## 👥 Demo Personas & Pre-Seeded Test Accounts
-
-| Email | Password | Role | Primary View & Permissions |
-| :--- | :--- | :--- | :--- |
-
 ---
 
 ## 🛠️ Technology Stack
@@ -92,7 +87,7 @@ REDIS_URL="redis://localhost:6379"
 npm install
 npx prisma generate
 npx prisma db push
-npx tsx scripts/seed.ts
+npx prisma db push
 ```
 
 ### 4. Run Development Server
@@ -100,6 +95,8 @@ npx tsx scripts/seed.ts
 npm run dev
 ```
 Open **`http://localhost:3000`** in your browser.
+
+Run validation with `npm run typecheck` and tests with `npm test`.
 
 ---
 

@@ -2,7 +2,6 @@
 import OpenAI from 'openai';
 
 import prisma from '@/lib/prisma';
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder-key' });
 
 export function calculateTotalScore(assessments: any[], criteriaList: any[]) {
   let totalScore = 0;
@@ -52,6 +51,7 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
     screeningRunId = screeningRun.id;
 
     // 3. AI Evaluation via Structured Outputs
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder-key' });
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-2024-08-06",
       messages: [

@@ -1,10 +1,7 @@
 import fs from 'fs/promises';
 import OpenAI from 'openai';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
 
 import prisma from '@/lib/prisma';
-const openai = new OpenAI(); // Automatically uses OPENAI_API_KEY from .env
 
 // --- A+ BIAS MITIGATION: PII REDACTION ---
 // To prevent proxy risk, we redact obvious personal identifiers before sending to OpenAI.
@@ -21,6 +18,7 @@ export function redactPII(text: string): string {
 
 export async function processResume(applicationId: string, resumeDocumentId: string, filePath: string) {
   try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder-key' });
     // 1. Update status to PROCESSING
     await prisma.resumeDocument.update({
       where: { id: resumeDocumentId },
@@ -29,6 +27,8 @@ export async function processResume(applicationId: string, resumeDocumentId: str
 
     // 2. Extract Text
     const dataBuffer = await fs.readFile(filePath);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = require('pdf-parse');
     const pdfData = await pdfParse(dataBuffer);
     const rawText = pdfData.text;
 
