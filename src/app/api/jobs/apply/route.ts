@@ -5,9 +5,21 @@ import { logAuditEvent } from '@/lib/auditLogger';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { validateFileMagicBytes, safeErrorResponse } from '@/lib/validation';
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting on application submissions
+    const rateLimitKey = getRateLimitKey(req, 'apply');
+    const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.upload);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many submissions. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
+      );
+    }
+
     const formData = await req.formData();
     const jobId = formData.get('jobId') as string;
     const firstName = formData.get('firstName') as string;
@@ -20,12 +32,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required candidate information' }, { status: 400 });
     }
 
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
     if (!consentGiven) {
       return NextResponse.json({ error: 'Consent to data processing is required' }, { status: 400 });
     }
 
     if (!file) {
       return NextResponse.json({ error: 'Resume file is required' }, { status: 400 });
+    }
+
+    // File size limit (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size exceeds 5MB limit' }, { status: 400 });
     }
 
     // Verify Job exists and get organization details
@@ -41,9 +64,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Job position not found' }, { status: 404 });
     }
 
+    if (job.status !== 'OPEN') {
+      return NextResponse.json({ error: 'This job is not accepting applications' }, { status: 409 });
+    }
+
     // Process file and save to uploads/
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+
+    // SECURITY: Magic-byte validation — don't trust client-supplied MIME types
+    const fileExt = path.extname(file.name).toLowerCase();
+    if (fileExt === '.pdf' || fileExt === '.docx') {
+      const detectedType = validateFileMagicBytes(buffer);
+      if (!detectedType) {
+        return NextResponse.json(
+          { error: 'Invalid file content. The file does not appear to be a valid PDF or DOCX document.' },
+          { status: 400 }
+        );
+      }
+    }
+
     const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
 
     const uploadDir = path.join(process.cwd(), 'uploads');
@@ -57,7 +97,6 @@ export async function POST(req: Request) {
 
     // Extract text content from file
     let extractedText = '';
-    const fileExt = path.extname(file.name).toLowerCase();
     
     if (fileExt === '.txt' || fileExt === '.md') {
       extractedText = buffer.toString('utf-8');
@@ -173,6 +212,7 @@ export async function POST(req: Request) {
     }, { status: 201 });
   } catch (error: any) {
     console.error('In-app apply error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to submit application' }, { status: 500 });
+    // SECURITY: Never leak internal error details
+    return safeErrorResponse('Failed to submit application');
   }
 }

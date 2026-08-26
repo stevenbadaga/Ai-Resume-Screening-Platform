@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
+import { requireAuth } from '@/lib/auth';
+import { createJobSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function GET(req: Request) {
   try {
+    // Require authentication to list jobs
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const department = searchParams.get('department');
     const search = searchParams.get('search');
 
-    const where: any = { status: 'OPEN' };
+    const where: any = { organizationId: auth.user.organizationId };
     if (department && department !== 'ALL') {
       where.department = department;
     }
@@ -37,97 +41,65 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json(jobs);
+    return NextResponse.json({ jobs, count: jobs.length });
   } catch (error: any) {
     console.error('Fetch jobs error:', error);
-    return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
+    return safeErrorResponse('Failed to fetch jobs');
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const userId = (session?.user as any)?.id;
+    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    if (auth.error) return auth.error;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const body = await req.json();
 
-    const { title, department, description, criteria } = await req.json();
+    // Validate input with Zod
+    const { data, error } = validateBody(createJobSchema, body);
+    if (error) return error;
 
-    if (!title || !department) {
-      return NextResponse.json({ error: 'Title and department are required' }, { status: 400 });
-    }
+    const { title, department, description, criteria } = data;
 
-    // Get user and organization
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { organization: true }
-    });
-
-    if (!user || !user.organizationId) {
-      return NextResponse.json({ error: 'Organization not found for user' }, { status: 400 });
-    }
-
-    // Create Job Requisition with Rubric
     const job = await prisma.jobRequisition.create({
       data: {
         title,
         department,
-        description: description || '',
+        description: description || 'No description provided.',
         status: 'OPEN',
-        ownerId: userId,
-        organizationId: user.organizationId,
+        ownerId: auth.user.id,
+        organizationId: auth.user.organizationId,
         rubrics: {
           create: {
             status: 'APPROVED',
             criteria: {
-              create: (criteria && criteria.length > 0)
-                ? criteria.map((c: any) => ({
-                    category: c.category || 'Core Skill',
-                    description: c.description || '',
-                    isRequired: c.isRequired ?? true,
-                    weight: Number(c.weight) || 3
-                  }))
-                : [
-                    { category: 'Technical Skills', description: 'Core domain competency and practical experience', isRequired: true, weight: 5 },
-                    { category: 'Problem Solving', description: 'Analytical reasoning and architectural problem solving', isRequired: true, weight: 4 },
-                    { category: 'Communication', description: 'Clear technical communication and team collaboration', isRequired: false, weight: 3 }
-                  ]
+              create: criteria.map((c) => ({
+                category: c.category || 'General Requirement',
+                description: c.description,
+                weight: c.weight || 3
+              }))
             }
           }
         }
       },
       include: {
-        rubrics: { include: { criteria: true } }
+        rubrics: {
+          include: { criteria: true }
+        }
       }
     });
 
-    // ðŸ“¢ Broadcast In-App Notification to all users in system/org
-    const allUsers = await prisma.user.findMany({ select: { id: true } });
-    if (allUsers.length > 0) {
-      await prisma.notification.createMany({
-        data: allUsers.map((u: any) => ({
-          userId: u.id,
-          title: `ðŸ“¢ New Job Posted: ${title}`,
-          message: `${user.organization?.name || 'RecruitAI'} is now hiring for ${title} (${department}). Click to review requirements and apply!`,
-          type: 'JOB_POSTED',
-          link: `/jobs`
-        }))
-      });
-    }
-
-    // Log Audit Event
     await logAuditEvent({
       action: 'JOB_REQUISITION_CREATED',
-      actorId: userId,
+      actorId: auth.user.id,
       affectedRecordId: job.id,
-      newValues: { title, department, criteriaCount: criteria?.length || 3, organizationId: user.organizationId }
+      newValues: { title: job.title, department: job.department }
     });
 
     return NextResponse.json({ success: true, job }, { status: 201 });
   } catch (error: any) {
-    console.error('Create job error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create job requisition' }, { status: 500 });
+    console.error('Job creation error:', error);
+    // SECURITY: Never leak internal error details
+    return safeErrorResponse('Failed to create job requisition');
   }
 }
