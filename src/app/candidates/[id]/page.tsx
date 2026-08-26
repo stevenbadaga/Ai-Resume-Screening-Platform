@@ -1,10 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CandidateProfileClient from './CandidateProfileClient';
-
 import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { redirect } from 'next/navigation';
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 export const dynamic = 'force-dynamic';
 
 export default async function CandidateProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions);
+  if (!session) redirect('/auth/signin');
+
+  const userRole = (session?.user as any)?.role || 'Recruiter';
+
+  // Strict RBAC: Candidates cannot inspect other candidate profiles
+  if (userRole === 'Candidate') {
+    redirect('/dashboard/my-applications');
+  }
+
   const resolvedParams = await params;
   const application = await prisma.application.findUnique({
     where: { id: resolvedParams.id },
@@ -22,34 +35,17 @@ export default async function CandidateProfilePage({ params }: { params: Promise
   });
 
   if (!application) {
-    return <div className="animate-in" style={{ padding: '2rem' }}>Candidate application not found.</div>;
+    return (
+      <div className="p-8 text-center text-slate-500">
+        Candidate application not found.
+      </div>
+    );
   }
 
-  const screeningRun = application.screeningRuns[0];
-
-  const profileData = {
-    id: application.id,
-    name: `${application.candidate.firstName} ${application.candidate.lastName}`,
-    job: application.job.title,
-    skills: application.parsedProfile?.skills ? JSON.parse(application.parsedProfile.skills) : [],
-    experience: application.parsedProfile?.employment ? JSON.stringify(JSON.parse(application.parsedProfile.employment), null, 2) : 'No experience parsed.',
-    rawText: application.resumeDocument?.extractedText || 'No raw text available.',
-  };
-
-  const screeningResultsData = screeningRun ? {
-    totalScore: screeningRun.totalResult || 0,
-    assessments: screeningRun.assessments.map((ca: /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ any) => ({
-      criterion: ca.criterion.description,
-      result: ca.result,
-      evidence: ca.supportingEvidence || 'No evidence provided.',
-      score: ca.scoreContribution
-    }))
-  } : null;
-
   return (
-    <CandidateProfileClient 
-      profile={profileData} 
-      screeningResults={screeningResultsData} 
+    <CandidateProfileClient
+      application={JSON.parse(JSON.stringify(application))}
+      userRole={userRole}
     />
   );
 }

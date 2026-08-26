@@ -2,266 +2,164 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
-interface ApplicationItem {
-  id: string;
-  stage: string;
-  status: string;
-  createdAt: string;
-  candidate: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    tags: string[];
-  };
-  job: {
-    id: string;
-    title: string;
-    department: string;
-  };
-  resumeDocument?: {
-    id: string;
-    processingStatus: string;
-  } | null;
-  screeningRuns?: {
-    totalResult: number;
-    decision: string;
-  }[];
+interface CandidatesClientProps {
+  applications: any[];
+  userRole?: string;
 }
 
-const STAGES = [
-  { key: 'RESUME_SCREENED', label: '📥 AI Screened', bg: 'border-slate-800' },
-  { key: 'SHORTLISTED', label: '⭐ Shortlisted', bg: 'border-indigo-500/30' },
-  { key: 'INTERVIEW_SCHEDULED', label: '🎯 Interviewing', bg: 'border-cyan-500/30' },
-  { key: 'OFFERED', label: '🏆 Offered / Hired', bg: 'border-emerald-500/30' },
-  { key: 'REJECTED', label: '❌ Rejected', bg: 'border-rose-500/30' }
-];
-
-export default function CandidatesClient({
-  initialApplications,
-  userRole
-}: {
-  initialApplications: ApplicationItem[];
-  userRole: string;
-}) {
-  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
-  const [applications, setApplications] = useState<ApplicationItem[]>(initialApplications);
-  const [searchQuery, setSearchQuery] = useState('');
+export default function CandidatesClient({ applications, userRole = 'Recruiter' }: CandidatesClientProps) {
+  const [activeTab, setActiveTab] = useState<'kanban' | 'table'>('kanban');
+  const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const router = useRouter();
+  const { t } = useLanguage();
 
-  const handleStageChange = async (applicationId: string, newStage: string) => {
-    setUpdatingId(applicationId);
-    try {
-      // Optimistic update
-      setApplications((prev) =>
-        prev.map((app) => (app.id === applicationId ? { ...app, stage: newStage } : app))
-      );
+  const stages = [
+    { key: 'INGESTED', label: t('stage_ingested'), count: 0, color: 'border-slate-500/40 text-slate-400 bg-slate-500/5' },
+    { key: 'SCREENING', label: t('stage_screening'), count: 0, color: 'border-amber-500/40 text-amber-400 bg-amber-500/5' },
+    { key: 'SHORTLISTED', label: t('stage_shortlisted'), count: 0, color: 'border-blue-500/40 text-blue-400 bg-blue-500/5' },
+    { key: 'INTERVIEWING', label: t('stage_interviewing'), count: 0, color: 'border-purple-500/40 text-purple-400 bg-purple-500/5' },
+    { key: 'OFFERED', label: t('stage_offered'), count: 0, color: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/5' }
+  ];
 
-      const res = await fetch('/api/candidates/stage', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicationId, newStage })
-      });
+  const departments = ['ALL', ...Array.from(new Set(applications.map((c) => c.job?.department).filter(Boolean)))];
 
-      if (!res.ok) {
-        throw new Error('Failed to update stage');
-      }
-      router.refresh();
-    } catch (err) {
-      console.error(err);
-      alert('Error updating candidate stage');
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const filtered = applications.filter((app) => {
-    const name = `${app.candidate.firstName} ${app.candidate.lastName}`.toLowerCase();
-    const email = app.candidate.email.toLowerCase();
-    const jobTitle = app.job.title.toLowerCase();
-    const q = searchQuery.toLowerCase();
-
-    const matchesSearch = name.includes(q) || email.includes(q) || jobTitle.includes(q);
-    const matchesDept = selectedDept === 'ALL' || app.job.department === selectedDept;
-
+  const filteredCandidates = applications.filter((c) => {
+    const fullName = `${c.candidate?.firstName} ${c.candidate?.lastName}`.toLowerCase();
+    const skills = (c.parsedProfile?.skills || []).join(' ').toLowerCase();
+    const matchesSearch = fullName.includes(search.toLowerCase()) || skills.includes(search.toLowerCase());
+    const matchesDept = selectedDept === 'ALL' || c.job?.department === selectedDept;
     return matchesSearch && matchesDept;
   });
 
-  const getScoreBadge = (score?: number) => {
-    if (score === undefined || score === null) {
-      return (
-        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-slate-800 text-slate-400">
-          Pending AI
-        </span>
-      );
-    }
-    if (score >= 85) {
-      return (
-        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-          {score}% Elite Match
-        </span>
-      );
-    }
-    if (score >= 70) {
-      return (
-        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-indigo-500/20 text-indigo-400 border border-indigo-500/40">
-          {score}% Strong
-        </span>
-      );
-    }
-    return (
-      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-amber-500/20 text-amber-400 border border-amber-500/40">
-        {score}% Moderate
-      </span>
-    );
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Top Controls: Search, Dept Filter, View Switcher */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-xl">
-        <div className="flex flex-1 items-center gap-3 w-full md:w-auto">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
+    <div className="space-y-4 max-w-7xl mx-auto">
+      {/* Top Header & Search Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b dark:border-slate-800/80 border-slate-200">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
+              {t('pipeline_title')}
+            </h1>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-indigo-950/60 bg-indigo-50 dark:text-indigo-300 text-indigo-700 border dark:border-indigo-800/50 border-indigo-200">
+              {filteredCandidates.length} APPLICANTS
+            </span>
+          </div>
+          <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
+            {t('pipeline_subtitle')}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          {/* Search Input */}
+          <div className="relative">
             <input
               type="text"
-              placeholder="Search candidates by name, email, or role..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('search_candidate_placeholder')}
+              className="dark:bg-[#0B0F19] bg-white border dark:border-slate-800 border-slate-200 rounded-lg px-3 py-1.5 pl-8 text-xs dark:text-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 w-48 sm:w-56"
             />
-            <span className="absolute left-3 top-2 text-slate-500 text-xs">🔍</span>
+            <span className="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
 
-          {/* Dept Filter */}
+          {/* Department Filter */}
           <select
             value={selectedDept}
             onChange={(e) => setSelectedDept(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="dark:bg-[#0B0F19] bg-white border dark:border-slate-800 border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 font-medium"
           >
-            <option value="ALL">All Departments</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Data & AI">Data & AI</option>
-            <option value="Product">Product</option>
-            <option value="Design">Design</option>
-            <option value="Operations">Operations</option>
+            {departments.map((dept: any) => (
+              <option key={dept} value={dept}>
+                {dept === 'ALL' ? t('all_departments') : dept}
+              </option>
+            ))}
           </select>
-        </div>
 
-        {/* View Switcher */}
-        <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 shadow-inner self-end md:self-auto">
-          <button
-            onClick={() => setViewMode('kanban')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-              viewMode === 'kanban'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>📊</span>
-            <span>Kanban Pipeline</span>
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-              viewMode === 'table'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>📋</span>
-            <span>Table View</span>
-          </button>
+          {/* View Switcher (Kanban / Table) */}
+          <div className="flex p-0.5 rounded-lg dark:bg-[#0B0F19] bg-slate-100 border dark:border-slate-800 border-slate-200 text-xs">
+            <button
+              onClick={() => setActiveTab('kanban')}
+              className={`px-2.5 py-1 rounded-md font-medium transition ${
+                activeTab === 'kanban'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {t('view_kanban')}
+            </button>
+            <button
+              onClick={() => setActiveTab('table')}
+              className={`px-2.5 py-1 rounded-md font-medium transition ${
+                activeTab === 'table'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {t('view_table')}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Kanban Board View */}
-      {viewMode === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
-          {STAGES.map((col) => {
-            const colApps = filtered.filter((app) => {
-              if (col.key === 'RESUME_SCREENED') return !app.stage || app.stage === 'RESUME_SCREENED' || app.stage === 'APPLIED';
-              if (col.key === 'OFFERED') return app.stage === 'OFFERED' || app.stage === 'HIRED';
-              return app.stage === col.key;
-            });
+      {/* KANBAN VIEW */}
+      {activeTab === 'kanban' ? (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {stages.map((stage) => {
+            const stageCandidates = filteredCandidates.filter((c) => (c.status || 'INGESTED') === stage.key);
 
             return (
               <div
-                key={col.key}
-                className={`bg-slate-900/60 border ${col.bg} rounded-3xl p-4 flex flex-col min-h-[550px] backdrop-blur-xl`}
+                key={stage.key}
+                className="dark:bg-[#0B0F19]/60 bg-slate-50/50 dark:border-slate-800/80 border-slate-200 border rounded-xl p-3 flex flex-col min-h-[580px]"
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-                  <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                    {col.label}
-                  </h2>
-                  <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[11px] font-mono rounded-full">
-                    {colApps.length}
+                <div className="flex items-center justify-between pb-2 mb-2 border-b dark:border-slate-800/60 border-slate-200/60">
+                  <span className="text-xs font-bold dark:text-slate-200 text-slate-800">
+                    {stage.label}
+                  </span>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${stage.color}`}>
+                    {stageCandidates.length}
                   </span>
                 </div>
 
-                {/* Column Candidate Cards */}
-                <div className="space-y-3 flex-1 overflow-y-auto pr-1">
-                  {colApps.length === 0 ? (
-                    <div className="h-32 flex items-center justify-center border border-dashed border-slate-800/80 rounded-2xl text-[11px] text-slate-600">
-                      No candidates in stage
+                {/* Candidate Cards Column */}
+                <div className="flex-1 space-y-2.5 overflow-y-auto">
+                  {stageCandidates.length === 0 ? (
+                    <div className="py-12 text-center text-slate-400 text-[11px]">
+                      {t('no_candidates_stage')}
                     </div>
                   ) : (
-                    colApps.map((app) => {
-                      const latestScore = app.screeningRuns?.[0]?.totalResult;
-                      const hasDuplicate = app.candidate.tags?.includes('POTENTIAL_DUPLICATE');
+                    stageCandidates.map((app) => {
+                      const latestRun = app.screeningRuns?.[0];
+                      const score = latestRun?.totalResult?.overallScore || 0;
 
                       return (
-                        <div
+                        <Link
                           key={app.id}
-                          className="bg-slate-950/90 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-4 transition shadow-lg space-y-3 group"
+                          href={`/candidates/${app.id}`}
+                          className="block dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200/90 border rounded-lg p-3 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition shadow-xs space-y-2 group"
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="space-y-1">
-                              <Link
-                                href={`/candidates/${app.id}`}
-                                className="text-xs font-bold text-white group-hover:text-indigo-400 transition line-clamp-1"
-                              >
-                                {app.candidate.firstName} {app.candidate.lastName}
-                              </Link>
-                              <p className="text-[11px] text-slate-400 line-clamp-1">{app.job.title}</p>
+                          <div className="flex items-start justify-between gap-1">
+                            <div>
+                              <h3 className="text-xs font-bold dark:text-white text-slate-900 group-hover:text-indigo-400 transition leading-tight">
+                                {app.candidate?.firstName} {app.candidate?.lastName}
+                              </h3>
+                              <p className="text-[10px] dark:text-slate-400 text-slate-500 truncate max-w-[130px]">
+                                {app.job?.title}
+                              </p>
                             </div>
-                            <div className="shrink-0">{getScoreBadge(latestScore)}</div>
-                          </div>
-
-                          {hasDuplicate && (
-                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                              ⚠️ Duplicate Detected
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-emerald-500 dark:bg-emerald-950/60 bg-emerald-50 border dark:border-emerald-800/60 border-emerald-200 shrink-0">
+                              {score}% {t('match_score')}
                             </span>
-                          )}
-
-                          <div className="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
-                            {/* Quick Stage Mover */}
-                            <select
-                              disabled={updatingId === app.id}
-                              value={app.stage || 'RESUME_SCREENED'}
-                              onChange={(e) => handleStageChange(app.id, e.target.value)}
-                              className="bg-slate-900 border border-slate-800 text-indigo-300 rounded-lg px-2 py-1 text-[11px] focus:outline-none"
-                            >
-                              <option value="RESUME_SCREENED">📥 AI Screened</option>
-                              <option value="SHORTLISTED">⭐ Shortlist</option>
-                              <option value="INTERVIEW_SCHEDULED">🎯 Interview</option>
-                              <option value="OFFERED">🏆 Offer / Hire</option>
-                              <option value="REJECTED">❌ Reject</option>
-                            </select>
-
-                            <Link
-                              href={`/candidates/${app.id}`}
-                              className="text-slate-400 hover:text-white transition font-medium"
-                            >
-                              Profile &rarr;
-                            </Link>
                           </div>
-                        </div>
+
+                          <div className="flex items-center justify-between text-[10px] dark:text-slate-500 text-slate-400 font-mono pt-1.5 border-t dark:border-slate-800/60 border-slate-100">
+                            <span>{app.job?.department}</span>
+                            <span>{new Date(app.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </Link>
                       );
                     })
                   )}
@@ -271,58 +169,45 @@ export default function CandidatesClient({
           })}
         </div>
       ) : (
-        /* Table View */
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-xl backdrop-blur-xl">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 text-slate-400 font-semibold border-b border-slate-800">
+        /* TABLE VIEW */
+        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl overflow-hidden shadow-xs">
+          <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
+            <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-slate-800 border-slate-200 border-b">
               <tr>
-                <th className="py-3.5 px-4">Candidate</th>
-                <th className="py-3.5 px-4">Role Requisition</th>
-                <th className="py-3.5 px-4">AI Score</th>
-                <th className="py-3.5 px-4">Pipeline Stage</th>
-                <th className="py-3.5 px-4">Applied Date</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="p-3">{t('candidate_name_col')}</th>
+                <th className="p-3">{t('position_applied_col')}</th>
+                <th className="p-3">{t('department_col')}</th>
+                <th className="p-3">{t('stage_col')}</th>
+                <th className="p-3">{t('score_col')}</th>
+                <th className="p-3 text-right">{t('actions_col')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filtered.map((app) => {
-                const latestScore = app.screeningRuns?.[0]?.totalResult;
+            <tbody className="divide-y dark:divide-slate-800/60 divide-slate-100">
+              {filteredCandidates.map((app) => {
+                const latestRun = app.screeningRuns?.[0];
+                const score = latestRun?.totalResult?.overallScore || 0;
+
                 return (
-                  <tr key={app.id} className="hover:bg-slate-800/30 transition">
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-white">
-                        {app.candidate.firstName} {app.candidate.lastName}
-                      </div>
-                      <div className="text-[11px] text-slate-400 font-mono">{app.candidate.email}</div>
+                  <tr key={app.id} className="dark:hover:bg-slate-900/50 hover:bg-slate-50 transition">
+                    <td className="p-3 font-semibold dark:text-white text-slate-900">
+                      {app.candidate?.firstName} {app.candidate?.lastName}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="text-slate-200 font-medium">{app.job.title}</div>
-                      <div className="text-[11px] text-indigo-400">{app.job.department}</div>
+                    <td className="p-3 dark:text-slate-300 text-slate-700">{app.job?.title}</td>
+                    <td className="p-3 font-mono text-[11px] dark:text-slate-400 text-slate-500">{app.job?.department}</td>
+                    <td className="p-3">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold dark:bg-slate-900 bg-slate-100 border dark:border-slate-800 border-slate-200">
+                        {app.status || 'INGESTED'}
+                      </span>
                     </td>
-                    <td className="py-3.5 px-4">{getScoreBadge(latestScore)}</td>
-                    <td className="py-3.5 px-4">
-                      <select
-                        disabled={updatingId === app.id}
-                        value={app.stage || 'RESUME_SCREENED'}
-                        onChange={(e) => handleStageChange(app.id, e.target.value)}
-                        className="bg-slate-950 border border-slate-800 text-indigo-300 rounded-lg px-2.5 py-1 text-xs focus:outline-none"
-                      >
-                        <option value="RESUME_SCREENED">📥 AI Screened</option>
-                        <option value="SHORTLISTED">⭐ Shortlisted</option>
-                        <option value="INTERVIEW_SCHEDULED">🎯 Interviewing</option>
-                        <option value="OFFERED">🏆 Offered / Hired</option>
-                        <option value="REJECTED">❌ Rejected</option>
-                      </select>
+                    <td className="p-3 font-mono font-bold text-emerald-500 text-xs">
+                      {score}%
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
-                      {new Date(app.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="p-3 text-right">
                       <Link
                         href={`/candidates/${app.id}`}
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition border border-slate-700 font-semibold"
+                        className="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition"
                       >
-                        View &rarr;
+                        {t('view_details')} &rarr;
                       </Link>
                     </td>
                   </tr>

@@ -1,314 +1,167 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getServerSession } from "next-auth/next";
-import { redirect } from 'next/navigation';
-import { logAuditEvent } from '@/lib/auditLogger';
-import { sendMockEmail } from '@/lib/mockEmailService';
 
-export const dynamic = 'force-dynamic';
+export default function ScheduleInterviewPage() {
+  const params = useParams();
+  const router = useRouter();
+  const appId = params?.id as string;
 
-export default async function InterviewPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession();
-  if (!session) redirect('/api/auth/signin');
+  const [application, setApplication] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [scheduledAt, setScheduledAt] = useState('2026-08-25T10:00');
+  const [durationMinutes, setDurationMinutes] = useState(45);
+  const [meetingType, setMeetingType] = useState('Google Meet');
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-  const resolvedParams = await params;
-  const applicationId = resolvedParams.id;
-
-  const application = await prisma.application.findUnique({
-    where: { id: applicationId },
-    include: {
-      candidate: true,
-      job: true,
-      interviews: { include: { participants: { include: { user: true } } } }
-    }
-  });
-
-  if (!application) {
-    return <div className="p-8 text-white">Application not found</div>;
-  }
-
-  // Handle scheduling form submission
-  async function scheduleInterview(formData: FormData) {
-    'use server';
-    const schedule = formData.get('schedule') as string;
-    const timezone = formData.get('timezone') as string;
-    const details = formData.get('details') as string;
-    
-    const sessionUser = await getServerSession();
-    if (!sessionUser?.user?.email) return;
-
-    const user = await prisma.user.findUnique({ where: { email: sessionUser.user.email } });
-    if (!user) return;
-
-    const interview = await prisma.interview.create({
-      data: {
-        applicationId: applicationId,
-        schedule: new Date(schedule),
-        timezone,
-        meetingDetails: details,
-        status: 'SCHEDULED',
-        participants: {
-          create: {
-            userId: user.id
-          }
+  useEffect(() => {
+    async function loadApp() {
+      try {
+        const res = await fetch(`/api/candidates/${appId}/interview`);
+        if (res.ok) {
+          const data = await res.json();
+          setApplication(data.application || null);
         }
+      } catch (err) {
+        console.error('Failed to load application', err);
+      } finally {
+        setLoading(false);
       }
-    });
-
-    await prisma.application.update({
-      where: { id: applicationId },
-      data: { stage: 'INTERVIEW_SCHEDULED', status: 'INTERVIEW' }
-    });
-
-    await sendMockEmail(
-      application!.candidate.email, 
-      'INTERVIEW_INVITATION', 
-      {
-        candidateName: application!.candidate.firstName,
-        jobTitle: application!.job.title,
-        schedule,
-        timezone,
-        details
-      },
-      application!.id
-    );
-
-    await logAuditEvent({
-      action: 'INTERVIEW_SCHEDULED',
-      actorId: user.id,
-      affectedRecordId: applicationId,
-      newValues: { schedule, interviewId: interview.id }
-    });
-
-    redirect(`/candidates/${applicationId}/interview`);
-  }
-
-  // Handle scorecard submission
-  async function submitScorecard(formData: FormData) {
-    'use server';
-    const interviewId = formData.get('interviewId') as string;
-    const recommendation = formData.get('recommendation') as string;
-    const comments = formData.get('comments') as string;
-    const rating1 = formData.get('rating1') as string;
-    const rating2 = formData.get('rating2') as string;
-
-    const sessionUser = await getServerSession();
-    const user = await prisma.user.findUnique({ where: { email: sessionUser?.user?.email || '' } });
-    
-    if (!user) return;
-
-    const participant = await prisma.interviewParticipant.findFirst({
-      where: { interviewId, userId: user.id }
-    });
-
-    if (participant) {
-      await prisma.interviewParticipant.update({
-        where: { id: participant.id },
-        data: {
-          recommendation,
-          comments,
-          structuredFeedback: JSON.stringify({ technical: rating1, cultural: rating2 })
-        }
-      });
-      
-      await prisma.interview.update({
-        where: { id: interviewId },
-        data: { status: 'COMPLETED' }
-      });
     }
+    if (appId) loadApp();
+  }, [appId]);
 
-    redirect(`/candidates/${applicationId}/interview`);
-  }
+  const handleSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch(`/api/candidates/${appId}/interview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scheduledAt,
+          durationMinutes: Number(durationMinutes),
+          meetingType
+        })
+      });
+
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          router.push(`/candidates/${appId}`);
+        }, 2000);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to schedule interview');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Network error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8 space-y-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">
-              Interview Scheduling & Scorecards
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Candidate: <strong className="text-white">{application.candidate.firstName} {application.candidate.lastName}</strong> â€” {application.job.title}
-            </p>
-          </div>
-          <Link
-            href={`/candidates/${application.id}`}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-300 transition"
-          >
-            &larr; Back to Profile
-          </Link>
+    <div className="space-y-6 max-w-2xl mx-auto py-8">
+      <div>
+        <Link
+          href={`/candidates/${appId}`}
+          className="text-xs text-slate-400 hover:text-white font-bold transition flex items-center gap-1.5 mb-2"
+        >
+          &larr; Back to Candidate Profile
+        </Link>
+      </div>
+
+      <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6 backdrop-blur-xl">
+        <div>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-800/80">
+            INTERVIEW SCHEDULING
+          </span>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight mt-2">
+            Schedule Structured Interview
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Dispatch calendar invitations, prepare technical scorecards, and reserve interview panelists.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Schedule Form */}
-          <div className="lg:col-span-5 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl space-y-4">
-            <h2 className="text-base font-bold text-white">Schedule New Session</h2>
-            <form action={scheduleInterview} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Date & Time
-                </label>
-                <input
-                  type="datetime-local"
-                  name="schedule"
-                  required
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500"
-                />
+        {success ? (
+          <div className="p-6 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-2xl text-center space-y-2">
+            <span className="text-3xl block">📅</span>
+            <h2 className="text-base font-bold text-white">Interview Scheduled Successfully!</h2>
+            <p className="text-xs text-emerald-300">
+              Calendar invitations and video room links have been dispatched. Redirecting to candidate profile...
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSchedule} className="space-y-4 text-xs text-slate-300">
+            {error && (
+              <div className="p-3 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 font-bold">
+                ⚠️ {error}
               </div>
+            )}
 
+            <div>
+              <label className="block text-slate-400 font-bold uppercase tracking-wider mb-1.5">
+                Date & Time (UTC) *
+              </label>
+              <input
+                type="datetime-local"
+                required
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Timezone
+                <label className="block text-slate-400 font-bold uppercase tracking-wider mb-1.5">
+                  Interview Duration *
                 </label>
                 <select
-                  name="timezone"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 font-bold"
                 >
-                  <option value="Africa/Kigali">CAT (Africa/Kigali)</option>
-                  <option value="UTC">UTC</option>
-                  <option value="America/New_York">EST (America/New_York)</option>
-                  <option value="Europe/London">GMT (Europe/London)</option>
+                  <option value={30}>30 Minutes</option>
+                  <option value={45}>45 Minutes (Standard)</option>
+                  <option value={60}>60 Minutes (Deep Dive)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Meeting Link / Details
+                <label className="block text-slate-400 font-bold uppercase tracking-wider mb-1.5">
+                  Meeting Platform *
                 </label>
-                <input
-                  type="text"
-                  name="details"
-                  placeholder="https://meet.google.com/... or Zoom Link"
-                  required
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-indigo-600/30"
-              >
-                Send Calendar Invite & Confirm ðŸ“…
-              </button>
-            </form>
-          </div>
-
-          {/* Existing Interviews & Scorecards */}
-          <div className="lg:col-span-7 space-y-4">
-            <h2 className="text-base font-bold text-white">Scheduled Sessions & Evaluations</h2>
-
-            {application.interviews.length === 0 ? (
-              <div className="p-8 bg-slate-900/60 border border-slate-800 rounded-3xl text-center text-xs text-slate-500">
-                No interviews scheduled for this candidate yet.
-              </div>
-            ) : (
-              application.interviews.map((inv) => (
-                <div
-                  key={inv.id}
-                  className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl space-y-4"
+                <select
+                  value={meetingType}
+                  onChange={(e) => setMeetingType(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 font-bold"
                 >
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                    <div>
-                      <h3 className="text-sm font-bold text-white">
-                        {(inv.schedule ? new Date(inv.schedule).toLocaleString() : 'TBD')} ({inv.timezone})
-                      </h3>
-                      <p className="text-xs text-indigo-400 mt-0.5">
-                        Link: <a href={inv.meetingDetails || '#'} target="_blank" rel="noreferrer" className="underline">{inv.meetingDetails}</a>
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase ${
-                        inv.status === 'COMPLETED'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                  </div>
+                  <option value="Google Meet">Google Meet (Auto-generated)</option>
+                  <option value="Zoom">Zoom Meeting</option>
+                  <option value="In-Person">In-Person (Kigali HQ)</option>
+                </select>
+              </div>
+            </div>
 
-                  {inv.status === 'SCHEDULED' && (
-                    <form action={submitScorecard} className="space-y-3 pt-2">
-                      <input type="hidden" name="interviewId" value={inv.id} />
-                      <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                        Submit Interview Scorecard
-                      </h4>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Technical Skills (1-5)</label>
-                          <input
-                            type="number"
-                            name="rating1"
-                            min="1"
-                            max="5"
-                            defaultValue={4}
-                            required
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">Cultural Alignment (1-5)</label>
-                          <input
-                            type="number"
-                            name="rating2"
-                            min="1"
-                            max="5"
-                            defaultValue={4}
-                            required
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Interviewer Feedback & Notes</label>
-                        <textarea
-                          name="comments"
-                          rows={2}
-                          placeholder="Candidate's technical depth, problem-solving, and team fit..."
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                        ></textarea>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <select
-                          name="recommendation"
-                          className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-indigo-400 font-bold"
-                        >
-                          <option value="HIRE">Recommendation: Strongly Hire</option>
-                          <option value="HOLD">Recommendation: Neutral / Hold</option>
-                          <option value="NO_HIRE">Recommendation: Do Not Hire</option>
-                        </select>
-                        <button
-                          type="submit"
-                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition"
-                        >
-                          Submit Scorecard & Complete
-                        </button>
-                      </div>
-                    </form>
-                  )}
-
-                  {inv.status === 'COMPLETED' &&
-                    inv.participants.map((p) => (
-                      <div
-                        key={p.id}
-                        className="p-4 bg-slate-950 rounded-2xl border border-slate-800/80 text-xs space-y-1 text-slate-300"
-                      >
-                        <p><strong>Interviewer:</strong> {p.user.name}</p>
-                        <p><strong>Recommendation:</strong> <span className="text-emerald-400 font-bold">{p.recommendation}</span></p>
-                        <p><strong>Feedback:</strong> {p.comments}</p>
-                        <p><strong>Evaluation Ratings:</strong> <span className="font-mono text-indigo-300">{p.structuredFeedback}</span></p>
-                      </div>
-                    ))}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+            >
+              <span>📅</span>
+              <span>{submitting ? 'Dispatching Calendar Invites...' : 'Confirm & Dispatch Interview Invitation'}</span>
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
