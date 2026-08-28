@@ -82,8 +82,8 @@ export default function DashboardClient({
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
               {t('nav_dashboard') || 'Dashboard'}
             </h1>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-indigo-950/80 bg-indigo-50 dark:text-indigo-300 text-indigo-700 border dark:border-indigo-800/60 border-indigo-200">
-              LIVE TELEMETRY
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/60 border-teal-200">
+              WORKSPACE OVERVIEW
             </span>
           </div>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
@@ -92,6 +92,12 @@ export default function DashboardClient({
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/candidates"
+            className="px-3 py-1.5 bg-[#0F766E] hover:bg-[#115E59] text-white rounded-lg text-xs font-semibold transition shadow-xs"
+          >
+            Review applications <span aria-hidden="true">&rarr;</span>
+          </Link>
           <button
             onClick={handleSyncTelemetry}
             disabled={isSyncing}
@@ -103,22 +109,21 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* 4 Compact Metric KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4 shadow-xs">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium dark:text-slate-400 text-slate-500">{t('total_candidates') || 'Total Applicants'}</span>
+            <span className="text-[10px] uppercase tracking-wider font-semibold dark:text-slate-400 text-slate-500">{t('total_candidates') || 'Total Applicants'}</span>
             <span className="text-xs">👥</span>
           </div>
           <div className="text-2xl font-bold dark:text-white text-slate-900 mt-1 font-mono tracking-tight">
             {totalCandidates}
           </div>
-          <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-mono mt-1 block">
+          <span className="text-[10px] text-teal-600 dark:text-teal-300 font-mono mt-1 block">
             Across active jobs
           </span>
         </div>
 
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4 shadow-xs">
+        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium dark:text-slate-400 text-slate-500">{t('open_requisitions') || 'Open Requisitions'}</span>
             <span className="text-xs">💼</span>
@@ -131,7 +136,7 @@ export default function DashboardClient({
           </span>
         </div>
 
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4 shadow-xs">
+        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium dark:text-slate-400 text-slate-500">Shortlisted Pool</span>
             <span className="text-xs">🎯</span>
@@ -144,7 +149,7 @@ export default function DashboardClient({
           </span>
         </div>
 
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4 shadow-xs">
+        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium dark:text-slate-400 text-slate-500">{t('active_audits') || 'Audited Events'}</span>
             <span className="text-xs">🛡️</span>
@@ -159,9 +164,9 @@ export default function DashboardClient({
       </div>
 
       {/* Funnel Distribution & Recent Activity Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         {/* 5-Stage Funnel Meter (5 Cols) */}
-        <div className="lg:col-span-5 dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4.5 space-y-3.5 shadow-xs">
+        <div className="lg:col-span-5 dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3.5">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">
               {t('pipeline_distribution') || 'Pipeline Distribution'}
@@ -194,7 +199,7 @@ export default function DashboardClient({
         </div>
 
         {/* Recent Audit Timeline Table (7 Cols) */}
-        <div className="lg:col-span-7 dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4.5 space-y-3 shadow-xs">
+        <div className="lg:col-span-7 dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">
               {t('recent_activity') || 'Recent Activity'}

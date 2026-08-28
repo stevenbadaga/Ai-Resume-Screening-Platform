@@ -73,7 +73,8 @@ export default function Navigation() {
   const navItems = getAllNavItems(userRole);
 
   return (
-    <aside className="w-56 shrink-0 dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border-r flex flex-col justify-between hidden md:flex z-30">
+    <>
+      <aside className="w-56 shrink-0 dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border-r flex flex-col justify-between hidden md:flex z-30">
       <div className="p-3.5 space-y-4">
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-2 px-2 py-1">
@@ -123,6 +124,29 @@ export default function Navigation() {
           </span>
         </div>
       </div>
-    </aside>
+      </aside>
+      <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 gap-1 rounded-2xl border border-[#D8D2C6] bg-[#FFFDF8]/95 p-1.5 shadow-xl backdrop-blur-sm dark:border-[#30424A] dark:bg-[#17242B]/95 md:hidden" aria-label="Mobile navigation">
+        {navItems.slice(0, 4).map((item) => {
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? 'page' : undefined}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[9px] font-semibold transition ${
+                isActive
+                  ? 'bg-teal-700 text-white dark:bg-teal-500 dark:text-[#102027]'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+              }`}
+            >
+              <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
+              </svg>
+              <span className="max-w-full truncate">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

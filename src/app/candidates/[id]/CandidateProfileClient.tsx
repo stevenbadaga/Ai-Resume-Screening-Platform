@@ -55,9 +55,16 @@ export default function CandidateProfileClient({
   const isRecruiterOrAdmin = ['Admin', 'Recruiter', 'HiringManager'].includes(userRole);
 
   const latestRun = app.screeningRuns?.[0] || (screeningResults ? { totalResult: screeningResults } : null);
-  const totalResult = latestRun?.totalResult || {};
-  const criteriaScores = totalResult.criteriaScores || [];
-  const score = totalResult.overallScore || 0;
+  const storedResult = latestRun?.totalResult;
+  const totalResult = storedResult && typeof storedResult === 'object' ? storedResult : {};
+  const criteriaScores = totalResult.criteriaScores || latestRun?.assessments?.map((assessment: any) => ({
+    category: assessment.criterion?.category || 'Requirement',
+    criterionDescription: assessment.criterion?.description || '',
+    score: assessment.effectiveResult || assessment.result,
+    quotedEvidence: assessment.supportingEvidence,
+    reasoning: assessment.uncertainty ? 'This result requires human review because the evidence is uncertain.' : '',
+  })) || [];
+  const score = Number(latestRun?.effectiveResult ?? (typeof storedResult === 'number' ? storedResult : totalResult.overallScore)) || 0;
 
   const candidateName = blindMode
     ? `Candidate #${(app.id || 'ANON').substring(0, 8).toUpperCase()}`
@@ -167,7 +174,7 @@ export default function CandidateProfileClient({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
+    <div className="space-y-4 max-w-[1440px] mx-auto">
       {/* Top Breadcrumb and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b dark:border-slate-800/80 border-slate-200">
         <div className="space-y-0.5">
@@ -179,7 +186,7 @@ export default function CandidateProfileClient({
               &larr; Pipeline
             </Link>
             <span className="dark:text-slate-600 text-slate-300">/</span>
-            <span className="font-mono text-[10px] text-indigo-500 font-semibold">EVALUATION</span>
+            <span className="font-mono text-[10px] text-teal-600 dark:text-teal-300 font-semibold">CANDIDATE REVIEW</span>
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
@@ -249,10 +256,24 @@ export default function CandidateProfileClient({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        {[
+          { label: 'Match score', value: `${score}%`, tone: 'text-teal-700 dark:text-teal-300' },
+          { label: 'Criteria reviewed', value: criteriaScores.length, tone: 'text-slate-900 dark:text-white' },
+          { label: 'Processing', value: app.resumeDocument?.processingStatus || 'Unknown', tone: app.resumeDocument?.processingStatus === 'NEEDS_REVIEW' ? 'text-amber-600 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' },
+          { label: 'Current stage', value: app.stage || app.status || 'Ingested', tone: 'text-sky-700 dark:text-sky-300' }
+        ].map((metric) => (
+          <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3 py-2.5">
+            <p className="text-[9px] uppercase tracking-wider font-semibold dark:text-slate-500 text-slate-500">{metric.label}</p>
+            <p className={`mt-1 text-sm font-bold font-mono truncate ${metric.tone}`}>{metric.value}</p>
+          </div>
+        ))}
+      </div>
+
       {/* SPLIT-SCREEN RESUME & RUBRIC VIEW */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left Column: Parsed Resume (7 Cols) */}
-        <div className="lg:col-span-7 dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4 sm:p-5 space-y-4">
+        <div className="lg:col-span-7 dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between pb-3 dark:border-slate-800 border-slate-100 border-b">
             <h2 className="text-sm font-semibold dark:text-white text-slate-900 flex items-center gap-1.5">
               <span>📄</span>
@@ -275,7 +296,7 @@ export default function CandidateProfileClient({
         {/* Right Column: AI Rubric Breakdown (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Overall Match Score Card */}
-          <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4 space-y-3">
+          <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold dark:text-slate-400 text-slate-500 uppercase tracking-wider">
                 Explainable Match Score
@@ -335,7 +356,7 @@ export default function CandidateProfileClient({
             {criteriaScores.map((crit: any, idx: number) => (
               <div
                 key={idx}
-                className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-3.5 space-y-2"
+                className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3.5 space-y-2"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
