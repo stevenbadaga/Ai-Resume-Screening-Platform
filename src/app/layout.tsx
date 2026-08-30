@@ -44,15 +44,6 @@ export default function RootLayout({
                   <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                     {/* Top Application Header */}
                     <header className="h-13 shrink-0 dark:bg-[#0B0F19]/90 bg-white/90 backdrop-blur-md dark:border-slate-800/80 border-slate-200 border-b flex items-center justify-between px-4 z-20">
-                      {/* Workspace Scope Indicator */}
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg dark:bg-slate-900 bg-slate-100 border dark:border-slate-800 border-slate-200 text-slate-700 dark:text-slate-300">
-                          <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                          <span className="font-semibold text-xs text-slate-900 dark:text-white">Codafriqa Tech Corp</span>
-                          <span className="text-[10px] text-slate-500 font-mono">US-East-2</span>
-                        </div>
-                      </div>
-
                       {/* Global Search & Command Trigger */}
                       <div className="flex-1 max-w-sm mx-4 hidden md:block">
                         <CommandPalette />

@@ -83,7 +83,7 @@ export default function ApplyJobPage() {
       formData.append('phone', phone);
       formData.append('resume', resumeFile);
 
-      const res = await fetch('/api/applications/apply', {
+      const res = await fetch('/api/jobs/apply', {
         method: 'POST',
         body: formData
       });
@@ -115,9 +115,9 @@ export default function ApplyJobPage() {
         </Link>
       </div>
 
-      <div className="dark:bg-slate-900/60 bg-white dark:border-slate-800/80 border-slate-200/90 border rounded-3xl p-6 sm:p-10 shadow-xs space-y-6 backdrop-blur-xl">
+      <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/95 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-6 sm:p-10 shadow-xl space-y-6 backdrop-blur-sm">
         <div>
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold dark:bg-indigo-950/80 bg-blue-50 dark:text-indigo-300 text-blue-700 border dark:border-indigo-800/80 border-blue-200">
+          <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold dark:bg-teal-950/80 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/80 border-teal-200">
             OFFICIAL APPLICATION
           </span>
           <h1 className="text-2xl font-extrabold dark:text-white text-slate-900 tracking-tight mt-2">
@@ -227,7 +227,7 @@ export default function ApplyJobPage() {
               <label className="block dark:text-slate-400 text-slate-500 font-bold uppercase tracking-wider mb-1.5">
                 {t('upload_resume') || 'Resume Document (PDF, DOCX, TXT)'} *
               </label>
-              <div className="border-2 border-dashed dark:border-slate-800 border-slate-200 hover:border-indigo-500 dark:bg-slate-950/80 bg-slate-50 rounded-2xl p-6 text-center cursor-pointer transition">
+              <div className="border-2 border-dashed dark:border-[#3A535B] border-[#C8C0B2] hover:border-teal-500 dark:bg-[#101A20] bg-[#F8F5EE] rounded-xl p-6 text-center cursor-pointer transition">
                 <input
                   type="file"
                   id="resumeFile"
@@ -243,7 +243,7 @@ export default function ApplyJobPage() {
                   <p className="text-xs font-bold dark:text-slate-200 text-slate-700">
                     {resumeFile ? resumeFile.name : 'Click to select or drag and drop your CV file'}
                   </p>
-                  <p className="text-[11px] text-slate-500">PDF, DOCX, TXT (Max 10MB)</p>
+                  <p className="text-[11px] text-slate-500">PDF, DOCX, TXT (Max 5MB)</p>
                 </label>
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function ApplyJobPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-slate-950 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-teal-900/20 flex items-center justify-center gap-2"
             >
               <span>🚀</span>
               <span>{submitting ? (t('loading') || 'Submitting...') : (t('submit_application') || 'Submit Application')}</span>

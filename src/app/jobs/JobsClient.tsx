@@ -61,14 +61,19 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
       });
 
       if (res.ok) {
-        const newJob = await res.json();
-        setJobs([newJob, ...jobs]);
+        const result = await res.json();
+        if (!result.job) {
+          showToast('The server returned an incomplete requisition response', 'error');
+          return;
+        }
+        setJobs((currentJobs) => [result.job, ...currentJobs]);
         setIsModalOpen(false);
         setTitle('');
         setDescription('');
         showToast(`Job Requisition "${title}" published live`, 'success', 'Requisition Created');
       } else {
-        showToast('Failed to create job requisition', 'error');
+        const result = await res.json().catch(() => null);
+        showToast(result?.error || 'Failed to create job requisition', 'error');
       }
     } catch (err) {
       showToast('Network error while creating requisition', 'error');
@@ -78,7 +83,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-[1440px] mx-auto">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b dark:border-slate-800/80 border-slate-200">
         <div>
@@ -86,7 +91,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
               {t('jobs_title')}
             </h1>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-emerald-950/60 bg-emerald-50 dark:text-emerald-300 text-emerald-800 border dark:border-emerald-800/50 border-emerald-200">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/60 bg-teal-50 dark:text-teal-300 text-teal-800 border dark:border-teal-800/50 border-teal-200">
               {jobs.length} {t('active_requisitions_badge')}
             </span>
           </div>
@@ -98,7 +103,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
         {isStaff && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto"
+            className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-slate-950"
           >
             <span>+</span>
             <span>{t('btn_create_job')}</span>
@@ -108,7 +113,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
 
       {/* Requisitions Grid */}
       {jobs.length === 0 ? (
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-8 text-center space-y-2">
+        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-8 text-center space-y-2">
           <p className="text-xs dark:text-slate-400 text-slate-500">{t('no_jobs_found')}</p>
         </div>
       ) : (
@@ -121,11 +126,11 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
             return (
               <div
                 key={job.id}
-                className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl p-4.5 flex flex-col justify-between space-y-3 hover:border-indigo-500/40 transition shadow-xs"
+                className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 flex flex-col justify-between space-y-3 hover:border-teal-500/50 transition shadow-xs"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium dark:bg-slate-900 bg-slate-100 dark:text-slate-300 text-slate-700 border dark:border-slate-800 border-slate-200">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium dark:bg-slate-900 bg-slate-100 dark:text-slate-300 text-slate-700 border dark:border-slate-800 border-slate-200">
                       {job.department}
                     </span>
                     <span className="text-[10px] font-mono text-emerald-500 font-bold">● ACTIVE</span>
@@ -165,7 +170,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
                   </span>
                   <Link
                     href={`/jobs/${job.id}/apply`}
-                    className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition"
+                    className="px-3 py-1 bg-teal-700 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-slate-950 text-white rounded-lg text-xs font-semibold transition"
                   >
                     {t('apply_role')} &rarr;
                   </Link>
