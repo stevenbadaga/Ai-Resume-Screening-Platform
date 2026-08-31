@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Decode JWT token to check authentication and roles
@@ -20,23 +20,23 @@ export async function middleware(request: NextRequest) {
   // Protect admin routes — require Admin role
   if (pathname.startsWith('/admin')) {
     if (userRole !== 'Admin') {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
 
-  // Protect job management routes — require recruitment roles
-  if (pathname.startsWith('/jobs')) {
-    const recruitmentRoles = ['Admin', 'Recruiter', 'HiringManager'];
-    if (!recruitmentRoles.includes(userRole)) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+  // Protect audit inspection routes — require Admin or ComplianceAuditor role
+  if (pathname.startsWith('/audit')) {
+    const auditRoles = ['Admin', 'ComplianceAuditor', 'Auditor'];
+    if (!auditRoles.includes(userRole)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
 
-  // Protect candidate routes — require recruitment roles
+  // Protect internal candidate review routes — require recruitment staff roles
   if (pathname.startsWith('/candidates')) {
-    const recruitmentRoles = ['Admin', 'Recruiter', 'HiringManager', 'Interviewer'];
+    const recruitmentRoles = ['Admin', 'Recruiter', 'HiringManager', 'Interviewer', 'ComplianceAuditor'];
     if (!recruitmentRoles.includes(userRole)) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+      return NextResponse.redirect(new URL('/dashboard/my-applications', request.url));
     }
   }
 
@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/jobs/:path*',
+    '/audit/:path*',
     '/candidates/:path*',
     '/interviews/:path*'
   ],
