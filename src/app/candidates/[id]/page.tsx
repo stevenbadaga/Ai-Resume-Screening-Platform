@@ -9,9 +9,17 @@ export const dynamic = 'force-dynamic';
 
 export default async function CandidateProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session) redirect('/auth/signin');
+  if (!session?.user) redirect('/auth/signin');
 
-  const userRole = (session?.user as any)?.role || 'Recruiter';
+  const userId = (session.user as any)?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { roles: true }
+  });
+
+  if (!user || user.accessStatus !== 'ACTIVE') redirect('/auth/signin');
+
+  const userRole = user.roles[0]?.name || (session.user as any)?.role || 'Recruiter';
 
   // Strict RBAC: Candidates cannot inspect other candidate profiles
   if (userRole === 'Candidate') {
@@ -30,14 +38,30 @@ export default async function CandidateProfilePage({ params }: { params: Promise
         include: { assessments: { include: { criterion: true } } },
         orderBy: { createdAt: 'desc' },
         take: 1
+      },
+      interviews: {
+        include: {
+          participants: {
+            include: {
+              user: { select: { id: true, name: true, email: true } }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      },
+      decisions: {
+        include: {
+          actor: { select: { id: true, name: true, email: true } }
+        },
+        orderBy: { createdAt: 'desc' }
       }
     }
   });
 
-  if (!application) {
+  if (!application || application.job.organizationId !== user.organizationId) {
     return (
       <div className="p-8 text-center text-slate-500">
-        Candidate application not found.
+        Candidate application not found or access restricted to your organization.
       </div>
     );
   }
