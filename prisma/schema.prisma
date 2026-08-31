@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -8,29 +7,43 @@ generator client {
 }
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  users     User[]
-  jobs      JobRequisition[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(uuid())
+  name             String
+  retentionPolicy  String?  // JSON configuration
+  branding         String?  // JSON configuration
+  securitySettings String?  // JSON configuration
+  users            User[]
+  jobs             JobRequisition[]
+  auditEvents      AuditEvent[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  primaryOwnerId   String?
 }
 
 model User {
-  id             String       @id @default(uuid())
-  email          String       @unique
-  name           String?
-  passwordHash   String?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  roles          Role[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  notifications Notification[]
+  id                     String       @id @default(uuid())
+  email                  String       @unique
+  name                   String?
+  passwordHash           String?
+  accessStatus           String       @default("ACTIVE") // ACTIVE, SUSPENDED
+  departmentRestrictions String[]     // Array of allowed departments
+  organizationId         String
+  organization           Organization @relation(fields: [organizationId], references: [id])
+  roles                  Role[]
+  ownedJobs              JobRequisition[] @relation("JobOwner")
+  applicationsAssigned   Application[] @relation("AssignedRecruiter")
+  decisionsMade          RecruitmentDecision[] @relation("DecisionActor")
+  interviewsParticipated InterviewParticipant[]
+  sentCommunications     Communication[] @relation("Sender")
+  auditEvents            AuditEvent[] @relation("Actor")
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 }
 
 model Role {
   id          String   @id @default(uuid())
-  name        String // System Administrator, Recruitment Manager, Recruiter, Hiring Manager, Interviewer, Auditor
+  name        String 
   users       User[]
   permissions String[] 
 }
@@ -43,54 +56,243 @@ model JobRequisition {
   employmentType String?
   description    String
   status         String       @default("DRAFT") // DRAFT, OPEN, CLOSED
+  ownerId        String
+  owner          User         @relation("JobOwner", fields: [ownerId], references: [id])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   rubrics        Rubric[]
   applications   Application[]
+  communications Communication[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
 
 model Rubric {
-  id        String      @id @default(uuid())
-  version   Int         @default(1)
-  status    String      @default("DRAFT") // DRAFT, REVIEW, APPROVED, ARCHIVED
-  jobId     String
-  job       JobRequisition @relation(fields: [jobId], references: [id])
-  criteria  Criterion[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id           String      @id @default(uuid())
+  version      Int         @default(1)
+  status       String      @default("DRAFT") // DRAFT, REVIEW, APPROVED, ARCHIVED
+  changeReason String?
+  jobId        String
+  job          JobRequisition @relation(fields: [jobId], references: [id])
+  criteria     Criterion[]
+  screeningRuns ScreeningRun[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Criterion {
-  id          String   @id @default(uuid())
-  category    String
-  description String
-  isRequired  Boolean  @default(false)
-  weight      Int      @default(1)
-  rubricId    String
-  rubric      Rubric   @relation(fields: [rubricId], references: [id])
+  id            String   @id @default(uuid())
+  category      String
+  description   String
+  isRequired    Boolean  @default(false)
+  weight        Int      @default(1)
+  threshold     String?  // e.g. minimum years or minimum level
+  evidenceRules String?  // e.g. what counts as evidence
+  rubricId      String
+  rubric        Rubric   @relation(fields: [rubricId], references: [id])
+  assessments   CriterionAssessment[]
 }
 
 model Candidate {
-  id           String        @id @default(uuid())
-  firstName    String
-  lastName     String
-  email        String        @unique
-  consentGiven Boolean       @default(false)
-  applications Application[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String
+  consentGiven    Boolean       @default(false)
+  source          String?       // E.g., LinkedIn, Career Page
+  tags            String[]
+  applications    Application[]
+  privacyRequests PrivacyRequest[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model Application {
-  id          String         @id @default(uuid())
-  candidateId String
-  candidate   Candidate      @relation(fields: [candidateId], references: [id])
-  jobId       String
-  job         JobRequisition @relation(fields: [jobId], references: [id])
-  stage       String         @default("NEW") 
-  resumeUrl   String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id                  String         @id @default(uuid())
+  candidateId         String
+  candidate           Candidate      @relation(fields: [candidateId], references: [id])
+  jobId               String
+  job                 JobRequisition @relation(fields: [jobId], references: [id])
+  assignedRecruiterId String?
+  assignedRecruiter   User?          @relation("AssignedRecruiter", fields: [assignedRecruiterId], references: [id])
+  stage               String         @default("NEW") 
+  status              String         @default("ACTIVE")
+  notes               String?        // JSON or text
+  decisionHistory     String?        // JSON tracking previous/new stages
+  resumeDocument      ResumeDocument?
+  parsedProfile       ParsedProfile?
+  screeningRuns       ScreeningRun[]
+  decisions           RecruitmentDecision[]
+  interviews          Interview[]
+  communications      Communication[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model ResumeDocument {
+  id               String       @id @default(uuid())
+  applicationId    String       @unique
+  application      Application  @relation(fields: [applicationId], references: [id])
+  fileReference    String       // Path or URL to S3
+  processingStatus String       @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED, NEEDS_REVIEW
+  extractedText    String?
+  version          Int          @default(1)
+  checksum         String?
+  safeMetadata     String?      // JSON
+  accessHistory    String?      // JSON
+  screeningRuns    ScreeningRun[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model ParsedProfile {
+  id                 String       @id @default(uuid())
+  applicationId      String       @unique
+  application        Application  @relation(fields: [applicationId], references: [id])
+  skills             String?      // JSON
+  employment         String?      // JSON
+  education          String?      // JSON
+  certifications     String?      // JSON
+  languages          String?      // JSON
+  projects           String?      // JSON
+  manualCorrections  String?      // JSON linked to source evidence
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model ScreeningRun {
+  id               String       @id @default(uuid())
+  applicationId    String
+  application      Application  @relation(fields: [applicationId], references: [id])
+  rubricId         String
+  rubric           Rubric       @relation(fields: [rubricId], references: [id])
+  resumeId         String
+  resume           ResumeDocument @relation(fields: [resumeId], references: [id])
+  aiVersion        String
+  configuration    String?      // JSON
+  status           String       @default("PROCESSING")
+  totalResult      Float?
+  effectiveResult  Float?
+  errorInformation String?
+  assessments      CriterionAssessment[]
+  decisions        RecruitmentDecision[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model CriterionAssessment {
+  id                 String       @id @default(uuid())
+  screeningRunId     String
+  screeningRun       ScreeningRun @relation(fields: [screeningRunId], references: [id])
+  criterionId        String
+  criterion          Criterion    @relation(fields: [criterionId], references: [id])
+  result             String       // e.g. MATCH, PARTIAL, MISSING
+  effectiveResult    String?
+  supportingEvidence String?
+  sourceLocation     String?      // e.g. bounding box or text snippet
+  uncertainty        Boolean      @default(false)
+  scoreContribution  Float?
+  reviewerCorrection String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model RecruitmentDecision {
+  id             String       @id @default(uuid())
+  applicationId  String
+  application    Application  @relation(fields: [applicationId], references: [id])
+  screeningRunId String?
+  screeningRun   ScreeningRun? @relation(fields: [screeningRunId], references: [id])
+  actorId        String
+  actor          User         @relation("DecisionActor", fields: [actorId], references: [id])
+  humanAction    String
+  decisionType   String       // SHORTLIST, REJECT, ADVANCE
+  reason         String
+  previousStage  String
+  newStage       String
+  createdAt      DateTime     @default(now())
+}
+
+model Interview {
+  id             String       @id @default(uuid())
+  applicationId  String
+  application    Application  @relation(fields: [applicationId], references: [id])
+  schedule       DateTime?
+  timezone       String?
+  status         String       @default("SCHEDULED")
+  meetingDetails String?
+  participants   InterviewParticipant[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model InterviewParticipant {
+  id             String       @id @default(uuid())
+  interviewId    String
+  interview      Interview    @relation(fields: [interviewId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  structuredFeedback String?  // JSON
+  comments       String?
+  recommendation String?      // e.g. HIRE, NO_HIRE
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Communication {
+  id              String       @id @default(uuid())
+  applicationId   String?
+  application     Application? @relation(fields: [applicationId], references: [id])
+  jobId           String?
+  job             JobRequisition? @relation(fields: [jobId], references: [id])
+  senderId        String?
+  sender          User?        @relation("Sender", fields: [senderId], references: [id])
+  recipient       String       // Email address
+  template        String
+  contentVersion  String
+  deliveryState   String       @default("PENDING")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model PrivacyRequest {
+  id                  String    @id @default(uuid())
+  candidateId         String
+  candidate           Candidate @relation(fields: [candidateId], references: [id])
+  noticeVersion       String
+  consentRecord       String?   // JSON
+  candidateRequest    String?   // e.g. DELETE, EXPORT
+  decision            String?
+  completionEvidence  String?
+  anonymizationAction String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model AuditEvent {
+  id               String   @id @default(uuid())
+  actorId          String?
+  actor            User?    @relation("Actor", fields: [actorId], references: [id])
+  action           String
+  affectedRecordId String?
+  previousValues   String?  // JSON
+  newValues        String?  // JSON
+  timestamp        DateTime @default(now())
+  organizationId   String?
+  organization     Organization? @relation(fields: [organizationId], references: [id])
+  requestContext   String?  // JSON
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("JOB_POSTED")
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
