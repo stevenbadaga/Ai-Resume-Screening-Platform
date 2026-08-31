@@ -64,37 +64,37 @@ export default function NotificationBell() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-1.5 rounded-lg dark:hover:bg-slate-800 hover:bg-slate-100 text-slate-500 dark:text-slate-400 dark:hover:text-white hover:text-slate-900 transition"
-        title={t('notifications_title') || 'Notifications'}
+        title={t('notifications')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
 
         {unreadCount > 0 && (
-          <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
+          <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-teal-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 text-xs">
-          <div className="p-3 dark:border-slate-800 border-slate-100 border-b flex items-center justify-between">
-            <h3 className="font-semibold dark:text-white text-slate-900">{t('notifications_title') || 'Notifications'}</h3>
+        <div className="absolute right-0 mt-2 w-80 dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 text-xs">
+          <div className="p-3 dark:border-[#30424A] border-[#D8D2C6] border-b flex items-center justify-between">
+            <h3 className="font-semibold dark:text-white text-slate-900">{t('notifications')}</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAsRead()}
-                className="text-[10px] text-indigo-500 hover:underline font-semibold"
+                className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold"
               >
-                {t('mark_all_read') || 'Mark all read'}
+                {t('notifications_mark_all_read')}
               </button>
             )}
           </div>
 
-          <div className="max-h-72 overflow-y-auto divide-y dark:divide-slate-800/60 divide-slate-100">
+          <div className="max-h-72 overflow-y-auto divide-y dark:divide-[#30424A]/60 divide-slate-100">
             {notifications.length === 0 ? (
               <div className="p-6 text-center text-slate-400">
-                {t('notifications_empty') || 'No notifications right now.'}
+                {t('notifications_empty')}
               </div>
             ) : (
               notifications.map((n) => (

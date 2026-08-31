@@ -68,7 +68,7 @@ export default function CommandPalette() {
 
         <div className="max-h-72 overflow-y-auto p-2 space-y-1">
           {filtered.length === 0 ? (
-            <div className="p-4 text-center text-slate-400 text-xs">No matching routes found.</div>
+            <div className="p-4 text-center text-slate-400 text-xs">{t('cmd_palette_no_results')}</div>
           ) : (
             filtered.map((action) => (
               <button
