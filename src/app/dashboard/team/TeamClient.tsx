@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface TeamClientProps {
   initialUsers: any[];
@@ -24,6 +25,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
   const [inviting, setInviting] = useState(false);
 
   const { showToast } = useToast();
+  const { t } = useLanguage();
 
   // Strict Segregation: Separate internal workers from external candidates
   const staffMembers = users.filter((u) => {
@@ -74,7 +76,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
       } else {
         showToast(data.error || 'Failed to update role', 'error');
       }
-    } catch (err: any) {
+    } catch {
       showToast('Network error while updating role', 'error');
     } finally {
       setSavingRole(false);
@@ -115,7 +117,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
       } else {
         showToast(data.error || 'Failed to invite member', 'error');
       }
-    } catch (err: any) {
+    } catch {
       showToast('Network error while sending invite', 'error');
     } finally {
       setInviting(false);
@@ -131,9 +133,9 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
-              User & Access Governance
+              {t('nav_team')}
             </h1>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-purple-950/60 bg-purple-50 dark:text-purple-300 text-purple-800 border dark:border-purple-800/50 border-purple-200">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-teal-950/60 bg-teal-50 dark:text-teal-300 text-teal-800 border dark:border-teal-800/50 border-teal-200">
               {users.length} TOTAL ACCOUNTS
             </span>
           </div>
@@ -144,7 +146,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
 
         <button
           onClick={() => setShowInviteModal(true)}
-          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto"
+          className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto"
         >
           <span>+</span>
           <span>Invite Staff Member</span>
@@ -152,17 +154,17 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
       </div>
 
       {/* Segregation Tabs */}
-      <div className="flex items-center gap-2 border-b dark:border-slate-800 border-slate-200 text-xs font-semibold">
+      <div className="flex items-center gap-2 border-b dark:border-[#30424A] border-slate-200 text-xs font-semibold">
         <button
           onClick={() => setActiveTab('staff')}
           className={`pb-2.5 px-3 flex items-center gap-2 transition border-b-2 ${
             activeTab === 'staff'
-              ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'border-teal-500 text-teal-600 dark:text-teal-400 font-bold'
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <span>🏢 Internal Staff Directory</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-indigo-950 bg-indigo-50 border dark:border-indigo-800/60 border-indigo-200">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-teal-950 bg-teal-50 border dark:border-teal-800/60 border-teal-200">
             {staffMembers.length}
           </span>
         </button>
@@ -171,19 +173,19 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
           onClick={() => setActiveTab('candidates')}
           className={`pb-2.5 px-3 flex items-center gap-2 transition border-b-2 ${
             activeTab === 'candidates'
-              ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold'
+              ? 'border-teal-500 text-teal-600 dark:text-teal-400 font-bold'
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <span>📄 External Job Seekers (Candidates)</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-slate-900 bg-slate-100 border dark:border-slate-800 border-slate-200">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-[#17242B] bg-slate-100 border dark:border-[#30424A] border-slate-200">
             {candidateAccounts.length}
           </span>
         </button>
       </div>
 
       {/* Notice Banner */}
-      <div className="p-3 rounded-xl dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border flex items-center justify-between text-xs dark:text-slate-300 text-slate-700">
+      <div className="p-3 rounded-xl dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border flex items-center justify-between text-xs dark:text-slate-300 text-slate-700">
         <div className="flex items-center gap-2">
           <span className="text-base">{activeTab === 'staff' ? '🏢' : '📄'}</span>
           <span>
@@ -195,17 +197,17 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
         {activeTab === 'candidates' && (
           <Link
             href="/candidates"
-            className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[10px] shrink-0 ml-2 shadow-xs"
+            className="px-2.5 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold text-[10px] shrink-0 ml-2 shadow-xs"
           >
-            Open Candidate Pipeline &rarr;
+            {t('nav_candidates')} &rarr;
           </Link>
         )}
       </div>
 
       {/* Directory Table */}
-      <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl overflow-hidden shadow-xs">
+      <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl overflow-hidden shadow-xs">
         <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
-          <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-slate-800 border-slate-200 border-b">
+          <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-[#30424A] border-slate-200 border-b">
             <tr>
               <th className="p-3">{activeTab === 'staff' ? 'Employee / Staff Member' : 'Candidate Name'}</th>
               <th className="p-3">Classification</th>
@@ -214,7 +216,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
               <th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y dark:divide-slate-800/60 divide-slate-100">
+          <tbody className="divide-y dark:divide-[#30424A]/60 divide-slate-100">
             {displayedUsers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-slate-400 text-xs">
@@ -235,8 +237,8 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                         <div
                           className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold ${
                             isStaff
-                              ? 'bg-indigo-600/15 border border-indigo-500/20 text-indigo-400'
-                              : 'bg-emerald-600/15 border border-emerald-500/20 text-emerald-400'
+                              ? 'bg-teal-600/15 border border-teal-500/20 text-teal-600 dark:text-teal-400'
+                              : 'bg-emerald-600/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                           }`}
                         >
                           {(user.name || user.email || 'U')[0].toUpperCase()}
@@ -253,7 +255,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                           isStaff
-                            ? 'dark:bg-indigo-950/80 bg-indigo-50 dark:text-indigo-300 text-indigo-700 border dark:border-indigo-800/80 border-indigo-200'
+                            ? 'dark:bg-teal-950/80 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/80 border-teal-200'
                             : 'dark:bg-emerald-950/60 bg-emerald-50 dark:text-emerald-300 text-emerald-800 border dark:border-emerald-800/60 border-emerald-200'
                         }`}
                       >
@@ -261,7 +263,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                       </span>
                     </td>
                     <td className="p-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-slate-800 bg-slate-100 dark:text-slate-300 text-slate-700 border dark:border-slate-700 border-slate-200">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-[#0F171D] bg-slate-100 dark:text-slate-300 text-slate-700 border dark:border-[#30424A] border-slate-200">
                         {roleName}
                       </span>
                     </td>
@@ -274,7 +276,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                       {isStaff ? (
                         <button
                           onClick={() => handleOpenEdit(user)}
-                          className="px-2.5 py-1 dark:bg-slate-900 bg-slate-100 hover:bg-indigo-600 hover:text-white dark:border-slate-800 border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
+                          className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
                         >
                           Edit Role
                         </button>
@@ -282,13 +284,13 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href="/candidates"
-                            className="px-2.5 py-1 dark:bg-slate-900 bg-slate-100 hover:bg-indigo-600 hover:text-white dark:border-slate-800 border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
+                            className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
                           >
                             View Applications &rarr;
                           </Link>
                           <button
                             onClick={() => handleOpenEdit(user)}
-                            className="px-2 py-1 text-[10px] text-slate-400 hover:text-indigo-400 font-semibold"
+                            className="px-2 py-1 text-[10px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-semibold"
                             title="Promote to Internal Staff"
                           >
                             Promote
@@ -307,8 +309,8 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
       {/* EDIT ROLE MODAL */}
       {editingUser && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
-            <div className="flex items-center justify-between pb-2 border-b dark:border-slate-800 border-slate-100">
+          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
               <h3 className="text-sm font-bold dark:text-white text-slate-900">Edit Member Role</h3>
               <button onClick={() => setEditingUser(null)} className="text-slate-400">✕</button>
             </div>
@@ -326,7 +328,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-teal-500"
                 >
                   <option value="Admin">Admin (Full Workspace Owner)</option>
                   <option value="Recruiter">Recruiter (ATS & Candidate Owner)</option>
@@ -337,20 +339,20 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-slate-800 border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-[#30424A] border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
                   className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={savingRole}
-                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-xs"
+                  className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs"
                 >
-                  {savingRole ? 'Saving...' : 'Save Role'}
+                  {savingRole ? t('loading') : t('confirm')}
                 </button>
               </div>
             </form>
@@ -361,8 +363,8 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
       {/* INVITE MEMBER MODAL */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
-            <div className="flex items-center justify-between pb-2 border-b dark:border-slate-800 border-slate-100">
+          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
               <h3 className="text-sm font-bold dark:text-white text-slate-900">Invite Staff Member</h3>
               <button onClick={() => setShowInviteModal(false)} className="text-slate-400">✕</button>
             </div>
@@ -375,7 +377,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   placeholder="e.g. Jane Doe"
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
                 />
               </div>
 
@@ -387,7 +389,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="jane@company.com"
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
                 />
               </div>
 
@@ -396,7 +398,7 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-teal-500"
                 >
                   <option value="Admin">Admin</option>
                   <option value="Recruiter">Recruiter</option>
@@ -406,20 +408,20 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-slate-800 border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-[#30424A] border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
                   className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={inviting}
-                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-xs"
+                  className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs"
                 >
-                  {inviting ? 'Sending Invite...' : 'Send Invite'}
+                  {inviting ? t('loading') : 'Send Invite'}
                 </button>
               </div>
             </form>

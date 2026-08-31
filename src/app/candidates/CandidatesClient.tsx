@@ -62,7 +62,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('search_candidate_placeholder')}
-              className="dark:bg-[#0B0F19] bg-white border dark:border-slate-800 border-slate-200 rounded-lg px-3 py-1.5 pl-8 text-xs dark:text-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 w-48 sm:w-56"
+              className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-3 py-1.5 pl-8 text-xs dark:text-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 w-48 sm:w-56"
             />
             <span className="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
@@ -71,7 +71,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
           <select
             value={selectedDept}
             onChange={(e) => setSelectedDept(e.target.value)}
-            className="dark:bg-[#0B0F19] bg-white border dark:border-slate-800 border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 font-medium"
+            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium"
           >
             {departments.map((dept: any) => (
               <option key={dept} value={dept}>
@@ -81,12 +81,12 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
           </select>
 
           {/* View Switcher (Kanban / Table) */}
-          <div className="flex p-0.5 rounded-lg dark:bg-[#0B0F19] bg-slate-100 border dark:border-slate-800 border-slate-200 text-xs">
+          <div className="flex p-0.5 rounded-lg dark:bg-[#0F171D] bg-slate-100 border dark:border-[#30424A] border-slate-200 text-xs">
             <button
               onClick={() => setActiveTab('kanban')}
               className={`px-2.5 py-1 rounded-md font-medium transition ${
                 activeTab === 'kanban'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-teal-700 dark:bg-teal-600 text-white shadow-xs'
                   : 'dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -96,7 +96,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
               onClick={() => setActiveTab('table')}
               className={`px-2.5 py-1 rounded-md font-medium transition ${
                 activeTab === 'table'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+                  ? 'bg-teal-700 dark:bg-teal-600 text-white shadow-xs'
                   : 'dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -132,7 +132,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
                 className="dark:bg-[#17242B]/65 bg-[#F8F5EE]/80 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3 flex flex-col min-h-[430px]"
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-2 mb-2 border-b dark:border-slate-800/60 border-slate-200/60">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b dark:border-[#30424A] border-slate-200/60">
                   <span className="text-xs font-bold dark:text-slate-200 text-slate-800">
                     {stage.label}
                   </span>
@@ -172,7 +172,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between text-[10px] dark:text-slate-500 text-slate-400 font-mono pt-1.5 border-t dark:border-slate-800/60 border-slate-100">
+                          <div className="flex items-center justify-between text-[10px] dark:text-slate-500 text-slate-400 font-mono pt-1.5 border-t dark:border-[#30424A]/60 border-slate-100">
                             <span>{app.job?.department}</span>
                             <span>{new Date(app.createdAt).toLocaleDateString()}</span>
                           </div>
@@ -187,9 +187,9 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
         </div>
       ) : (
         /* TABLE VIEW */
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800/80 border-slate-200 border rounded-xl overflow-hidden shadow-xs">
+        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl overflow-hidden shadow-xs">
           <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
-            <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-slate-800 border-slate-200 border-b">
+            <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-[#30424A] border-slate-200 border-b">
               <tr>
                 <th className="p-3">{t('candidate_name_col')}</th>
                 <th className="p-3">{t('position_applied_col')}</th>
@@ -199,7 +199,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
                 <th className="p-3 text-right">{t('actions_col')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y dark:divide-slate-800/60 divide-slate-100">
+            <tbody className="divide-y dark:divide-[#30424A]/60 divide-slate-100">
               {filteredCandidates.map((app) => {
                 const latestRun = app.screeningRuns?.[0];
                 const score = Number(latestRun?.effectiveResult ?? latestRun?.totalResult) || 0;
@@ -212,17 +212,17 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
                     <td className="p-3 dark:text-slate-300 text-slate-700">{app.job?.title}</td>
                     <td className="p-3 font-mono text-[11px] dark:text-slate-400 text-slate-500">{app.job?.department}</td>
                     <td className="p-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold dark:bg-slate-900 bg-slate-100 border dark:border-slate-800 border-slate-200">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold dark:bg-[#0F171D] bg-slate-100 border dark:border-[#30424A] border-slate-200">
                         {app.stage || 'INGESTED'}
                       </span>
                     </td>
-                    <td className="p-3 font-mono font-bold text-emerald-500 text-xs">
+                    <td className="p-3 font-mono font-bold text-teal-600 dark:text-teal-400 text-xs">
                       {score}%
                     </td>
                     <td className="p-3 text-right">
                       <Link
                         href={`/candidates/${app.id}`}
-                        className="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition"
+                        className="px-2.5 py-1 rounded-md bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-medium text-xs transition"
                       >
                         {t('view_details')} &rarr;
                       </Link>
