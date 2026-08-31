@@ -32,7 +32,10 @@ export const createJobSchema = z.object({
   description: z.string().max(10000).optional(),
   criteria: z.array(z.object({
     category: z.string().max(200).optional(),
-    description: z.string().min(1).max(2000),
+    description: z.string().max(2000).optional(),
+    name: z.string().max(2000).optional(),
+    isRequired: z.boolean().optional(),
+    threshold: z.string().max(500).optional(),
     weight: z.coerce.number().int().min(1).max(10).optional(),
   })).max(50).optional().default([]),
 });
@@ -43,7 +46,8 @@ export const createJobSchema = z.object({
 
 export const decisionSchema = z.object({
   applicationId: uuidSchema,
-  decision: z.enum(['ADVANCED', 'REJECTED']),
+  decision: z.enum(['SHORTLIST', 'ADVANCE', 'ADVANCED', 'HOLD', 'REJECT', 'REJECTED', 'WITHDRAW', 'REVIEW']),
+  reasonCode: z.string().max(200).optional(),
   rationale: z.string().min(1, 'Rationale is required').max(5000),
 });
 
@@ -138,6 +142,14 @@ export const interviewScheduleSchema = z.object({
   scheduledAt: z.coerce.date(),
   durationMinutes: z.coerce.number().int().min(15).max(240),
   meetingType: z.enum(['Google Meet', 'Zoom', 'In-Person']),
+});
+
+export const scorecardSchema = z.object({
+  techRating: z.coerce.number().int().min(1).max(5),
+  commRating: z.coerce.number().int().min(1).max(5),
+  problemRating: z.coerce.number().int().min(1).max(5),
+  recommendation: z.enum(['STRONG_HIRE', 'HIRE', 'LEAN_HIRE', 'NO_HIRE']),
+  comments: z.string().max(5000).optional().default(''),
 });
 
 // ──────────────────────────────────────────────

@@ -47,9 +47,10 @@ export default function ApplyJobPage() {
       try {
         const res = await fetch(`/api/jobs`);
         if (res.ok) {
-          const jobs = await res.json();
-          const target = jobs.find((j: any) => j.id === params.id);
-          setJob(target || jobs[0]);
+          const data = await res.json();
+          const jobList = Array.isArray(data) ? data : (data.jobs || []);
+          const target = jobList.find((j: any) => j.id === params?.id);
+          setJob(target || jobList[0] || null);
         }
       } catch (err) {
         console.error('Failed to load job', err);
@@ -58,7 +59,7 @@ export default function ApplyJobPage() {
       }
     }
     fetchJob();
-  }, [params.id]);
+  }, [params?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +82,8 @@ export default function ApplyJobPage() {
       formData.append('lastName', lastName);
       formData.append('email', email);
       formData.append('phone', phone);
+      formData.append('consentGiven', String(consentGiven));
+      formData.append('consentToDataProcessing', String(consentGiven));
       formData.append('resume', resumeFile);
 
       const res = await fetch('/api/jobs/apply', {

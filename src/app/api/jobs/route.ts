@@ -14,7 +14,10 @@ export async function GET(req: Request) {
     const department = searchParams.get('department');
     const search = searchParams.get('search');
 
-    const where: any = { organizationId: auth.user.organizationId };
+    const where: any = auth.user.role === 'Candidate'
+      ? { status: 'OPEN' }
+      : { organizationId: auth.user.organizationId };
+
     if (department && department !== 'ALL') {
       where.department = department;
     }
@@ -75,7 +78,7 @@ export async function POST(req: Request) {
             criteria: {
               create: criteria.map((c) => ({
                 category: c.category || 'General Requirement',
-                description: c.description,
+                description: c.description || c.name || 'General requirement',
                 weight: c.weight || 3
               }))
             }

@@ -25,7 +25,8 @@ export async function POST(req: Request) {
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
     const email = formData.get('email') as string;
-    const consentGiven = formData.get('consentGiven') === 'true';
+    const consentRaw = formData.get('consentGiven') ?? formData.get('consent') ?? formData.get('consentToDataProcessing');
+    const consentGiven = consentRaw === 'true' || consentRaw === '1' || consentRaw === 'on';
     const file = formData.get('resume') as File | null;
 
     if (!jobId || !firstName || !lastName || !email) {

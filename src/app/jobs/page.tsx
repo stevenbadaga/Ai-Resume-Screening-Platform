@@ -12,9 +12,14 @@ export default async function JobsPage() {
   const userRole = (session?.user as any)?.role || 'Candidate';
   const organizationId = (session?.user as any)?.organizationId;
 
+  const whereClause: any = userRole === 'Candidate'
+    ? { status: 'OPEN' }
+    : { organizationId };
+
   const jobs = await prisma.jobRequisition.findMany({
-    where: { organizationId },
+    where: whereClause,
     include: {
+      organization: { select: { id: true, name: true } },
       rubrics: {
         include: { criteria: true }
       },
