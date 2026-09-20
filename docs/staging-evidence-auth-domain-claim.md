@@ -81,8 +81,26 @@ USER_REGISTERED          {email, role:"Admin", …}          ← third founder
 ## Remaining items (infrastructure, not code)
 
 1. **Positive DNS-verification capture** — start a claim on a domain you control, publish the TXT record, click Verify. Expected audit event: `DOMAIN_CLAIM_VERIFIED`.
-2. **Brevo IP allow-listing** — unblock real delivery, then capture a `SENT` Communication row and the received email itself.
-3. Both are addenda to the "known remaining items" list in `specification-compliance-report.md` §3.
+2. **Brevo IP allow-listing** — unblock real delivery, then capture a `SENT` Communication row and the received email itself. The current machine's egress IP `2c0f:eb68:509:1c00:1c11:7dc1:2f4e:ff63` must be added at https://app.brevo.com/security/authorised_ips, after which `npx tsx scripts/emailEvidenceProbe.ts` records the `SENT` row.
+3. **Backup/restore drill** — requires `pg_dump`/`psql` client tools, which are not installed on this workstation (no Docker either). Install PostgreSQL client tools or run from a host that has them, then execute the runbook §1.2/§1.3 procedure and record the drill date + result.
+4. All three are addenda to the "known remaining items" list in `specification-compliance-report.md` §3.
+
+---
+
+## Evidence run — September 20, 2026 (v1.3 gap-closure verification)
+
+| Item | Result | Evidence |
+|---|---|---|
+| Migration `20260920000000_audit_hash_chain_and_indexes` | ✅ Applied to the staging database (`npx prisma migrate deploy`, 7 migrations total) | migrate deploy output |
+| Integration suite against staging DB | ✅ **12/12 tests passing** (§14 workflow incl. new §6.2 rubric-versioning and §6.1 audit-tamper tests) | `TEST_DATABASE_URL=… TEST_INTEGRATION=1 npx vitest run __tests__/workflow.integration.test.ts` — 45.8s |
+| Audit-ledger tamper-evidence | ✅ `npm run verify-audit-chain` → **9 events checked, chain intact** | verifier exit 0 |
+| Health endpoint (public liveness) | ✅ `GET /api/health` → `{"status":"ok"}` with no auth, no info leak | curl output |
+| Health endpoint (authenticated detail) | ✅ Admin session over real HTTP: database reachable (290 ms Neon), queue reachable (Upstash, 0 failed jobs), storage writable, resume processing view available, communications `failed: 5 / sent: 0 / pending: 0`, integrations reported as booleans (OpenAI ✓, email ✓, Redis ✓, malware scanner: signature-only) | curl with NextAuth session cookie |
+| Email delivery (§6.9 failure visibility) | ⚠️ Probe send via `scripts/emailEvidenceProbe.ts` → Brevo HTTP 401 (IP not allow-listed) recorded honestly as `Communication` row `030923e4-12d9-4cc2-9dfe-1208fa7c185f`, `deliveryState: FAILED` with the full provider error in `failureInfo` — exactly the §6.9 behavior. `SENT` row still pending the Brevo IP allow-list (item 2 above). | Communication row in staging DB |
+| Backup/restore drill (§9) | ⛔ Blocked by workstation tooling (no `pg_dump`/`psql`/Docker) — runbook procedure ready to execute on a host with the client tools | item 3 above |
+| Positive DNS domain claim | ⛔ Requires a domain under the operator's DNS control | item 1 above |
+
+Evidence-session hygiene: the health-evidence account and workspace were removed after the run; the curl session cookie was discarded.
 
 ## Artifact hygiene
 
