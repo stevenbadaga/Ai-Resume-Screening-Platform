@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { overrideBodySchema, validateBody, safeErrorResponse } from '@/lib/validation';
+import { calculateTotalScore } from '@/lib/scoringEngine';
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    const auth = await requirePermission(Permission.OverrideScores);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -82,6 +84,31 @@ export async function POST(req: NextRequest) {
         effectiveResult: newResult
       }
     });
+
+    // §6.5: a human override must recompute the overall result so ranking and
+    // exports reflect it — the original AI result stays intact on `result`.
+    const run = await prisma.screeningRun.findUnique({
+      where: { id: assessment.screeningRunId },
+      include: {
+        assessments: true,
+        rubric: { include: { criteria: true } }
+      }
+    });
+    if (run) {
+      const calc = calculateTotalScore(
+        // Effective (human-corrected) results drive the recomputed total; an
+        // assessment without an effective value falls back to the AI result.
+        run.assessments.map((a) => ({
+          criterionId: a.criterionId,
+          result: a.effectiveResult ?? a.result,
+        })),
+        run.rubric.criteria
+      );
+      await prisma.screeningRun.update({
+        where: { id: run.id },
+        data: { effectiveResult: calc.percentage }
+      });
+    }
 
     await logAuditEvent({
       action: 'CRITERION_OVERRIDE',

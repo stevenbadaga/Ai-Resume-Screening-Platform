@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission, permissionsForRoleName } from '@/lib/roleAccess';
 import { teamDeleteSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
     // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
-    const auth = await requireAuth(['Admin']);
+    const auth = await requirePermission(Permission.ManageTeam);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -17,13 +18,20 @@ export async function POST(req: NextRequest) {
 
     const { targetUserId } = data;
     
-    // Verify caller has the right permissions from DB
+    // Verify caller has the right permissions from DB — checked against the
+    // single RBAC matrix (self-healing rows) rather than legacy string lists.
     const dbUser = await prisma.user.findUnique({
       where: { id: auth.user.id },
       include: { roles: true }
     });
 
-    if (!dbUser || !dbUser.roles.some(r => r.permissions.includes('ALL') || r.permissions.includes('MANAGE_TEAM'))) {
+    const matrixPermissions = permissionsForRoleName(auth.user.role);
+    const canManage =
+      matrixPermissions.includes(Permission.ManageTeam) ||
+      dbUser?.roles.some(
+        (r) => r.permissions.includes('ALL') || r.permissions.includes('MANAGE_TEAM')
+      );
+    if (!dbUser || !canManage) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

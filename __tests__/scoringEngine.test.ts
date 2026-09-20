@@ -48,7 +48,7 @@ describe('AI Scoring Logic (calculateTotalScore)', () => {
     expect(result.percentage).toBe(0);
   });
 
-  it('handles missing criteria gracefully (ignores them)', () => {
+  it('ignores assessments for criteria outside the rubric', () => {
     const criteria = [
       { id: '1', weight: 5 }
     ];
@@ -56,9 +56,63 @@ describe('AI Scoring Logic (calculateTotalScore)', () => {
       { criterionId: '2', result: 'MATCH' } // criterion 2 does not exist
     ];
 
+    // Criterion 1 was never assessed → counts toward maxScore at 0 points.
     const result = calculateTotalScore(assessments, criteria);
-    expect(result.maxScore).toBe(0);
+    expect(result.maxScore).toBe(5);
     expect(result.totalScore).toBe(0);
     expect(result.percentage).toBe(0);
+  });
+
+  // Regression: unassessed criteria must count toward maxScore (score 0),
+  // not silently drop out and inflate the match percentage.
+  it('treats unassessed criteria as MISSING instead of inflating the score', () => {
+    const criteria = [
+      { id: '1', weight: 5, isRequired: false },
+      { id: '2', weight: 5, isRequired: false },
+      { id: '3', weight: 5, isRequired: false },
+      { id: '4', weight: 5, isRequired: false },
+    ];
+    const assessments = [
+      { criterionId: '1', result: 'MATCH' },
+      { criterionId: '2', result: 'MATCH' },
+      // AI omitted criteria 3 and 4 entirely
+    ];
+
+    const result = calculateTotalScore(assessments, criteria);
+    expect(result.maxScore).toBe(20);        // all four criteria counted
+    expect(result.totalScore).toBe(10);      // only the two MATCHes score
+    expect(result.percentage).toBe(50);      // NOT 100%
+  });
+
+  it('fails at 0% when a required criterion was never assessed', () => {
+    const criteria = [
+      { id: '1', weight: 5, isRequired: true },
+      { id: '2', weight: 5, isRequired: false },
+    ];
+    const assessments = [
+      { criterionId: '2', result: 'MATCH' },
+      // required criterion 1 never assessed
+    ];
+
+    const result = calculateTotalScore(assessments, criteria);
+    expect(result.percentage).toBe(0);
+    expect(result.failedRequiredCriterion).toBeTruthy();
+  });
+
+  it('counts a duplicated assessment only once', () => {
+    const criteria = [
+      { id: '1', weight: 4, isRequired: false },
+      { id: '2', weight: 4, isRequired: false },
+    ];
+    const assessments = [
+      { criterionId: '1', result: 'MATCH' },
+      { criterionId: '1', result: 'MATCH' },  // duplicate — must not stack
+      { criterionId: '2', result: 'MISSING' },
+    ];
+
+    const result = calculateTotalScore(assessments, criteria);
+    expect(result.maxScore).toBe(8);
+    expect(result.totalScore).toBe(4);
+    expect(result.percentage).toBe(50);
   });
 });

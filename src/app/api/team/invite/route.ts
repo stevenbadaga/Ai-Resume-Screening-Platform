@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { sendMockEmail } from '@/lib/mockEmailService';
-import { requireAuth } from '@/lib/auth';
+import { sendRecordedEmail } from '@/lib/emailService';
+import { requirePermission } from '@/lib/auth';
+import { Permission, ROLE_PERMISSIONS, permissionsForRoleName } from '@/lib/roleAccess';
 import { teamInviteSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
-    // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
-    const auth = await requireAuth(['Admin']);
+    const auth = await requirePermission(Permission.ManageTeam);
     if (auth.error) return auth.error;
-    
-    // Verify caller has the right permissions from DB
-    const dbUser = await prisma.user.findUnique({
-      where: { id: auth.user.id },
-      include: { roles: true }
-    });
-
-    if (!dbUser || !dbUser.roles.some(r => r.permissions.includes('ALL') || r.permissions.includes('MANAGE_TEAM'))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     const body = await req.json();
 
@@ -28,12 +18,30 @@ export async function POST(req: NextRequest) {
 
     const { email, roleName } = data;
 
-    // Create the role if it doesn't exist
+    // Ensure the role exists — permissions come from the RBAC matrix
+    // (src/lib/roleAccess.ts), NOT a hardcoded fallback like ['VIEW_JOBS'].
+    // Validate the role name against the matrix keys (Candidate grants zero
+    // permissions but is still a valid role name).
+    if (!(roleName in ROLE_PERMISSIONS)) {
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+    }
+
+    const permissions = permissionsForRoleName(roleName);
+
     let role = await prisma.role.findFirst({ where: { name: roleName } });
     if (!role) {
       role = await prisma.role.create({
-        data: { name: roleName, permissions: ['VIEW_JOBS'] }
+        data: { name: roleName, permissions }
       });
+    } else if (role.name !== 'Admin') {
+      // Repair legacy rows created with incomplete permission lists.
+      const missing = permissions.filter((p) => !role!.permissions.includes(p));
+      if (missing.length > 0) {
+        role = await prisma.role.update({
+          where: { id: role.id },
+          data: { permissions: [...role.permissions, ...missing] }
+        });
+      }
     }
 
     // Check if user already exists
@@ -42,27 +50,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
-    // Create placeholder user
+    // Create the invited user record
     const newUser = await prisma.user.create({
       data: {
         email,
         accessStatus: 'INVITED',
-        organizationId: dbUser.organizationId,
+        organizationId: auth.user.organizationId,
         roles: {
           connect: { id: role.id }
         }
       }
     });
 
-    // Send invite email — SECURITY: Use template literal properly
+    // Send invite email and record the delivery outcome honestly.
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    await sendMockEmail(email, 'TEAM_INVITATION', {
-      inviterName: dbUser.name || 'Your Team',
-      role: roleName,
-      joinLink: `${baseUrl}/auth/signup?invite=${newUser.id}`
+    const delivery = await sendRecordedEmail({
+      to: email,
+      template: 'TEAM_INVITATION',
+      data: {
+        candidateName: 'there',
+        joinLink: `${baseUrl}/auth/signup?invite=${newUser.id}`
+      },
+      senderId: auth.user.id
     });
 
-    return NextResponse.json({ success: true, user: newUser });
+    // SECURITY: return a safe subset — never the raw Prisma user record.
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        accessStatus: newUser.accessStatus,
+        roleName: role.name
+      },
+      emailDelivered: delivery.delivered,
+      emailError: delivery.delivered ? undefined : delivery.error
+    });
   } catch (error) {
     console.error('Invite error:', error);
     return safeErrorResponse('Internal server error');

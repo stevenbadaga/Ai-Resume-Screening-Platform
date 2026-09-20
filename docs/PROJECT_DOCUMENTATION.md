@@ -1,10 +1,10 @@
 # CODAFRIQA AI Resume Screening Platform
-## Complete Technical Architecture, User Manual & Project Documentation (Version 1.0)
+## Complete Technical Architecture, User Manual & Project Documentation (Version 1.1)
 
 **Project Specification:** CODAFRIQA AI Resume Screening Platform — Intern Project Specification Document, Version 1.0  
 **Target Repository:** `stevenbadaga/Ai-Resume-Screening-Platform`  
 **Author / Contributor:** `jospin20` (`jospinshyaka807@gmail.com`)  
-**Evaluation Date:** August 31, 2026  
+**Evaluation Date:** September 12, 2026 (v1.1 — supersedes the August 31, 2026 v1.0 edition)  
 **Status:** Production-Ready & 100.0% Specification Compliant  
 
 ---
@@ -100,7 +100,7 @@ flowchart TD
 
 ## 3. Database Entity-Relationship Design
 
-The platform uses Prisma ORM connected to a Neon Serverless PostgreSQL database. The schema encompasses **15 relational models**:
+The platform uses Prisma ORM connected to a Neon Serverless PostgreSQL database. The schema encompasses **18 relational models** (v1.1 adds `PasswordResetToken` and `EmailVerificationToken` for account recovery/verification, and domain-claim columns on `Organization`):
 
 ```mermaid
 erDiagram
@@ -127,8 +127,9 @@ erDiagram
 ```
 
 ### Entity Specifications:
-* **`Organization`**: Tenant boundary (`id`, `name`, `subdomain`, `complianceTier`).
-* **`User` & `Role`**: Multi-role identity (`email`, `passwordHash`, `accessStatus`, `organizationId`).
+* **`Organization`**: Tenant boundary (`id`, `name`, `primaryOwnerId`, `verifiedEmailDomain` (unique), `pendingEmailDomain` + `domainClaimToken` for the DNS ownership challenge).
+* **`User` & `Role`**: Multi-role identity (`email`, `passwordHash`, `accessStatus`, `emailVerifiedAt`, `organizationId`).
+* **`PasswordResetToken` / `EmailVerificationToken`**: Single-use, SHA-256-hashed, time-limited tokens for password recovery (30 min) and email verification (24 h) — the plain token lives only in the emailed link.
 * **`JobRequisition`**: Vacancy record (`title`, `department`, `description`, `status: DRAFT|OPEN|CLOSED|ARCHIVED`).
 * **`Rubric` & `Criterion`**: Weighted screening guidelines (`category`, `weight`, `isRequired`, `threshold`).
 * **`Candidate`**: Applicant profile (`firstName`, `lastName`, `email`, `consentGiven`, `tags`).
@@ -145,7 +146,13 @@ erDiagram
 
 | Endpoint | Method | Role Scope | Description |
 | :--- | :---: | :--- | :--- |
-| `/api/auth/signup` | `POST` | Public | Candidate and Recruiter self-registration with bcrypt password hashing. |
+| `/api/auth/signup` | `POST` | Public | Candidate and staff self-registration with bcrypt hashing, disposable-domain rejection, and an emailed verification link. Staff founding an unclaimed workspace become its Admin; staff matching a verified workspace domain auto-join as Recruiters. |
+| `/api/auth/forgot-password` | `POST` | Public | Anti-enumeration password reset request (single-use 30-min hashed token). |
+| `/api/auth/reset-password` | `POST` | Public | Consumes a reset token and sets the new bcrypt-hashed password. |
+| `/api/auth/verify-email` | `GET` | Public | Consumes an email-verification token (atomic, single-use) and activates sign-in. |
+| `/api/auth/resend-verification` | `POST` | Public | Anti-enumeration re-send of the verification link. |
+| `/api/org/domain-claim` | `POST`/`GET` | Admin | Starts (or returns) the DNS TXT domain-ownership challenge for the workspace identity. |
+| `/api/org/domain-claim/verify` | `POST` | Admin | Re-checks DNS and marks the domain verified (unique platform-wide). |
 | `/api/jobs` | `GET` | All / Candidate | Retrieves open job requisitions (cross-tenant for candidates, org-scoped for staff). |
 | `/api/jobs` | `POST` | Admin, Recruiter, HiringManager | Creates a new job requisition and approved rubric in a single transaction. |
 | `/api/jobs/apply` | `POST` | Public / Candidate | Multipart upload for CV intake (PDF/DOCX/TXT) with magic-byte check and BullMQ enqueueing. |
@@ -171,8 +178,9 @@ RecruitAI provides role-specific views tailored to each participant in the hirin
 
 ### 5.1 System Administrator Workflow
 1. **Access Directory (`/dashboard/team`)**: Inspect all internal staff members and external candidate accounts.
-2. **Role Assignment & Invites**: Invite new hiring members (`Admin`, `Recruiter`, `HiringManager`, `Interviewer`, `ComplianceAuditor`) and update access privileges.
-3. **Audit Ledger Oversight (`/audit`)**: Inspect immutable SHA-256 sealed audit logs recording all system mutations.
+2. **Workspace Identity (`/dashboard/team`)**: Verify ownership of your company's email domain by publishing the shown `recruitai-verify=<token>` TXT record at `_recruitai-challenge.<domain>` and clicking **Verify now** — teammates with `@yourdomain.com` addresses then auto-join the workspace on signup.
+3. **Role Assignment & Invites**: Invite new hiring members (`Admin`, `Recruiter`, `HiringManager`, `Interviewer`, `ComplianceAuditor`) and update access privileges.
+4. **Audit Ledger Oversight (`/audit`)**: Inspect SHA-256 sealed audit logs recording all system mutations (including account, verification, and domain-claim lifecycle events).
 
 ### 5.2 Recruiter Workflow
 1. **Create Requisition (`/jobs`)**: Click `+ Post New Requisition`. Enter job title, department, description, and configure AI criteria with `Required`/`Preferred` qualifiers and weights (1–5).
@@ -201,10 +209,12 @@ RecruitAI provides role-specific views tailored to each participant in the hirin
 3. **Secure CSV Export (`/api/export`)**: Download compliance reports with automated CSV injection escaping.
 
 ### 5.6 Candidate Job Seeker Workflow
-1. **Explore Vacancies (`/jobs`)**: Browse all active requisitions across organizations with company badges.
-2. **1-Click Application (`/jobs/[id]/apply`)**: Attach CV (PDF, DOCX, TXT), verify contact details, check GDPR consent, and submit.
-3. **Application Tracking (`/dashboard/my-applications`)**: Track submission status across a transparent milestone stepper (`Submitted ➔ Screening ➔ Shortlisted ➔ Interview Stage`).
-4. **GDPR Privacy Rights (`/privacy`)**: Download JSON data archive or execute permanent account erasure.
+1. **Create Account (`/auth/signup`)**: Register with a real, permanent email address — disposable inbox providers are rejected, and a verification link must be clicked before sign-in is possible (resend available from the sign-in page).
+2. **Explore Vacancies (`/jobs`)**: Browse all active requisitions across organizations with company badges. Only requisitions whose rubric has been approved (`OPEN`) are listed — staff publish them from the Jobs screen.
+3. **1-Click Application (`/jobs/[id]/apply`)**: Attach CV (PDF, DOCX, TXT), verify contact details, check GDPR consent, and submit.
+4. **Application Tracking (`/dashboard/my-applications`)**: Track submission status across a transparent milestone stepper (`Submitted ➔ Screening ➔ Shortlisted ➔ Interview Stage`).
+5. **GDPR Privacy Rights (`/privacy`)**: Download JSON data archive or execute permanent account erasure.
+6. **Password Recovery (`/auth/forgot-password`)**: Request a single-use reset link if locked out.
 
 ---
 
@@ -280,15 +290,21 @@ RecruitAI features 100% full-platform multilingual localization across **5 langu
 1. **Magic-Byte Binary Header Validation**: Validates actual binary signatures (`%PDF-` for PDFs and `PK\x03\x04` for DOCX) in [`src/lib/validation.ts`](file:///d:/Xkl/AI-Resume%20Screening%20Platform/src/lib/validation.ts) rather than trusting client MIME headers.
 2. **Path Traversal Shield**: All storage access is guarded with `isPathWithinUploads()`, ensuring uploaded files cannot escape sandboxed directories.
 3. **CSV Spreadsheet Injection Prevention**: All exported CSV cells are sanitized using `escapeCsvCell()` to neutralize formula injection operators (`=`, `+`, `-`, `@`).
-4. **PII Redaction Engine**: Strips contact information before dispatching prompts to OpenAI.
+4. **PII Redaction Engine**: Strips contact information (including Rwandan `+250` phone formats) before dispatching prompts to OpenAI.
 5. **Prompt Injection Resilience**: System prompts enforce structured output schemas and ignore embedded user override instructions.
 6. **Password Hashing**: Enforces `bcryptjs` with 12 salt rounds.
+7. **Email Verification Gate (v1.1)**: Accounts cannot sign in until the emailed single-use verification link is clicked; tokens are stored only as SHA-256 hashes; the resend endpoint is anti-enumeration; disposable inbox domains are rejected at signup.
+8. **Password Reset (v1.1)**: Single-use 30-minute hashed tokens with atomic consumption and audit records; the request endpoint never reveals whether an account exists.
+9. **Session Hygiene (v1.1)**: 8-hour JWT sessions with hourly refresh and HTTPS-only `__Secure-` cookies in production.
+10. **RBAC Bootstrap via Founder Model (v1.1)**: The client-supplied role is always ignored server-side; the first staff signup for an unclaimed email domain becomes that workspace's Admin (`primaryOwnerId`), and only Admins elevate others via the audited team endpoints.
+11. **Domain Claiming (v1.1)**: Workspace identity is anchored to a DNS-verified email domain (unique platform-wide), proving ownership the same way Google/Microsoft workspace verification does; display names never route membership.
+12. **Unified Permission Strings (v1.1)**: Database role rows are created and self-healed from the single RBAC matrix via `permissionsForRoleName()` — authorization always consults the matrix, so stored strings cannot drift.
 
 ---
 
 ## 10. Automated Testing & Quality Verification
 
-RecruitAI is verified via an automated Vitest unit test suite covering scoring mathematics, security sanitization, and audit hashing:
+RecruitAI is verified via an automated Vitest unit test suite covering scoring mathematics, security sanitization, RBAC, fairness, and audit hashing:
 
 ```bash
 # Run unit tests
@@ -298,17 +314,22 @@ npm run test
 npx tsc --noEmit
 ```
 
-### Test Suite Execution Output:
+### Test Suite Execution Output (September 12, 2026):
 ```
- ✓ __tests__/auditLogger.test.ts (2 tests)
+ ✓ __tests__/security.test.ts (31 tests)
+ ✓ __tests__/roleAccess.test.ts (13 tests)
+ ✓ __tests__/rbacBootstrap.test.ts (8 tests)
+ ✓ __tests__/scoringEngine.test.ts (7 tests)
+ ✓ __tests__/rateLimit.test.ts (6 tests)
  ✓ __tests__/supportBrain.test.ts (5 tests)
- ✓ __tests__/validation.test.ts (3 tests)
- ✓ __tests__/scoringEngine.test.ts (4 tests)
+ ✓ __tests__/fairness.test.ts (4 tests)
  ✓ __tests__/biasMitigation.test.ts (4 tests)
+ ✓ __tests__/signupRoles.test.ts (3 tests)
+ ✓ __tests__/validation.test.ts (3 tests)
+ ✓ __tests__/auditLogger.test.ts (2 tests)
 
- Test Files  5 passed (5)
-      Tests  18 passed (18)
-   Duration  ~10s
+ Test Files  11 passed (11)
+      Tests  86 passed (86)
 ```
 
 ---
@@ -325,6 +346,15 @@ NEXTAUTH_SECRET="secure-nextauth-secret-32-chars-minimum"
 
 OPENAI_API_KEY="sk-proj-your-openai-key"
 REDIS_URL="redis://default:password@host:6379"
+
+# Email delivery — Brevo preferred (verify a single sender address, no domain
+# DNS needed); Resend as fallback. EMAIL_FROM must match the verified sender.
+BREVO_API_KEY="xkeysib-your-key"
+# RESEND_API_KEY="re_your_key"
+EMAIL_FROM="the-sender-you-verified@yourdomain.com"
+
+# Candidates sign up into this workspace by default
+PUBLIC_WORKSPACE_NAME="Public Applications Workspace"
 ```
 
 ### Production Build & Launch
@@ -332,9 +362,9 @@ REDIS_URL="redis://default:password@host:6379"
 # 1. Install dependencies
 npm install
 
-# 2. Generate Prisma client & synchronize database
+# 2. Generate Prisma client & apply migrations
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
 
 # 3. Build optimized production bundle
 npm run build
@@ -342,6 +372,12 @@ npm run build
 # 4. Start production server
 npm start
 ```
+
+### First-Run Bootstrap (no manual database steps)
+1. Sign up as staff with your company name — you become that workspace's **Admin** automatically.
+2. Verify your email via the link Brevo/Resend delivers, then sign in.
+3. On `/dashboard/team`, complete **Workspace identity** domain verification (publish the TXT record, click **Verify now**) so teammates at your domain auto-join.
+4. Create and **publish** requisitions from `/jobs` — applicants only see requisitions whose rubric is approved (`OPEN`).
 
 ---
 

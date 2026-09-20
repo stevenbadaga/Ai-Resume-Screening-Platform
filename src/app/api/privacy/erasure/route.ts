@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/auditLogger';
@@ -28,9 +29,13 @@ export async function POST() {
     if (candidate) {
       for (const app of candidate.applications) {
         if (app.resumeDocument?.fileReference) {
-          if (isPathWithinUploads(app.resumeDocument.fileReference)) {
+          // C2 FIX: Always resolve to absolute path before unlinking
+          const absolutePath = path.isAbsolute(app.resumeDocument.fileReference)
+            ? app.resumeDocument.fileReference
+            : path.resolve(process.cwd(), /* turbopackIgnore: true */ app.resumeDocument.fileReference);
+          if (isPathWithinUploads(absolutePath)) {
             try {
-              await unlink(app.resumeDocument.fileReference);
+              await unlink(absolutePath);
             } catch (fsErr) {
               console.warn('Physical file already unlinked or missing:', fsErr);
             }

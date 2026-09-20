@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { roleCapabilities } from '@/lib/roleAccess';
 
 interface Props {
   application?: any;
@@ -84,9 +85,11 @@ export default function CandidateProfileClient({
 
   const { showToast } = useToast();
 
-  const isInterviewer = userRole === 'Interviewer';
-  const isAuditor = userRole === 'ComplianceAuditor' || userRole === 'Auditor';
-  const isRecruiterOrAdmin = ['Admin', 'Recruiter', 'HiringManager'].includes(userRole);
+  const canMakeDecisions = roleCapabilities.canMakeDecisions(userRole);
+  const canOverrideScores = roleCapabilities.canOverrideScores(userRole);
+  const canScheduleInterviews = roleCapabilities.canScheduleInterviews(userRole);
+  const canGenerateInterviewQuestions = roleCapabilities.canGenerateInterviewQuestions(userRole);
+  const canSubmitScorecards = roleCapabilities.canSubmitScorecards(userRole);
 
   const latestRun = app.screeningRuns?.[0] || (screeningResults ? { totalResult: screeningResults } : null);
   const storedResult = latestRun?.totalResult;
@@ -345,63 +348,75 @@ export default function CandidateProfileClient({
 
         {/* Action Buttons Suite */}
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={handleGenerateQuestions}
-            className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
-          >
-            <span>🤖</span>
-            <span>{t('btn_ai_questions')}</span>
-          </button>
+          {canGenerateInterviewQuestions && (
+            <button
+              onClick={handleGenerateQuestions}
+              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+            >
+              <span>🤖</span>
+              <span>{t('btn_ai_questions')}</span>
+            </button>
+          )}
 
-          <button
-            onClick={() => setShowScorecardModal(true)}
-            className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
-          >
-            <span>📝</span>
-            <span>{t('btn_scorecard')}</span>
-          </button>
+          {canSubmitScorecards && (
+            <button
+              onClick={() => setShowScorecardModal(true)}
+              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+            >
+              <span>📝</span>
+              <span>{t('btn_scorecard')}</span>
+            </button>
+          )}
 
-          <Link
-            href={`/candidates/${app.id}/interview`}
-            className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
-          >
-            <span>📅</span>
-            <span>{t('btn_schedule')}</span>
-          </Link>
+          {canScheduleInterviews && (
+            <Link
+              href={`/candidates/${app.id}/interview`}
+              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+            >
+              <span>📅</span>
+              <span>{t('btn_schedule')}</span>
+            </Link>
+          )}
 
-          {isRecruiterOrAdmin && (
+          {(canMakeDecisions || canOverrideScores) && (
             <>
-              <button
-                onClick={() => setOverrideModalOpen(true)}
-                className="px-2.5 py-1.5 dark:bg-amber-950/40 bg-amber-50 dark:hover:bg-amber-900/60 hover:bg-amber-100 border dark:border-amber-800/50 border-amber-200 dark:text-amber-300 text-amber-800 text-xs font-medium rounded-lg transition flex items-center gap-1"
-              >
-                <span>✏</span>
-                <span>{t('btn_recalibrate')}</span>
-              </button>
+              {canOverrideScores && (
+                <button
+                  onClick={() => setOverrideModalOpen(true)}
+                  className="px-2.5 py-1.5 dark:bg-amber-950/40 bg-amber-50 dark:hover:bg-amber-900/60 hover:bg-amber-100 border dark:border-amber-800/50 border-amber-200 dark:text-amber-300 text-amber-800 text-xs font-medium rounded-lg transition flex items-center gap-1"
+                >
+                  <span>✏</span>
+                  <span>{t('btn_recalibrate')}</span>
+                </button>
+              )}
 
-              <button
-                onClick={() => openDecisionDialog('SHORTLIST')}
-                className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
-              >
-                <span>⭐</span>
-                <span>{t('decision_action_shortlist')}</span>
-              </button>
+              {canMakeDecisions && (
+                <>
+                  <button
+                    onClick={() => openDecisionDialog('SHORTLIST')}
+                    className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
+                  >
+                    <span>⭐</span>
+                    <span>{t('decision_action_shortlist')}</span>
+                  </button>
 
-              <button
-                onClick={() => openDecisionDialog('REJECT')}
-                className="px-2.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
-              >
-                <span>✕</span>
-                <span>{t('decision_action_reject')}</span>
-              </button>
+                  <button
+                    onClick={() => openDecisionDialog('REJECT')}
+                    className="px-2.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
+                  >
+                    <span>✕</span>
+                    <span>{t('decision_action_reject')}</span>
+                  </button>
 
-              <button
-                onClick={() => setShowOfferModal(true)}
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
-              >
-                <span>🚀</span>
-                <span>{t('btn_extend_offer')}</span>
-              </button>
+                  <button
+                    onClick={() => setShowOfferModal(true)}
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
+                  >
+                    <span>🚀</span>
+                    <span>{t('btn_extend_offer')}</span>
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -411,7 +426,7 @@ export default function CandidateProfileClient({
         {[
           { label: t('match_score'), value: `${score}%`, tone: 'text-teal-700 dark:text-teal-300' },
           { label: t('scored_criteria'), value: criteriaScores.length, tone: 'text-slate-900 dark:text-white' },
-          { label: 'Status', value: app.resumeDocument?.processingStatus || 'COMPLETED', tone: app.resumeDocument?.processingStatus === 'NEEDS_REVIEW' ? 'text-amber-600 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' },
+          { label: 'Status', value: app.resumeDocument?.processingStatus || 'NOT_STARTED', tone: app.resumeDocument?.processingStatus === 'NEEDS_REVIEW' ? 'text-amber-600 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' },
           { label: t('stage_col'), value: app.stage || app.status || t('stage_ingested'), tone: 'text-sky-700 dark:text-sky-300' }
         ].map((metric) => (
           <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3 py-2.5">
@@ -864,6 +879,7 @@ export default function CandidateProfileClient({
                   Justification *
                 </label>
                 <textarea
+                  id="overrideReason"
                   rows={2}
                   required
                   value={overrideReason}

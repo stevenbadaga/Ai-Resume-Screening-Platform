@@ -3,7 +3,9 @@ import { Worker } from 'bullmq';
 import { processResume } from './resumeProcessor'; // Assuming resumeProcessor is exported from lib
 import prisma from './prisma';
 import { scoreCandidateProfile } from './scoringEngine';
+import { scanDocumentForMalware } from './malwareScan';
 import path from 'path';
+import fs from 'fs/promises';
 
 let connection: any = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -31,11 +33,33 @@ const worker = new Worker('ResumeProcessingQueue', async job => {
 
   if (!resume) throw new Error('Resume document not found');
 
-  await processResume(
-    job.data.applicationId,
-    job.data.resumeDocumentId,
-    job.data.filePath || path.join(process.cwd(), resume.fileReference)
-  );
+  const filePath =
+    job.data.filePath ||
+    (path.isAbsolute(resume.fileReference)
+      ? resume.fileReference
+      : path.resolve(process.cwd(), resume.fileReference));
+
+  // §6.4 defense in depth: re-scan the stored document before it reaches the
+  // extraction/AI services (covers files queued by older code paths or retry).
+  try {
+    const stored = await fs.readFile(filePath);
+    const scan = await scanDocumentForMalware(stored);
+    if (!scan.clean) {
+      await prisma.resumeDocument.update({
+        where: { id: resume.id },
+        data: {
+          processingStatus: 'FAILED',
+          safeMetadata: JSON.stringify({ error: 'Malware scan failed', threats: scan.threats }),
+        },
+      });
+      throw new Error(`Malware scan failed: ${scan.threats.join(', ')}`);
+    }
+  } catch (scanError) {
+    if (scanError instanceof Error && scanError.message.startsWith('Malware scan failed')) throw scanError;
+    // Missing/unreadable file will be handled by processResume's own error path.
+  }
+
+  await processResume(job.data.applicationId, job.data.resumeDocumentId, filePath);
 
   const processedResume = await prisma.resumeDocument.findUnique({ where: { id: resume.id } });
   const rubricId = job.data.rubricId || resume.application.job.rubrics.find((rubric) => rubric.status === 'APPROVED')?.id;

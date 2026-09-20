@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { sendMockEmail } from '@/lib/mockEmailService';
+import { sendRecordedEmail } from '@/lib/emailService';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { decisionSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
     // Require authentication with appropriate roles
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    const auth = await requirePermission(Permission.MakeHiringDecisions);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -91,21 +92,22 @@ export async function POST(req: NextRequest) {
       })
     ]);
 
-    // Send Rejection or Status Update Email
+    // Send rejection email, recording the real delivery outcome (spec §6.9).
+    // Failure is recorded on the Communication row; the decision itself still succeeds.
+    let emailDelivered: boolean | undefined;
     if (decision === 'REJECT' || decision === 'REJECTED') {
-      try {
-        await sendMockEmail(
-          application.candidate.email,
-          'REJECTION',
-          {
-            candidateName: application.candidate.firstName,
-            jobTitle: application.job.title
-          },
-          application.id
-        );
-      } catch (emailErr) {
-        console.warn('Mock email dispatch warning:', emailErr);
-      }
+      const delivery = await sendRecordedEmail({
+        to: application.candidate.email,
+        template: 'REJECTION_FEEDBACK',
+        data: {
+          candidateName: `${application.candidate.firstName} ${application.candidate.lastName}`.trim(),
+          jobTitle: application.job.title
+        },
+        applicationId: application.id,
+        jobId: application.job.id,
+        senderId: auth.user.id
+      });
+      emailDelivered = delivery.delivered;
     }
 
     // In-app candidate notification if candidate has a portal account
@@ -135,7 +137,13 @@ export async function POST(req: NextRequest) {
       newValues: { decision, reasonCode, rationale, stage, status, candidateName: `${application.candidate.firstName} ${application.candidate.lastName}` }
     });
 
-    return NextResponse.json({ success: true, stage, status, decision });
+    return NextResponse.json({
+      success: true,
+      stage,
+      status,
+      decision,
+      emailDelivered
+    });
   } catch (error) {
     console.error('Decision error:', error);
     return safeErrorResponse('Failed to save decision');

@@ -5,14 +5,14 @@ import { logAuditEvent } from '@/lib/auditLogger';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { validateFileMagicBytes, safeErrorResponse } from '@/lib/validation';
+import { containsKnownMalwareSignature, validateFileMagicBytes, safeErrorResponse, PRIVACY_NOTICE_VERSION } from '@/lib/validation';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
     // Rate limiting on application submissions
     const rateLimitKey = getRateLimitKey(req, 'apply');
-    const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.upload);
+    const rateCheck = await checkRateLimit(rateLimitKey, RATE_LIMITS.upload);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: 'Too many submissions. Please try again later.' },
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       where: { id: jobId },
       include: {
         organization: true,
-        rubrics: { include: { criteria: true }, take: 1 }
+        rubrics: { include: { criteria: true }, orderBy: { version: 'desc' } }
       }
     });
 
@@ -69,12 +69,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'This job is not accepting applications' }, { status: 409 });
     }
 
+    // §6.2: only an approved rubric version may be used for official screening.
+    const approvedRubric = job.rubrics.find((r) => r.status === 'APPROVED');
+    if (!approvedRubric) {
+      return NextResponse.json(
+        { error: 'This position is not yet open for screening' },
+        { status: 409 }
+      );
+    }
+
     // Process file and save to uploads/
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // SECURITY: Magic-byte validation — don't trust client-supplied MIME types
+    if (containsKnownMalwareSignature(buffer)) {
+      await logAuditEvent({
+        action: 'MALWARE_SIGNATURE_DETECTED',
+        actorId: null,
+        affectedRecordId: jobId,
+        newValues: { filename: file.name },
+      });
+      return NextResponse.json({ error: 'Upload rejected by security scanner' }, { status: 403 });
+    }
+
+    // SECURITY: Validate the advertised format and do not trust client MIME types.
     const fileExt = path.extname(file.name).toLowerCase();
+    if (!['.pdf', '.docx', '.txt', '.md'].includes(fileExt)) {
+      return NextResponse.json({ error: 'Only PDF, DOCX, TXT, and Markdown resumes are allowed' }, { status: 400 });
+    }
     if (fileExt === '.pdf' || fileExt === '.docx') {
       const detectedType = validateFileMagicBytes(buffer);
       if (!detectedType) {
@@ -87,7 +109,7 @@ export async function POST(req: Request) {
 
     const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
 
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = path.resolve(process.env.STORAGE_LOCAL_PATH || path.join(process.cwd(), 'uploads'));
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -107,15 +129,33 @@ export async function POST(req: Request) {
         const pdfData = await pdfParse(buffer);
         extractedText = pdfData.text || '';
       } catch (e) {
-        console.warn('PDF parse fallback:', e);
-        extractedText = buffer.toString('utf-8', 0, Math.min(buffer.length, 5000));
+        // SECURITY/DATA-INTEGRITY: do NOT fall back to raw binary bytes as text.
+        // Garbage input poisons AI screening silently; fail loudly instead.
+        console.error('PDF parse failed:', e);
+        return NextResponse.json(
+          { error: 'We could not read your PDF. Please re-export it as a text-based PDF (not scanned) and try again.' },
+          { status: 422 }
+        );
       }
     } else {
-      extractedText = buffer.toString('utf-8', 0, Math.min(buffer.length, 5000));
+      // Text formats only — never treat arbitrary binary as extracted text.
+      const decoded = buffer.toString('utf-8');
+      const replacementCharCount = (decoded.match(/\uFFFD/g) || []).length;
+      if (replacementCharCount > decoded.length * 0.05) {
+        return NextResponse.json(
+          { error: 'The uploaded file does not contain readable text content.' },
+          { status: 422 }
+        );
+      }
+      extractedText = decoded;
     }
 
     if (!extractedText || extractedText.trim().length === 0) {
-      extractedText = `${firstName} ${lastName}\nEmail: ${email}\nCandidate applied for ${job.title} at ${job.organization.name}.`;
+      // Do NOT fabricate a synthetic resume. Tell the applicant honestly.
+      return NextResponse.json(
+        { error: 'Your resume appears to be empty or image-only. Please upload a text-based resume (PDF, DOCX, TXT, or Markdown).' },
+        { status: 422 }
+      );
     }
 
     // Find or create Candidate
@@ -126,7 +166,24 @@ export async function POST(req: Request) {
           firstName,
           lastName,
           email,
-          consentGiven: true
+          consentGiven: true,
+          // Spec §6.11: record the notice version accepted and the timestamp
+          // of acceptance — a bare boolean is not an auditable consent record.
+          consentNoticeVersion: PRIVACY_NOTICE_VERSION,
+          consentGivenAt: new Date(),
+          consentChoices: JSON.stringify({ dataProcessing: true })
+        }
+      });
+    } else if (!candidate.consentGiven) {
+      // Returning candidate previously withheld or lost consent — refresh the
+      // record with the current notice version rather than silently reusing it.
+      await prisma.candidate.update({
+        where: { id: candidate.id },
+        data: {
+          consentGiven: true,
+          consentNoticeVersion: PRIVACY_NOTICE_VERSION,
+          consentGivenAt: new Date(),
+          consentChoices: JSON.stringify({ dataProcessing: true })
         }
       });
     }
@@ -146,13 +203,15 @@ export async function POST(req: Request) {
       }, { status: 409 });
     }
 
-    // Create Application
+    // Create Application — stage/status vocabulary consistent with the pipeline
+    // ('NEW' until the worker completes screening; §6.4 processing status lives
+    // on the ResumeDocument, not on the application stage).
     const application = await prisma.application.create({
       data: {
         jobId,
         candidateId: candidate.id,
-        status: 'SCREENING',
-        stage: 'RESUME_SCREENED'
+        status: 'NEW',
+        stage: 'NEW'
       }
     });
 
@@ -160,24 +219,32 @@ export async function POST(req: Request) {
     const resumeDoc = await prisma.resumeDocument.create({
       data: {
         applicationId: application.id,
-        fileReference: `uploads/${safeFileName}`,
+        fileReference: filePath,
         checksum,
         extractedText,
         processingStatus: 'PENDING'
       }
     });
 
-    // Enqueue BullMQ Background Screening Job
+    // Enqueue BullMQ Background Screening Job.
+    // If the queue is unavailable, say so — a silently never-screened application
+    // is worse than an honest 503 the applicant can retry.
     try {
       await resumeQueue.add('process-resume', {
         applicationId: application.id,
         resumeDocumentId: resumeDoc.id,
         extractedText,
-        rubricId: job.rubrics[0]?.id
+        rubricId: approvedRubric.id
       });
-      console.log(`[BullMQ] Enqueued screening job for app ${application.id}`);
     } catch (queueErr) {
-      console.warn('BullMQ queue add error, worker may process on polling:', queueErr);
+      console.error('BullMQ enqueue failed for application:', application.id, queueErr);
+      return NextResponse.json(
+        {
+          error: 'Your application was saved but our screening pipeline is temporarily unavailable. Please try again shortly or contact support.',
+          applicationId: application.id
+        },
+        { status: 503, headers: { 'Retry-After': '60' } }
+      );
     }
 
     // Broadcast In-App Notification to hiring team

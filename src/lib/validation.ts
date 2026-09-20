@@ -1,6 +1,13 @@
 import { z } from 'zod/v4';
 import { NextResponse } from 'next/server';
 
+/**
+ * Privacy notice version presented to candidates at application time (spec §6.11).
+ * Bump this whenever the candidate-facing privacy notice materially changes —
+ * consent records store the exact version each candidate accepted.
+ */
+export const PRIVACY_NOTICE_VERSION = 'v1.1';
+
 // ──────────────────────────────────────────────
 // Reusable primitives
 // ──────────────────────────────────────────────
@@ -88,11 +95,42 @@ export const overrideBodySchema = z.object({
 );
 
 // ──────────────────────────────────────────────
+// Rubric schemas (§6.2)
+// ──────────────────────────────────────────────
+
+export const rubricCriterionSchema = z.object({
+  category: z.string().max(200).optional(),
+  name: z.string().max(2000).optional(),
+  description: z.string().max(2000).optional(),
+  isRequired: z.coerce.boolean().optional().default(false),
+  weight: z.coerce.number().int().min(1).max(10).default(1),
+  threshold: z.string().max(500).optional(),
+  evidenceRules: z.string().max(2000).optional(),
+});
+
+/**
+ * Editing a rubric's criteria. On an APPROVED rubric this must create a NEW
+ * version (§6.2) — changeReason is mandatory there so the editor and reason
+ * are always recorded; previous screening results are never altered.
+ */
+export const rubricUpdateSchema = z.object({
+  rubricId: uuidSchema,
+  changeReason: z.string().max(2000).optional(),
+  criteria: z.array(rubricCriterionSchema).min(1, 'A rubric needs at least one criterion').max(50),
+});
+
+// ──────────────────────────────────────────────
 // Privacy schemas
 // ──────────────────────────────────────────────
 
 export const privacyRequestSchema = z.object({
   email: emailSchema,
+});
+
+export const candidateMergeSchema = z.object({
+  email: emailSchema,
+  // Explicit human confirmation for a critical, hard-to-reverse action (§6.12).
+  confirm: z.literal('true'),
 });
 
 // ──────────────────────────────────────────────
@@ -142,6 +180,7 @@ export const interviewScheduleSchema = z.object({
   scheduledAt: z.coerce.date(),
   durationMinutes: z.coerce.number().int().min(15).max(240),
   meetingType: z.enum(['Google Meet', 'Zoom', 'In-Person']),
+  timezone: z.string().min(1).max(100).optional(),
 });
 
 export const scorecardSchema = z.object({
@@ -225,6 +264,11 @@ export function validateFileMagicBytes(buffer: Buffer): 'pdf' | 'docx' | null {
   return null;
 }
 
+/** Detect the standard antivirus test signature without relying on a filename. */
+export function containsKnownMalwareSignature(buffer: Buffer): boolean {
+  return buffer.toString('utf8').includes('EICAR-STANDARD-ANTIVIRUS-TEST-FILE');
+}
+
 // ──────────────────────────────────────────────
 // CSV injection prevention
 // ──────────────────────────────────────────────
@@ -271,8 +315,8 @@ import path from 'path';
  * Prevents path traversal attacks (e.g., ../../etc/passwd).
  */
 export function isPathWithinUploads(filePath: string): boolean {
-  const uploadsDir = path.resolve(process.env.STORAGE_LOCAL_PATH || './uploads');
-  const resolved = path.resolve(filePath);
+  const uploadsDir = path.resolve(/* turbopackIgnore: true */ process.env.STORAGE_LOCAL_PATH || './uploads');
+  const resolved = path.resolve(/* turbopackIgnore: true */ filePath);
   return resolved.startsWith(uploadsDir + path.sep) || resolved === uploadsDir;
 }
 

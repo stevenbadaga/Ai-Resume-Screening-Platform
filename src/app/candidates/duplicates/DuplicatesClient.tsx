@@ -11,11 +11,33 @@ interface DuplicatesClientProps {
 export default function DuplicatesClient({ duplicates: initialDuplicates }: DuplicatesClientProps) {
   const [duplicates, setDuplicates] = useState(initialDuplicates);
   const { t } = useLanguage();
+  const [mergingEmail, setMergingEmail] = useState<string | null>(null);
   const { showToast } = useToast();
 
-  const handleMerge = (email: string) => {
-    setDuplicates((prev) => prev.filter((d) => d.email !== email));
-    showToast(`Merged duplicate candidate records for ${email}`, 'success', 'Deduplication Complete');
+  // §6.3: merging duplicates is a confirmed, human-initiated action that calls
+  // the audited merge API (tenant-scoped, transactional server-side).
+  const handleMerge = async (email: string) => {
+    if (mergingEmail) return;
+    setMergingEmail(email);
+    try {
+      const res = await fetch('/api/candidates/merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, confirm: 'true' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(data?.error || 'Merge failed — please try again.', 'error', 'Deduplication Error');
+        return;
+      }
+      setDuplicates((prev) => prev.filter((d) => d.email !== email));
+      showToast(`Merged duplicate candidate records for ${email}`, 'success', 'Deduplication Complete');
+    } catch (e) {
+      console.error(e);
+      showToast('Merge failed — please try again.', 'error', 'Deduplication Error');
+    } finally {
+      setMergingEmail(null);
+    }
   };
 
   return (
@@ -60,9 +82,10 @@ export default function DuplicatesClient({ duplicates: initialDuplicates }: Dupl
                 </div>
                 <button
                   onClick={() => handleMerge(dup.email)}
-                  className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition shadow-xs"
+                  disabled={mergingEmail === dup.email}
+                  className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition shadow-xs disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {t('duplicates_merge_btn')}
+                  {mergingEmail === dup.email ? 'Merging…' : t('duplicates_merge_btn')}
                 </button>
               </div>
 

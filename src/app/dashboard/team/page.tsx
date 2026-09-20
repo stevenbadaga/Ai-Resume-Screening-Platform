@@ -44,12 +44,34 @@ export default async function TeamPage() {
     );
   }
 
-  const users = await prisma.user.findMany({
-    include: { roles: true },
-    orderBy: { createdAt: 'asc' }
-  });
+  const [users, org] = await Promise.all([
+    prisma.user.findMany({
+      include: { roles: true },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.organization.findUnique({
+      where: { id: (session.user as any).organizationId },
+      select: {
+        verifiedEmailDomain: true,
+        pendingEmailDomain: true,
+        domainClaimToken: true,
+      },
+    }),
+  ]);
+
+  const { buildChallengeHost, buildChallengeTxtRecord } = await import('@/lib/domainClaim');
 
   return (
-    <TeamClient initialUsers={JSON.parse(JSON.stringify(users))} />
+    <TeamClient
+      initialUsers={JSON.parse(JSON.stringify(users))}
+      verifiedDomain={org?.verifiedEmailDomain ?? null}
+      pendingDomain={org?.pendingEmailDomain ?? null}
+      pendingHost={org?.pendingEmailDomain ? buildChallengeHost(org.pendingEmailDomain) : null}
+      pendingTxtRecord={
+        org?.pendingEmailDomain && org?.domainClaimToken
+          ? buildChallengeTxtRecord(org.domainClaimToken)
+          : null
+      }
+    />
   );
 }

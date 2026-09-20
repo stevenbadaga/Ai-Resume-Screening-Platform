@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { roleCapabilities } from '@/lib/roleAccess';
 
 interface CandidatesClientProps {
   applications: any[];
@@ -14,13 +16,86 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
   const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
   const { t } = useLanguage();
+  const router = useRouter();
 
+  // ── Bulk actions (§6.3 / §6.12: confirmation + mandatory reason) ──
+  const canMakeDecisions = roleCapabilities.canMakeDecisions(userRole);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'SHORTLIST' | 'ADVANCE' | 'HOLD' | 'REJECT' | 'WITHDRAW' | 'REVIEW'>('SHORTLIST');
+  const [bulkReason, setBulkReason] = useState('');
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [bulkError, setBulkError] = useState('');
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) =>
+      prev.size === filteredCandidates.length
+        ? new Set()
+        : new Set(filteredCandidates.map((c) => c.id))
+    );
+  };
+
+  const openBulkModal = (action: typeof bulkAction) => {
+    setBulkAction(action);
+    setBulkReason('');
+    setBulkError('');
+    setBulkModalOpen(true);
+  };
+
+  const submitBulkAction = async () => {
+    if (!bulkReason.trim()) {
+      setBulkError('A mandatory reason is required for bulk decisions.');
+      return;
+    }
+    setBulkSubmitting(true);
+    setBulkError('');
+    try {
+      const res = await fetch('/api/candidates/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicationIds: Array.from(selectedIds),
+          action: bulkAction,
+          reason: bulkReason.trim(),
+          confirm: 'true', // §6.12: explicit human confirmation for bulk decisions
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setBulkError(data.error || 'Bulk action failed.');
+        return;
+      }
+      setBulkModalOpen(false);
+      setSelectedIds(new Set());
+      router.refresh();
+    } catch {
+      setBulkError('Network error — the bulk action was not applied.');
+    } finally {
+      setBulkSubmitting(false);
+    }
+  };
+
+  // §6.7: the work queue must surface every configured workflow state —
+  // new, processing/review-required, screened, shortlisted, rejected, interview,
+  // offer — so no application can silently disappear from the board.
   const stages = [
-    { key: 'INGESTED', label: t('stage_ingested'), color: 'border-slate-500/40 text-slate-400 bg-slate-500/5' },
+    { key: 'NEW', label: t('stage_ingested'), color: 'border-slate-500/40 text-slate-400 bg-slate-500/5' },
     { key: 'SCREENING', label: t('stage_screening'), color: 'border-amber-500/40 text-amber-400 bg-amber-500/5' },
+    { key: 'NEEDS_REVIEW', label: 'Needs Review', color: 'border-indigo-500/40 text-indigo-400 bg-indigo-500/5' },
+    { key: 'ON_HOLD', label: 'On Hold', color: 'border-violet-500/40 text-violet-400 bg-violet-500/5' },
     { key: 'SHORTLISTED', label: t('stage_shortlisted'), color: 'border-teal-500/40 text-teal-500 bg-teal-500/5' },
     { key: 'INTERVIEW_SCHEDULED', label: t('stage_interviewing'), color: 'border-sky-500/40 text-sky-500 bg-sky-500/5' },
-    { key: 'OFFERED', label: t('stage_offered'), color: 'border-emerald-500/40 text-emerald-500 bg-emerald-500/5' }
+    { key: 'OFFERED', label: t('stage_offered'), color: 'border-emerald-500/40 text-emerald-500 bg-emerald-500/5' },
+    { key: 'REJECTED', label: 'Rejected', color: 'border-rose-500/40 text-rose-400 bg-rose-500/5' }
   ];
 
   const departments = ['ALL', ...Array.from(new Set(applications.map((c) => c.job?.department).filter(Boolean)))];
@@ -111,7 +186,8 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
           { label: 'Visible applications', value: filteredCandidates.length, tone: 'text-slate-900 dark:text-white' },
           { label: 'Needs review', value: reviewCount, tone: 'text-amber-600 dark:text-amber-300' },
           { label: 'Average match', value: `${Math.round(averageScore)}%`, tone: 'text-teal-700 dark:text-teal-300' },
-          { label: 'Shortlisted', value: applications.filter((app) => app.stage === 'SHORTLISTED').length, tone: 'text-sky-700 dark:text-sky-300' }
+          { label: 'Shortlisted', value: applications.filter((app) => app.stage === 'SHORTLISTED').length, tone: 'text-sky-700 dark:text-sky-300' },
+          { label: 'Rejected', value: applications.filter((app) => app.stage === 'REJECTED').length, tone: 'text-rose-600 dark:text-rose-300' }
         ].map((metric) => (
           <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3.5 py-3">
             <p className="text-[10px] uppercase tracking-wider font-semibold dark:text-slate-500 text-slate-500">{metric.label}</p>
@@ -122,7 +198,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
 
       {/* KANBAN VIEW */}
       {activeTab === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
           {stages.map((stage) => {
             const stageCandidates = filteredCandidates.filter((c) => (c.stage || 'INGESTED') === stage.key);
 
@@ -187,10 +263,53 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
         </div>
       ) : (
         /* TABLE VIEW */
-        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl overflow-hidden shadow-xs">
+        <div className="space-y-2">
+          {/* Bulk action bar (§6.3: bulk actions with confirmation + audit) */}
+          {canMakeDecisions && selectedIds.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3.5 py-2.5">
+              <span className="text-xs font-semibold dark:text-white text-slate-900 mr-1">
+                {selectedIds.size} selected:
+              </span>
+              {([
+                ['SHORTLIST', 'Shortlist', 'border-teal-500/40 text-teal-600 dark:text-teal-300 hover:bg-teal-500/10'],
+                ['ADVANCE', 'Advance', 'border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10'],
+                ['HOLD', 'Hold', 'border-violet-500/40 text-violet-600 dark:text-violet-300 hover:bg-violet-500/10'],
+                ['REVIEW', 'Return to review', 'border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-500/10'],
+                ['REJECT', 'Reject', 'border-rose-500/40 text-rose-600 dark:text-rose-300 hover:bg-rose-500/10'],
+                ['WITHDRAW', 'Withdraw', 'border-slate-500/40 text-slate-600 dark:text-slate-300 hover:bg-slate-500/10'],
+              ] as const).map(([action, label, classes]) => (
+                <button
+                  key={action}
+                  onClick={() => openBulkModal(action)}
+                  className={`px-2.5 py-1 rounded-md border text-xs font-medium transition ${classes}`}
+                >
+                  {label}
+                </button>
+              ))}
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="ml-auto text-xs dark:text-slate-400 text-slate-500 hover:underline"
+              >
+                Clear selection
+              </button>
+            </div>
+          )}
+
+          <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl overflow-hidden shadow-xs">
           <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
             <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-[#30424A] border-slate-200 border-b">
               <tr>
+                {canMakeDecisions && (
+                  <th className="p-3 w-8">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all visible applications"
+                      checked={selectedIds.size > 0 && selectedIds.size === filteredCandidates.length}
+                      onChange={toggleSelectAll}
+                      className="accent-teal-600"
+                    />
+                  </th>
+                )}
                 <th className="p-3">{t('candidate_name_col')}</th>
                 <th className="p-3">{t('position_applied_col')}</th>
                 <th className="p-3">{t('department_col')}</th>
@@ -206,6 +325,17 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
 
                 return (
                   <tr key={app.id} className="dark:hover:bg-slate-900/50 hover:bg-slate-50 transition">
+                    {canMakeDecisions && (
+                      <td className="p-3 w-8">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select application for ${app.candidate?.firstName} ${app.candidate?.lastName}`}
+                          checked={selectedIds.has(app.id)}
+                          onChange={() => toggleSelected(app.id)}
+                          className="accent-teal-600"
+                        />
+                      </td>
+                    )}
                     <td className="p-3 font-semibold dark:text-white text-slate-900">
                       {app.candidate?.firstName} {app.candidate?.lastName}
                     </td>
@@ -232,6 +362,55 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
               })}
             </tbody>
           </table>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk decision confirmation modal (§6.12) */}
+      {bulkModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirm bulk decision"
+        >
+          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-xl w-full max-w-md p-5 space-y-3">
+            <h2 className="text-sm font-bold dark:text-white text-slate-900">
+              Confirm bulk “{bulkAction}” on {selectedIds.size} application(s)
+            </h2>
+            <p className="text-xs dark:text-slate-400 text-slate-500">
+              This records a decision on every selected application under your account and is
+              written to the audit trail. It cannot be undone silently.
+            </p>
+            <label htmlFor="bulk-reason" className="block text-xs font-semibold dark:text-slate-200 text-slate-800">
+              Reason (required)
+            </label>
+            <textarea
+              id="bulk-reason"
+              value={bulkReason}
+              onChange={(e) => setBulkReason(e.target.value)}
+              rows={3}
+              maxLength={5000}
+              placeholder="Why is this bulk decision being applied?"
+              className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-3 py-2 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            />
+            {bulkError && <p className="text-xs text-rose-500">{bulkError}</p>}
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setBulkModalOpen(false)}
+                className="px-3 py-1.5 rounded-md border dark:border-[#30424A] border-slate-200 text-xs dark:text-slate-300 text-slate-700 hover:bg-slate-500/10"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitBulkAction}
+                disabled={bulkSubmitting}
+                className="px-3 py-1.5 rounded-md bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-semibold disabled:opacity-60"
+              >
+                {bulkSubmitting ? 'Applying…' : `Confirm ${bulkAction.toLowerCase()}`}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -35,7 +35,8 @@ export default function CommandPalette() {
     { name: t('nav_jobs'), path: '/jobs', icon: '💼', category: 'Requisitions' },
     { name: t('nav_audit'), path: '/audit', icon: '🛡️', category: 'Compliance' },
     { name: t('nav_privacy'), path: '/privacy', icon: '🔒', category: 'Compliance' },
-    { name: t('nav_team'), path: '/dashboard/team', icon: '🏢', category: 'Administration' }
+    { name: t('nav_team'), path: '/dashboard/team', icon: '🏢', category: 'Administration' },
+    { name: t('nav_analytics'), path: '/dashboard/analytics', icon: '📈', category: 'Analytics' },
   ];
 
   const filtered = actions.filter((a) =>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { safeErrorResponse } from '@/lib/validation';
 
 export async function GET(
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   try {
     // SECURITY: Require authentication — talent pool exposes candidate PII
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    const auth = await requirePermission(Permission.ViewTalentPool);
     if (auth.error) return auth.error;
 
     const resolvedParams = await params;
@@ -24,14 +25,19 @@ export async function GET(
       }
     });
 
-    if (!job) {
+    if (!job || job.organizationId !== auth.user.organizationId) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
-    // Find candidates from OTHER jobs to resurface in the talent pool
+    // Find candidates from OTHER jobs within the SAME organization to resurface in the talent pool
     const pastApplications = await prisma.application.findMany({
       where: {
-        jobId: { not: jobId }
+        jobId: { not: jobId },
+        job: { organizationId: auth.user.organizationId },
+        // §6.1: department-restricted users only see permitted departments.
+        ...(auth.user.departmentRestrictions.length > 0
+          ? { job: { organizationId: auth.user.organizationId, department: { in: auth.user.departmentRestrictions } } }
+          : {}),
       },
       include: {
         candidate: true,
@@ -44,20 +50,16 @@ export async function GET(
       take: 20
     });
 
-    const criteriaList = job.rubrics.flatMap((r) => r.criteria);
-    const jobKeywords = (job.description + ' ' + criteriaList.map((c: any) => c.name).join(' ')).toLowerCase();
-
     const matchedPool = pastApplications.map((app: any) => {
       const screeningRun = app.screeningRuns[0];
-      const pastScore = screeningRun?.effectiveResult ?? (screeningRun?.totalResult ? Number(screeningRun.totalResult) : 75);
-      
-      // Calculate relevance boost
-      let matchCount = 0;
-      criteriaList.forEach((c: any) => {
-        if (jobKeywords.includes(c.name.toLowerCase())) matchCount++;
-      });
-
-      const adjustedScore = Math.min(98, Math.round(pastScore * 0.9 + matchCount * 2));
+      // §9 data integrity: no fabricated defaults — an unscreened candidate is
+      // reported as not yet screened (null), never as a made-up score.
+      const pastScore =
+        screeningRun?.effectiveResult != null
+          ? Number(screeningRun.effectiveResult)
+          : screeningRun?.totalResult != null
+            ? Number(screeningRun.totalResult)
+            : null;
 
       return {
         candidateId: app.candidate.id,
@@ -65,14 +67,16 @@ export async function GET(
         candidateName: `${app.candidate.firstName} ${app.candidate.lastName}`,
         candidateEmail: app.candidate.email,
         originalJob: app.job.title,
-        matchScore: adjustedScore,
-        skillsSummary: (app.candidate.tags && app.candidate.tags.length > 0) ? app.candidate.tags.join(', ') : 'TypeScript, Cloud Architecture, PostgreSQL',
+        matchScore: pastScore,
+        // Real extraction output only — fabricated skill strings would mislead
+        // recruiters (§7 candidate transparency).
+        skillsSummary: app.candidate.tags.length > 0 ? app.candidate.tags.join(', ') : '',
         status: app.status
       };
     });
 
-    // Sort by match score descending
-    matchedPool.sort((a, b) => b.matchScore - a.matchScore);
+    // Unscreened candidates sort last; scored candidates by score descending.
+    matchedPool.sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1));
 
     return NextResponse.json({
       jobTitle: job.title,

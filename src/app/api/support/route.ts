@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
 import {
   RECRUIT_AI_SYSTEM_PROMPT,
 } from '@/lib/supportKnowledge';
+import { getOpenAI, isOpenAIConfigured } from '@/lib/aiConfig';
 import { supportMessageSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import {
@@ -13,17 +14,13 @@ import {
   SupportMessage,
 } from '@/lib/supportBrain';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy_key',
-});
-
 type LangCode = 'en' | 'fr' | 'es' | 'de' | 'rw';
 
 export async function POST(req: Request) {
   try {
     // Rate limiting to prevent chatbot abuse
     const rateLimitKey = getRateLimitKey(req, 'support');
-    const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.support);
+    const rateCheck = await checkRateLimit(rateLimitKey, RATE_LIMITS.support);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: 'Too many requests. Please wait a moment before sending another message.' },
@@ -62,13 +59,10 @@ export async function POST(req: Request) {
     }
 
     // 1. OpenAI Completion with Explicit Language Instruction
-    if (
-      process.env.OPENAI_API_KEY &&
-      process.env.OPENAI_API_KEY !== 'dummy_key' &&
-      !process.env.OPENAI_API_KEY.includes('placeholder') &&
-      !process.env.OPENAI_API_KEY.includes('sk-proj-your')
-    ) {
+    // Single config gate (src/lib/aiConfig.ts) — no dummy-key string sniffing.
+    if (isOpenAIConfigured()) {
       try {
+        const openai = getOpenAI();
         const langInstructions: Record<LangCode, string> = {
           en: "Respond in clear, professional English.",
           fr: "Répondez impérativement en français avec un vocabulaire RH et technique authentique et soigné.",

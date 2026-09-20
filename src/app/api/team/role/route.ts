@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { teamRoleSchema, validateBody, safeErrorResponse } from '@/lib/validation';
+import { permissionsForRoleName } from '@/lib/roleAccess';
 
 export async function PATCH(req: Request) {
   try {
-    const auth = await requireAuth(['Admin']);
+    const auth = await requirePermission(Permission.ManageTeam);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -31,30 +33,28 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Find or create role in database
+    // Find or create role in database — permission strings come from the RBAC
+    // matrix via the single shared helper, never a local hardcoded list.
     let roleRecord = await prisma.role.findFirst({
       where: { name: newRole }
     });
 
     if (!roleRecord) {
-      const getPermissionsForRole = (r: string) => {
-        switch (r) {
-          case 'Admin': return ['ALL'];
-          case 'Recruiter': return ['MANAGE_CANDIDATES', 'OVERRIDE_SCORES', 'EXTEND_OFFERS'];
-          case 'HiringManager': return ['VIEW_DEPARTMENT_CANDIDATES', 'OVERRIDE_SCORES'];
-          case 'Interviewer': return ['EVALUATE_CANDIDATES', 'SUBMIT_SCORECARDS'];
-          case 'ComplianceAuditor': return ['VIEW_AUDIT_LOGS', 'INSPECT_MODELS'];
-          case 'Candidate': return ['VIEW_OWN_APPLICATIONS'];
-          default: return ['READ_ONLY'];
-        }
-      };
-
       roleRecord = await prisma.role.create({
         data: {
           name: newRole,
-          permissions: getPermissionsForRole(newRole)
+          permissions: permissionsForRoleName(newRole)
         }
       });
+    } else {
+      // Self-heal legacy rows whose stored strings predate the unified matrix.
+      const canonical = permissionsForRoleName(newRole);
+      if (JSON.stringify([...roleRecord.permissions].sort()) !== JSON.stringify([...canonical].sort())) {
+        roleRecord = await prisma.role.update({
+          where: { id: roleRecord.id },
+          data: { permissions: canonical },
+        });
+      }
     }
 
     // Update user's roles

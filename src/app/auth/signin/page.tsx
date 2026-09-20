@@ -1,8 +1,9 @@
 'use client';
 
+import { Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { SupportedLanguage } from '@/lib/i18n/translations';
@@ -20,6 +21,11 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   hidePassword: string;
   noAccount: string;
   createAccount: string;
+  emailNotVerified: string;
+  emailNotVerifiedHint: string;
+  resendVerification: string;
+  resendSent: string;
+  resending: string;
 }> = {
   en: {
     title: 'Sign In to RecruitAI',
@@ -34,6 +40,11 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Hide password',
     noAccount: "Don't have an account?",
     createAccount: 'Create Account →',
+    emailNotVerified: 'Please verify your email address before signing in.',
+    emailNotVerifiedHint: 'We sent a verification link when you registered. Click it to activate your account.',
+    resendVerification: 'Resend verification email',
+    resendSent: 'Verification email sent. Check your inbox.',
+    resending: 'Sending...',
   },
   fr: {
     title: 'Se connecter à RecruitAI',
@@ -48,6 +59,11 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Masquer le mot de passe',
     noAccount: "Vous n'avez pas de compte ?",
     createAccount: 'Créer un compte →',
+    emailNotVerified: 'Veuillez vérifier votre adresse e-mail avant de vous connecter.',
+    emailNotVerifiedHint: "Un lien de vérification vous a été envoyé lors de l'inscription. Cliquez dessus pour activer votre compte.",
+    resendVerification: "Renvoyer l'e-mail de vérification",
+    resendSent: "E-mail de vérification envoyé. Consultez votre boîte de réception.",
+    resending: 'Envoi...',
   },
   es: {
     title: 'Iniciar sesión en RecruitAI',
@@ -62,6 +78,11 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Ocultar contraseña',
     noAccount: '¿No tienes una cuenta?',
     createAccount: 'Crear cuenta →',
+    emailNotVerified: 'Verifique su dirección de correo antes de iniciar sesión.',
+    emailNotVerifiedHint: 'Se envió un enlace de verificación al registrarse. Haga clic en él para activar su cuenta.',
+    resendVerification: 'Reenviar correo de verificación',
+    resendSent: 'Correo de verificación enviado. Revise su bandeja de entrada.',
+    resending: 'Enviando...',
   },
   de: {
     title: 'Bei RecruitAI anmelden',
@@ -76,6 +97,11 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Passwort ausblenden',
     noAccount: 'Noch kein Konto?',
     createAccount: 'Konto erstellen →',
+    emailNotVerified: 'Bitte bestätigen Sie Ihre E-Mail-Adresse vor der Anmeldung.',
+    emailNotVerifiedHint: 'Bei der Registrierung wurde ein Bestätigungslink gesendet. Klicken Sie darauf, um Ihr Konto zu aktivieren.',
+    resendVerification: 'Bestätigungs-E-Mail erneut senden',
+    resendSent: 'Bestätigungs-E-Mail gesendet. Überprüfen Sie Ihren Posteingang.',
+    resending: 'Wird gesendet...',
   },
   rw: {
     title: 'Injira muri RecruitAI',
@@ -90,23 +116,51 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Hisha ijambo ry’ibanga',
     noAccount: 'Nta konti ufite?',
     createAccount: 'Fungura konti →',
+    emailNotVerified: 'Banza umeze aderesi ya imeyili mbere yo kwinjira.',
+    emailNotVerifiedHint: 'Urutonde rwo kwemeza twoherejwe iyo wiyandikishije. Kanda kugira ngo ukoreshe konti yawe.',
+    resendVerification: 'Ongera uwohereze imeyili yo kwemeza',
+    resendSent: 'Imeyili yo kwemeza yoherejwe. Reba uko utunganya.',
+    resending: 'Birimo koherezwa...',
   },
 };
 
-export default function SignIn() {
+function SignInForm() {
   const { language } = useLanguage();
   const copy = SIGN_IN_COPY[language];
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle');
   const router = useRouter();
+
+  // Signup now requires email verification (spec §6.1) — a redirect from the
+  // signup page shows a heads-up instead of a bare sign-in form.
+  const justRegistered = searchParams.get('registered') === '1';
+
+  const handleResend = async () => {
+    if (!email || resendState === 'sending') return;
+    setResendState('sending');
+    try {
+      await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setResendState('sent');
+    } catch {
+      setResendState('idle');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setEmailNotVerified(false);
 
     const res = await signIn('credentials', {
       redirect: false,
@@ -115,7 +169,13 @@ export default function SignIn() {
     });
 
     if (res?.error) {
-      setError(copy.invalidCredentials);
+      if (res.error === 'EMAIL_NOT_VERIFIED') {
+        // Credentials were correct — offer a resend instead of a generic error.
+        setEmailNotVerified(true);
+        setResendState('idle');
+      } else {
+        setError(copy.invalidCredentials);
+      }
       setLoading(false);
     } else {
       router.push('/dashboard');
@@ -146,6 +206,31 @@ export default function SignIn() {
         {error && (
           <div role="alert" className="p-3.5 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 text-xs font-bold text-center">
             ⚠️ {error}
+          </div>
+        )}
+
+        {justRegistered && !error && !emailNotVerified && (
+          <div className="p-3.5 bg-teal-950/70 border border-teal-800 rounded-xl text-teal-300 text-xs font-semibold text-center">
+            ✅ Account created. Check your inbox and click the verification link we emailed you, then sign in here.
+          </div>
+        )}
+
+        {emailNotVerified && (
+          <div role="alert" className="p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 text-xs space-y-2 text-center">
+            <p className="font-bold">⚠️ {copy.emailNotVerified}</p>
+            <p className="font-medium opacity-90">{copy.emailNotVerifiedHint}</p>
+            {resendState === 'sent' ? (
+              <p className="font-semibold text-emerald-300">✅ {copy.resendSent}</p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendState === 'sending'}
+                className="px-3 py-1.5 bg-amber-700/80 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+              >
+                {resendState === 'sending' ? copy.resending : copy.resendVerification}
+              </button>
+            )}
           </div>
         )}
 
@@ -209,6 +294,16 @@ export default function SignIn() {
           </button>
         </form>
 
+        {/* Forgot password (spec §6.1) */}
+        <div className="pt-2 text-center text-xs">
+          <a
+            href="/auth/forgot-password"
+            className="dark:text-slate-400 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
+          >
+            Forgot your password?
+          </a>
+        </div>
+
         {/* Link to Registration */}
         <div className="pt-2 text-center text-xs dark:text-slate-400 text-slate-500">
           {copy.noAccount}{' '}
@@ -218,5 +313,13 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div className="min-h-[85vh] flex items-center justify-center text-xs dark:text-slate-400 text-slate-500">Loading…</div>}>
+      <SignInForm />
+    </Suspense>
   );
 }

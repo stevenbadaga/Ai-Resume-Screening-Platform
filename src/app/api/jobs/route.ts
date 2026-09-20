@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { createJobSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function GET(req: Request) {
@@ -17,6 +18,13 @@ export async function GET(req: Request) {
     const where: any = auth.user.role === 'Candidate'
       ? { status: 'OPEN' }
       : { organizationId: auth.user.organizationId };
+
+    // Spec §6.1: users may be limited to permitted departments. A department-
+    // restricted user only sees jobs in their allowed departments (the filter
+    // is already applied to decisions and exports).
+    if (auth.user.role !== 'Candidate' && auth.user.departmentRestrictions.length > 0) {
+      where.department = { in: auth.user.departmentRestrictions };
+    }
 
     if (department && department !== 'ALL') {
       where.department = department;
@@ -53,7 +61,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    const auth = await requirePermission(Permission.ManageJobs);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -69,16 +77,17 @@ export async function POST(req: Request) {
         title,
         department,
         description: description || 'No description provided.',
-        status: 'OPEN',
+        status: 'DRAFT',
         ownerId: auth.user.id,
         organizationId: auth.user.organizationId,
         rubrics: {
           create: {
-            status: 'APPROVED',
+            status: 'DRAFT',
             criteria: {
               create: criteria.map((c) => ({
                 category: c.category || 'General Requirement',
                 description: c.description || c.name || 'General requirement',
+                isRequired: c.isRequired ?? false,
                 weight: c.weight || 3
               }))
             }
@@ -95,6 +104,7 @@ export async function POST(req: Request) {
     await logAuditEvent({
       action: 'JOB_REQUISITION_CREATED',
       actorId: auth.user.id,
+      organizationId: auth.user.organizationId,
       affectedRecordId: job.id,
       newValues: { title: job.title, department: job.department }
     });

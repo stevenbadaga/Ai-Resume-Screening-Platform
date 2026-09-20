@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import OpenAI from 'openai';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { safeErrorResponse } from '@/lib/validation';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy_key'
-});
+import { getOpenAI, isOpenAIConfigured } from '@/lib/aiConfig';
 
 export async function POST(
   req: Request,
@@ -14,7 +11,7 @@ export async function POST(
 ) {
   try {
     // SECURITY: Require authentication
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager', 'Interviewer']);
+    const auth = await requirePermission(Permission.GenerateInterviewQuestions);
     if (auth.error) return auth.error;
 
     const resolvedParams = await params;
@@ -57,9 +54,11 @@ export async function POST(
     // Find gap skills (PARTIAL or MISSING/NO_MATCH)
     const gaps = assessments.filter((a: any) => a.result === 'PARTIAL' || a.result === 'MISSING' || a.result === 'NO_MATCH');
 
-    // If OpenAI is configured, generate dynamic tailored questions
-    if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('placeholder')) {
+    // If OpenAI is configured, generate dynamic tailored questions.
+    // Single config gate (src/lib/aiConfig.ts) — no dummy-key string sniffing.
+    if (isOpenAIConfigured()) {
       try {
+        const openai = getOpenAI();
         const prompt = `You are an expert technical interviewer for the role: "${application.job.title}".
 A candidate showed specific skill gaps during AI screening:
 ${gaps.map((g: any) => `- Requirement: ${g.criterion?.name || 'Criterion'}, Result: ${g.result}, Evidence: ${g.supportingEvidence || 'None'}`).join('\n')}

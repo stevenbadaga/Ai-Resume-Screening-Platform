@@ -7,11 +7,68 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface TeamClientProps {
   initialUsers: any[];
+  verifiedDomain: string | null;
+  pendingDomain: string | null;
+  pendingHost: string | null;
+  pendingTxtRecord: string | null;
 }
 
-export default function TeamClient({ initialUsers }: TeamClientProps) {
+export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain, pendingHost, pendingTxtRecord }: TeamClientProps) {
   const [users, setUsers] = useState<any[]>(initialUsers);
   const [activeTab, setActiveTab] = useState<'staff' | 'candidates'>('staff');
+
+  // Domain claiming state (workspace identity = verified email domain)
+  const [claimDomain, setClaimDomain] = useState('');
+  const [claimBusy, setClaimBusy] = useState(false);
+  const [claimRecord, setClaimRecord] = useState<{ host: string; txt: string } | null>(
+    pendingHost && pendingTxtRecord ? { host: pendingHost, txt: pendingTxtRecord } : null
+  );
+  const [claimMessage, setClaimMessage] = useState('');
+
+  const handleStartClaim = async () => {
+    if (!claimDomain.trim() || claimBusy) return;
+    setClaimBusy(true);
+    setClaimMessage('');
+    try {
+      const res = await fetch('/api/org/domain-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: claimDomain.trim() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setClaimRecord({ host: data.host, txt: data.txtRecord });
+        setClaimMessage(data.alreadyVerified ? 'This domain is already verified.' : data.instructions);
+      } else {
+        setClaimMessage(data.error || 'Failed to start the domain claim.');
+      }
+    } catch {
+      setClaimMessage('Network error while starting the domain claim.');
+    } finally {
+      setClaimBusy(false);
+    }
+  };
+
+  const handleVerifyClaim = async () => {
+    if (claimBusy) return;
+    setClaimBusy(true);
+    setClaimMessage('');
+    try {
+      const res = await fetch('/api/org/domain-claim/verify', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        setClaimRecord(null);
+        setClaimMessage(data.message);
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setClaimMessage(data.message || data.error || 'Verification failed.');
+      }
+    } catch {
+      setClaimMessage('Network error while verifying.');
+    } finally {
+      setClaimBusy(false);
+    }
+  };
 
   const [editingUser, setEditingUser] = useState<any | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>('Recruiter');
@@ -151,6 +208,67 @@ export default function TeamClient({ initialUsers }: TeamClientProps) {
           <span>+</span>
           <span>Invite Staff Member</span>
         </button>
+      </div>
+
+      {/* Workspace Identity — Domain Claiming */}
+      <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold dark:text-white text-slate-900">🔐 Workspace identity</h2>
+            <p className="text-[11px] dark:text-slate-400 text-slate-500 mt-0.5">
+              Staff with an email at your verified domain automatically join this workspace when they sign up.
+            </p>
+          </div>
+          {verifiedDomain ? (
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 whitespace-nowrap">
+              ✓ {verifiedDomain}
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 whitespace-nowrap">
+              ⚠ NOT VERIFIED
+            </span>
+          )}
+        </div>
+
+        {!verifiedDomain && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={claimDomain}
+              onChange={(e) => setClaimDomain(e.target.value)}
+              placeholder="yourcompany.com"
+              className="flex-1 dark:bg-slate-950 bg-white dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-500"
+            />
+            <button
+              onClick={handleStartClaim}
+              disabled={claimBusy || !claimDomain.trim()}
+              className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition whitespace-nowrap"
+            >
+              {claimBusy ? 'Working…' : 'Start verification'}
+            </button>
+          </div>
+        )}
+
+        {claimRecord && (
+          <div className="p-3 rounded-lg dark:bg-slate-950/70 bg-slate-50 dark:border-slate-800 border-slate-200 border space-y-1.5">
+            <p className="text-[10px] font-mono dark:text-slate-300 text-slate-700">
+              1. Add this TXT record at your DNS provider:
+            </p>
+            <p className="text-[11px] font-mono font-bold dark:text-teal-300 text-teal-700 break-all">{claimRecord.host}</p>
+            <p className="text-[11px] font-mono font-bold dark:text-teal-300 text-teal-700 break-all">{claimRecord.txt}</p>
+            <button
+              onClick={handleVerifyClaim}
+              disabled={claimBusy}
+              className="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition"
+            >
+              {claimBusy ? 'Checking DNS…' : 'Verify now'}
+            </button>
+          </div>
+        )}
+
+        {claimMessage && (
+          <p className="text-[11px] dark:text-slate-400 text-slate-500">{claimMessage}</p>
+        )}
       </div>
 
       {/* Segregation Tabs */}

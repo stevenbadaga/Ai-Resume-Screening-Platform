@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { v4 as uuidv4 } from 'uuid';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { privacyRequestSchema, validateBody, isPathWithinUploads, safeErrorResponse } from '@/lib/validation';
 import { unlink } from 'fs/promises';
 
 export async function POST(req: NextRequest) {
   try {
     // SECURITY: Only authorized staff can process GDPR data deletion requests
-    const auth = await requireAuth(['Admin', 'ComplianceAuditor']);
+    const auth = await requirePermission(Permission.ManagePrivacyRequests);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -65,6 +66,11 @@ export async function POST(req: NextRequest) {
         await tx.screeningRun.deleteMany({ where: { applicationId: { in: applicationIds } } });
         await tx.parsedProfile.deleteMany({ where: { applicationId: { in: applicationIds } } });
         await tx.resumeDocument.deleteMany({ where: { applicationId: { in: applicationIds } } });
+        // FK order: participants reference interviews, so participants first —
+        // otherwise erasure fails and candidate data silently survives (§6.11).
+        await tx.interviewParticipant.deleteMany({
+          where: { interview: { applicationId: { in: applicationIds } } }
+        });
         await tx.interview.deleteMany({ where: { applicationId: { in: applicationIds } } });
         await tx.communication.deleteMany({ where: { applicationId: { in: applicationIds } } });
         await tx.application.deleteMany({ where: { id: { in: applicationIds } } });

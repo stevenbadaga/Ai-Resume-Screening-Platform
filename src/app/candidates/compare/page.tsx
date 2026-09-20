@@ -46,7 +46,16 @@ export default async function ComparePage() {
     );
   }
 
+  const organizationId = (session.user as any)?.organizationId;
+  const userId = (session.user as any)?.id;
+
+  const whereClause: any = { job: { organizationId } };
+  if (userRole === 'HiringManager' && userId) {
+    whereClause.job = { organizationId, ownerId: userId };
+  }
+
   const applications = await prisma.application.findMany({
+    where: whereClause,
     include: {
       candidate: true,
       job: true,

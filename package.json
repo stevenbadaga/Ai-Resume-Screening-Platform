@@ -1,5 +1,5 @@
 {
-    "name": "temp-app",
+    "name": "recruitai",
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -7,9 +7,13 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint",
-        "test": "vitest run --pool=threads",
+        "test": "vitest run",
+        "test:e2e": "playwright test",
         "typecheck": "tsc --noEmit",
         "cleanup-accounts": "tsx scripts/cleanupAccounts.ts",
+        "verify-audit-chain": "tsx scripts/verifyAuditChain.ts",
+        "backup": "bash scripts/backup.sh",
+        "restore": "bash scripts/restore.sh",
         "postinstall": "prisma generate"
     },
     "dependencies": {
@@ -19,6 +23,7 @@
         "bcryptjs": "^3.0.3",
         "bullmq": "^6.0.9",
         "ioredis": "^6.0.0",
+        "mammoth": "^1.12.2",
         "next": "16.3.0",
         "next-auth": "^4.24.15",
         "openai": "^6.49.0",
@@ -31,6 +36,7 @@
         "zod": "^4.4.3"
     },
     "devDependencies": {
+        "@playwright/test": "^1.63.0",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
         "@types/bcryptjs": "^2.4.6",

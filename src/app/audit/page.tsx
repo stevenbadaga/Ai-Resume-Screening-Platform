@@ -7,11 +7,16 @@ import AuditClient from './AuditClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AuditPage() {
+export default async function AuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actor?: string; action?: string; from?: string; to?: string }>;
+}) {
   const session = await getServerSession(authOptions);
   if (!session) redirect('/auth/signin');
 
   const userRole = (session.user as any)?.role || 'Candidate';
+  const organizationId = (session.user as any)?.organizationId;
 
   if (userRole === 'Candidate') {
     redirect('/dashboard/my-applications');
@@ -46,7 +51,31 @@ export default async function AuditPage() {
     );
   }
 
+  // Spec §6.12: the audit log must support search by user, action type, and date
+  // range — and it must never show one organization's events to another (§6.1).
+  const { actor, action, from, to } = await searchParams;
+
+  const where: Record<string, unknown> = { organizationId };
+  if (actor && actor.trim()) {
+    where.actor = { email: { contains: actor.trim(), mode: 'insensitive' } };
+  }
+  if (action && action.trim()) {
+    where.action = { contains: action.trim().toUpperCase() };
+  }
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to) : null;
+  if (fromDate && !Number.isNaN(fromDate.getTime())) {
+    where.timestamp = { ...(where.timestamp as object | undefined), gte: fromDate };
+  }
+  if (toDate && !Number.isNaN(toDate.getTime())) {
+    // Include the whole "to" day.
+    const toEnd = new Date(toDate);
+    toEnd.setHours(23, 59, 59, 999);
+    where.timestamp = { ...(where.timestamp as object | undefined), lte: toEnd };
+  }
+
   const events = await prisma.auditEvent.findMany({
+    where,
     include: {
       actor: {
         select: {
@@ -60,5 +89,10 @@ export default async function AuditPage() {
     take: 50
   });
 
-  return <AuditClient events={JSON.parse(JSON.stringify(events))} />;
+  return (
+    <AuditClient
+      events={JSON.parse(JSON.stringify(events))}
+      filters={{ actor: actor ?? '', action: action ?? '', from: from ?? '', to: to ?? '' }}
+    />
+  );
 }

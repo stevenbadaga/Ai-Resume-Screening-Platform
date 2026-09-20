@@ -1,13 +1,31 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface AuditClientProps {
   events: any[];
+  filters?: { actor: string; action: string; from: string; to: string };
 }
 
-export default function AuditClient({ events }: AuditClientProps) {
+export default function AuditClient({ events, filters = { actor: '', action: '', from: '', to: '' } }: AuditClientProps) {
   const { t } = useLanguage();
+  const router = useRouter();
+
+  // Spec §6.12: search the audit log by user, action type, and date range.
+  const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const params = new URLSearchParams();
+    for (const key of ['actor', 'action', 'from', 'to'] as const) {
+      const value = String(form.get(key) ?? '').trim();
+      if (value) params.set(key, value);
+    }
+    router.push(`/audit${params.toString() ? `?${params.toString()}` : ''}`);
+  };
+
+  const inputClass =
+    'dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500';
 
   const getActorDisplay = (evt: any) => {
     if (evt.actor?.name) return evt.actor.name;
@@ -45,6 +63,56 @@ export default function AuditClient({ events }: AuditClientProps) {
           </p>
         </div>
 
+        <form onSubmit={submitSearch} className="flex flex-wrap items-center gap-1.5">
+          <input
+            type="search"
+            name="actor"
+            defaultValue={filters.actor}
+            placeholder="Search by actor email…"
+            aria-label="Search audit log by actor email"
+            className={`${inputClass} w-44`}
+          />
+          <input
+            type="search"
+            name="action"
+            defaultValue={filters.action}
+            placeholder="Action e.g. DECISION"
+            aria-label="Search audit log by action"
+            className={`${inputClass} w-40`}
+          />
+          <input
+            type="date"
+            name="from"
+            defaultValue={filters.from}
+            aria-label="From date"
+            className={`${inputClass} w-36`}
+          />
+          <input
+            type="date"
+            name="to"
+            defaultValue={filters.to}
+            aria-label="To date"
+            className={`${inputClass} w-36`}
+          />
+          <button
+            type="submit"
+            className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition"
+          >
+            Search
+          </button>
+          {filters.actor || filters.action || filters.from || filters.to ? (
+            <button
+              type="button"
+              onClick={() => router.push('/audit')}
+              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:border-[#30424A] border-slate-200 border rounded-lg text-xs font-medium dark:text-slate-300 text-slate-600 transition"
+            >
+              Clear
+            </button>
+          ) : null}
+        </form>
+      </div>
+
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#17242B] bg-white border dark:border-[#30424A] border-slate-200 text-[11px] font-mono text-emerald-500 font-medium shadow-xs">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>{t('sha256_verified')}</span>

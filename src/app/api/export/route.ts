@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { escapeCsvCell, safeErrorResponse } from '@/lib/validation';
+import { logAuditEvent } from '@/lib/auditLogger';
 
 export async function GET() {
   // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
-  const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+  const auth = await requirePermission(Permission.ExportData);
   if (auth.error) return auth.error;
 
   const whereClause: any = { job: { organizationId: auth.user.organizationId } };
   if (auth.user.role === 'HiringManager') {
     whereClause.job = {
       ownerId: auth.user.id
+    };
+  }
+  if (auth.user.departmentRestrictions.length > 0) {
+    whereClause.job = {
+      ...(whereClause.job || {}),
+      department: { in: auth.user.departmentRestrictions },
     };
   }
 
@@ -38,6 +46,19 @@ export async function GET() {
     const name = `${app.candidate.firstName} ${app.candidate.lastName}`;
     csvContent += `${escapeCsvCell(app.id)},${escapeCsvCell(name)},${escapeCsvCell(app.candidate.email)},${escapeCsvCell(app.job.title)},${escapeCsvCell(app.status)},${escapeCsvCell(String(score))},${escapeCsvCell(app.createdAt.toISOString())}\n`;
   }
+
+  // Spec §6.11: downloaded resumes and exported reports are controlled personal
+  // data and must be logged — record who exported what and how many records.
+  await logAuditEvent({
+    action: 'DATA_EXPORT',
+    actorId: auth.user.id,
+    organizationId: auth.user.organizationId,
+    newValues: {
+      format: 'csv',
+      recordCount: applications.length,
+      filters: { role: auth.user.role },
+    },
+  });
 
   return new NextResponse(csvContent, {
     status: 200,

@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { safeRedirect, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
     // SECURITY: Require authentication — retrying processing is a privileged operation
-    const auth = await requireAuth(['Admin', 'Recruiter']);
+    const auth = await requirePermission(Permission.RetryResumeUpload);
     if (auth.error) return auth.error;
 
     const data = await req.formData();

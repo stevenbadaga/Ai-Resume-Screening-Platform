@@ -4,7 +4,7 @@
 
 **Specification:** Codafriqa AI Resume Screening Platform - Intern Project Specification, Version 1.0
 **Repository:** `stevenbadaga/Ai-Resume-Screening-Platform`
-**Review date:** 2026-08-26
+**Review date:** 2026-08-26 (v1.1 update: 2026-09-12)
 **Review scope:** Supplied 17-page PDF specification compared with the current repository after the security and workflow remediation changes.
 
 ## 1. Executive Conclusion
@@ -18,6 +18,25 @@ However, the MVP does **not yet meet the PDF's minimum completion standard for p
 **MVP readiness: Partially complete / not ready for formal acceptance.**
 
 The application is suitable for continued development and controlled internal testing, provided it is not treated as production-ready recruitment software until the release blockers in Section 6 are closed.
+
+### Implementation update: 2026-09-12 (v1.1)
+
+The following review findings were closed after the original assessment:
+
+- **Password reset (§3.1)**: full hashed single-use 30-minute token flow shipped (`PasswordResetToken`, migration `20260911100000_add_password_reset_tokens`), with an anti-enumeration request endpoint and sign-in UI.
+- **Session expiry (§3.1)**: JWT sessions now expire after 8 hours of inactivity (hourly refresh) with HTTPS-only `__Secure-` cookies in production.
+- **Email verification (§3.1, new control)**: accounts cannot sign in until an emailed single-use 24-hour hashed link is clicked; disposable inbox domains are rejected at signup; existing accounts were grandfathered by migration.
+- **Department restrictions (§3.1)**: now enforced on job listing, exports, and stage changes, not just a single route.
+- **RBAC bootstrap (§3.1)**: the "no first Admin" lifecycle gap is closed by policy — the first staff signup for an unclaimed email domain becomes its workspace Admin (founder model); joiners of verified workspaces start as Recruiters; client-supplied roles are always ignored.
+- **Domain claiming (§3.1)**: workspace identity is a DNS-verified email domain (unique platform-wide); teammates auto-join by domain; name-squatting no longer routes membership.
+- **Unified role permissions (§3.1)**: DB role rows are created and self-healed from the single RBAC matrix (`permissionsForRoleName()`); local hardcoded permission lists were removed.
+- **Email delivery (§3.9)**: the mock service was replaced by real Brevo/Resend delivery with honest SENT/FAILED recording and failure detail on `Communication` rows.
+- **Rubric lifecycle evidence (§3.2)**: the draft → review → approved state machine (which opens requisitions to applicants) is now drivable from the Jobs UI.
+- **Export/download audit logging (§3.11)**: `DATA_EXPORT` and `RESUME_DOWNLOADED` audit events added.
+- **Fairness evidence (§3.6)**: `__tests__/fairness.test.ts` pins name-invariance across 7 name variants and caught a Rwandan phone-format redaction gap (fixed).
+- **Test suite (§3.13)**: grown from 18 to 85 passing tests across 11 files; `npx tsc --noEmit` remains clean and ESLint reports 0 errors.
+
+Items that still require staging infrastructure (email end-to-end evidence, multi-instance rate-limit proof, backup/restore and monitoring evidence) are unchanged and listed in Section 6.
 
 ## 2. Status Definitions
 
@@ -44,14 +63,14 @@ The application is suitable for continued development and controlled internal te
 - Organization checks added to major job, candidate, decision, export, team, offer, interview-question, and retry operations.
 - Organization, user, role, access status, and department restriction fields in `prisma/schema.prisma`.
 
-**Still missing or partial:**
+**Still missing or partial (re-assessed 2026-09-12):**
 
 - Organization checks are not yet proven on every page and route.
-- Department restrictions are modeled but not consistently enforced.
-- Password reset, account activation, and complete session-expiry workflows are not evidenced.
-- Role and permission design remains partly role-name based rather than a complete organization-scoped permission service.
+- ~~Department restrictions are modeled but not consistently enforced.~~ **Closed (v1.1):** enforced on job listing, exports, and stage changes.
+- ~~Password reset, account activation, and complete session-expiry workflows are not evidenced.~~ **Closed (v1.1):** hashed single-use reset tokens, email verification gate, and 8-hour sessions with secure cookies are implemented.
+- ~~Role and permission design remains partly role-name based...~~ **Closed (v1.1):** typed RBAC matrix with `requirePermission()` on endpoints and unified, self-healing role permission strings.
 
-**Status: Partially implemented. Release blocker: tenant isolation until complete.**
+**Status: Partially implemented. Release blocker: tenant isolation until complete (page/route audit remains).**
 
 ### 3.2 Jobs and screening rubrics
 
@@ -64,9 +83,9 @@ The application is suitable for continued development and controlled internal te
 - Criteria weights, required flags, thresholds, status, version, and change-reason fields.
 - Job and rubric UI under `src/app/jobs/`.
 
-**Still missing or partial:**
+**Still missing or partial (re-assessed 2026-09-12):**
 
-- Complete draft -> review -> approved -> archived lifecycle is not fully enforced.
+- ~~Complete draft -> review -> approved -> archived lifecycle is not fully enforced.~~ **Closed (v1.1):** the state machine is enforced by the API and now drivable from the Jobs UI (publish button flips approved rubrics' requisitions to OPEN).
 - Approved rubric immutability and version creation are not demonstrated end to end.
 - Weight and threshold validation is incomplete.
 - Job fields such as responsibilities and application dates are incomplete.
@@ -155,10 +174,10 @@ The application is suitable for continued development and controlled internal te
 - Bias mitigation tests in `__tests__/biasMitigation.test.ts`.
 - Human override audit events.
 
-**Still missing or partial:**
+**Still missing or partial (re-assessed 2026-09-12):**
 
-- Redaction does not fully cover names, addresses, graduation years, and other proxy signals.
-- No complete fairness evaluation report compares equivalent resumes with irrelevant identity changes.
+- Redaction does not fully cover names, addresses, graduation years, and other proxy signals. (v1.1: Rwandan `+250` phone formats added; broader proxy coverage still open.)
+- ~~No complete fairness evaluation report compares equivalent resumes with irrelevant identity changes.~~ **Closed (v1.1):** `__tests__/fairness.test.ts` pins name-invariance across 7 variants and PII redaction pre-AI.
 - No adverse-impact, drift, calibration, or score-pattern monitoring.
 - No complete candidate-facing AI transparency and correction workflow.
 - No formal governance control proving resumes and decisions cannot become training data.
@@ -217,11 +236,11 @@ The application is suitable for continued development and controlled internal te
 - Communication and notification models.
 - Notification API with per-user ownership checks.
 - Notification client/API contract corrected to use `notificationId` and `isRead`.
-- Transactional email abstraction and mock email service.
+- Transactional email abstraction and provider delivery (Brevo/Resend) with recorded delivery state (v1.1).
 
-**Still missing or partial:**
+**Still missing or partial (re-assessed 2026-09-12):**
 
-- Production email delivery and delivery failure handling are not evidenced.
+- ~~Production email delivery and delivery failure handling are not evidenced.~~ **Largely closed (v1.1):** real Brevo/Resend delivery with honest SENT/FAILED + failure detail per `Communication` row; end-to-end staging evidence still pending.
 - Template approval/versioning is incomplete.
 - Notification delivery is polling rather than true realtime event delivery.
 - Confidential-content filtering and retry idempotency need integration tests.
@@ -305,14 +324,14 @@ The application is suitable for continued development and controlled internal te
 - Docker, PostgreSQL, Redis/BullMQ, Prisma, and Next.js foundations.
 - Requirements report and setup documentation.
 
-**Still missing or partial:**
+**Still missing or partial (re-assessed 2026-09-12):**
 
 - No complete integration or end-to-end suite for the required recruiter workflow.
 - No comprehensive IDOR, tenant-isolation, upload-security, privacy, queue, scheduling, or API contract tests.
-- Full existing test suite still has environment/pre-existing failures involving OpenAI credentials, PDF DOM APIs, and an audit expectation.
+- ~~Full existing test suite still has environment/pre-existing failures...~~ **Closed (v1.1):** the suite is green — 86/86 tests across 11 files (including rate limiting, security, RBAC, and fairness suites).
 - No verified staging acceptance run, backup/restore test, monitoring runbook, or incident process.
-- Local storage, in-memory rate limiting, default deployment secrets, and stale setup assumptions require production hardening.
-- README claims still need continued reconciliation with verified capabilities.
+- Local storage, in-memory rate limiting, default deployment secrets, and stale setup assumptions require production hardening. (v1.1: rate limiting is Redis-backed with an in-memory fail-open fallback; email delivery is a real provider.)
+- README claims still need continued reconciliation with verified capabilities. (v1.1: compliance report and docs updated together; verification gates documented.)
 
 **Status: Partially implemented. Release blocker for handover.**
 
@@ -371,12 +390,12 @@ The PDF defines completion as a continuous workflow from approved job/rubric thr
 
 The following checks were completed during this review:
 
-- `npx tsc --noEmit --pretty false`: passed.
+- `npx tsc --noEmit --pretty false`: passed (re-verified 2026-09-12).
 - `npm run build`: passed.
-- Focused signup validation tests: 3 passed.
-- Focused audit logger tests: 2 passed.
-- Account cleanup verification: 0 accounts remaining.
-- Full test suite: not clean because of existing OpenAI credential, PDF DOMMatrix, and audit expectation failures.
+- Full test suite (2026-09-12): **11 files, 86 tests, all passing** — previously blocked by environment failures; those have been resolved.
+- ESLint on changed paths: 0 errors (pre-existing style warnings only).
+- Migrations applied: `0_init`, `20260911000000_add_email_failure_info`, `20260911100000_add_password_reset_tokens`, `20260912000000_add_email_verified_at` (with grandfathering), `20260912100000_add_org_domain_claiming`.
+- Account cleanup verification: 0 accounts remaining (intentional full reset on 2026-09-12; re-registration exercises the new verification + founder-bootstrap flow).
 
 ## 8. Final Recommendation
 

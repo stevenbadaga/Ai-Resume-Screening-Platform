@@ -66,6 +66,15 @@ export default async function CandidateProfilePage({ params }: { params: Promise
     );
   }
 
+  // Spec §6.7: Hiring managers must only view candidates and information associated with jobs assigned to them.
+  if (userRole === 'HiringManager' && application.job.ownerId !== userId) {
+    return (
+      <div className="p-8 text-center text-slate-500">
+        Access restricted: Hiring managers may only view candidates for vacancies assigned to them.
+      </div>
+    );
+  }
+
   return (
     <CandidateProfileClient
       application={JSON.parse(JSON.stringify(application))}

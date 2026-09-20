@@ -5,6 +5,15 @@ import bcrypt from 'bcryptjs';
 import { signupSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import { resolveMx, resolve4, resolve6 } from 'node:dns/promises';
+import {
+  generateVerificationToken,
+  isDisposableEmailDomain,
+  EMAIL_VERIFICATION_TOKEN_TTL_MINUTES,
+} from '@/lib/emailVerification';
+import { sendRecordedEmail } from '@/lib/emailService';
+import { resolveSignupRole } from '@/lib/signupRoles';
+import { permissionsForRoleName } from '@/lib/roleAccess';
+import { emailDomain, generateDomainClaimToken, isSharedEmailProviderDomain } from '@/lib/domainClaim';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -31,7 +40,7 @@ export async function POST(req: Request) {
   try {
     // Rate limiting
     const rateLimitKey = getRateLimitKey(req, 'signup');
-    const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.signup);
+    const rateCheck = await checkRateLimit(rateLimitKey, RATE_LIMITS.signup);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: 'Too many signup attempts. Please try again later.' },
@@ -54,9 +63,19 @@ export async function POST(req: Request) {
       );
     }
 
-    // SECURITY: Force self-signup role — ignore any client-supplied role
-    // Only admins can assign elevated roles through the team/role endpoint
-    const assignedRoleName = accountType === 'candidate' ? 'Candidate' : 'Recruiter';
+    // Block known disposable/throwaway inbox providers.
+    if (isDisposableEmailDomain(normalizedEmail)) {
+      return NextResponse.json(
+        { error: 'Disposable email addresses are not allowed. Please use a permanent email address.' },
+        { status: 422 }
+      );
+    }
+
+    // SECURITY: The client-supplied role is always ignored. Role is resolved
+    // server-side (see src/lib/signupRoles.ts): candidates are Candidates,
+    // staff who FOUND a new workspace become its Admin (standard founder
+    // model), and staff joining an existing workspace start as Recruiters —
+    // only an Admin can elevate them via the audited team/role endpoint.
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -71,54 +90,96 @@ export async function POST(req: Request) {
     }
 
     let organizationId = '';
+    let assignedRoleName: 'Admin' | 'Recruiter' | 'Candidate';
 
     if (accountType === 'worker') {
-      // If company name is specified, find or create company
-      const targetOrgName = companyName?.trim() || 'Codafriqa Tech Corp';
-      let org = await prisma.organization.findFirst({
-        where: { name: targetOrgName }
-      });
+      // Company name is REQUIRED for staff accounts — it becomes the display
+      // name of a workspace they found. It is NOT an identity: routing is by
+      // verified email domain (see below), so two workspaces may share a name
+      // and name-squatting gains nothing.
+      const targetOrgName = companyName?.trim();
+      if (!targetOrgName) {
+        return NextResponse.json(
+          { error: 'Company or organization name is required for staff accounts.' },
+          { status: 400 }
+        );
+      }
+
+      // Identity routing (production policy): a staff signup joins the
+      // workspace that has VERIFIED ownership of their email domain. If no
+      // workspace has claimed their domain yet, they found a new one and
+      // become its Admin — then prove domain ownership via DNS (see
+      // /api/org/domain-claim) to let future teammates auto-join. A squatter
+      // can neither claim a domain their email is not at, nor be routed into
+      // a workspace by guessing its display name.
+      const registrantDomain = emailDomain(normalizedEmail);
+      let org = registrantDomain
+        ? await prisma.organization.findFirst({
+            where: { verifiedEmailDomain: registrantDomain }
+          })
+        : null;
+
+      const foundedOrg = !org;
 
       if (!org) {
+        // Pre-seed the DNS challenge for the founder's email domain so the
+        // Admin can verify ownership right away — but never for shared public
+        // provider namespaces (gmail.com etc.), which no tenant may claim.
+        const seedDomain =
+          registrantDomain && !isSharedEmailProviderDomain(registrantDomain)
+            ? registrantDomain
+            : null;
+        const challengeToken = seedDomain ? generateDomainClaimToken() : null;
         org = await prisma.organization.create({
-          data: { name: targetOrgName }
+          data: {
+            name: targetOrgName,
+            pendingEmailDomain: seedDomain ?? undefined,
+            domainClaimToken: challengeToken ?? undefined,
+          },
         });
       }
       organizationId = org.id;
+
+      assignedRoleName = resolveSignupRole({ accountType, foundedOrg });
     } else {
-      // Candidate account attaches to default workspace for job application scope
-      let defaultOrg = await prisma.organization.findFirst();
+      // Candidate account attaches to the public application workspace for job
+      // application scope. Created lazily with an explicit name — no fake company.
+      const PUBLIC_WORKSPACE_NAME = process.env.PUBLIC_WORKSPACE_NAME || 'Public Applications Workspace';
+      let defaultOrg = await prisma.organization.findFirst({
+        where: { name: PUBLIC_WORKSPACE_NAME }
+      });
       if (!defaultOrg) {
         defaultOrg = await prisma.organization.create({
-          data: { name: 'Codafriqa Tech Corp' }
+          data: { name: PUBLIC_WORKSPACE_NAME }
         });
       }
       organizationId = defaultOrg.id;
+
+      assignedRoleName = resolveSignupRole({ accountType, foundedOrg: false });
     }
 
-    // Get or create the Role in DB
+    // Get or create the Role in DB — permission strings come from the RBAC
+    // matrix via the single shared helper, never a local hardcoded list.
     let roleRecord = await prisma.role.findFirst({
       where: { name: assignedRoleName }
     });
 
     if (!roleRecord) {
-      const getPermissions = (r: string) => {
-        switch (r) {
-          case 'Admin': return ['ALL'];
-          case 'Recruiter': return ['MANAGE_CANDIDATES', 'OVERRIDE_SCORES', 'EXTEND_OFFERS'];
-          case 'HiringManager': return ['VIEW_DEPARTMENT_CANDIDATES', 'OVERRIDE_SCORES'];
-          case 'Interviewer': return ['EVALUATE_CANDIDATES', 'SUBMIT_SCORECARDS'];
-          case 'ComplianceAuditor': return ['VIEW_AUDIT_LOGS', 'INSPECT_MODELS'];
-          default: return ['VIEW_OWN_APPLICATIONS'];
-        }
-      };
-
       roleRecord = await prisma.role.create({
         data: {
           name: assignedRoleName,
-          permissions: getPermissions(assignedRoleName)
+          permissions: permissionsForRoleName(assignedRoleName)
         }
       });
+    } else {
+      // Self-heal legacy rows whose stored strings predate the unified matrix.
+      const canonical = permissionsForRoleName(assignedRoleName);
+      if (JSON.stringify([...roleRecord.permissions].sort()) !== JSON.stringify([...canonical].sort())) {
+        roleRecord = await prisma.role.update({
+          where: { id: roleRecord.id },
+          data: { permissions: canonical },
+        });
+      }
     }
 
     // Hash password before storing
@@ -137,6 +198,15 @@ export async function POST(req: Request) {
       },
       include: { roles: true }
     });
+
+    // Record the workspace founder as the organization's owner (used by team
+    // management to protect the last Admin from demotion/deletion).
+    if (assignedRoleName === 'Admin') {
+      await prisma.organization.update({
+        where: { id: organizationId },
+        data: { primaryOwnerId: user.id },
+      });
+    }
 
     // If Candidate, ensure a corresponding Candidate record exists for ATS tracking
     if (assignedRoleName === 'Candidate') {
@@ -169,12 +239,38 @@ export async function POST(req: Request) {
         email: user.email,
         role: assignedRoleName,
         accountType,
-        organizationId
+        organizationId,
+        foundedWorkspace: assignedRoleName === 'Admin'
       }
     });
 
+    // Email verification (spec §6.1): prove the mailbox is real and owned by
+    // the registrant. The account cannot sign in until the emailed link is
+    // clicked. Send AFTER the user row exists; a delivery failure does NOT
+    // roll back the account — the user can request a fresh link from the
+    // sign-in page (resend-verification endpoint).
+    const { token, tokenHash } = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MINUTES * 60_000);
+    await prisma.emailVerificationToken.create({
+      data: { userId: user.id, tokenHash, expiresAt },
+    });
+
+    const origin = process.env.NEXTAUTH_URL || new URL(req.url).origin;
+    const verifyUrl = `${origin}/auth/verify-email?token=${token}`;
+    // Recorded send (spec §6.9): the attempt lands in the Communication table
+    // with an honest SENT/FAILED state so admins can see and retry delivery.
+    const recorded = await sendRecordedEmail({
+      to: normalizedEmail,
+      template: 'EMAIL_VERIFICATION',
+      data: { joinLink: verifyUrl },
+      senderId: user.id,
+    });
+    const verificationEmailQueued = recorded.delivered;
+
     return NextResponse.json({
       success: true,
+      emailVerificationRequired: true,
+      emailDelivered: verificationEmailQueued,
       user: {
         id: user.id,
         name: user.name,

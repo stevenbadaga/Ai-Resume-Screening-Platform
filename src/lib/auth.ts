@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
+import { Permission, roleHasPermission, type ApplicationRole } from '@/lib/roleAccess';
 
 export interface AuthenticatedUser {
   id: string;
@@ -9,6 +10,7 @@ export interface AuthenticatedUser {
   name?: string | null;
   role: string;
   organizationId: string;
+  departmentRestrictions: string[];
 }
 
 interface AuthResult {
@@ -22,16 +24,38 @@ interface AuthError {
 }
 
 /**
- * Validates the current session and optionally checks role membership.
- *
- * Always uses `getServerSession(authOptions)` to ensure the JWT callbacks
- * populate the session with `id` and `role`.
- *
- * @param allowedRoles – optional whitelist of roles. If provided, user must have one of them.
+ * Validates the current session.
  * @returns `{ user, error }` – if `error` is set, return it as the API response.
  */
-export async function requireAuth(
-  allowedRoles?: readonly string[]
+export async function requireAuth(): Promise<AuthResult | AuthError> {
+  return requireAuthInternal();
+}
+
+/**
+ * Validates the current session AND enforces a permission from the typed
+ * RBAC matrix (src/lib/roleAccess.ts). Preferred over the role-list overload:
+ * the compiler checks the permission name, and role grants live in one place.
+ *
+ * @param permission – permission required to proceed (e.g. Permission.MakeHiringDecisions)
+ */
+export async function requirePermission(
+  permission: Permission
+): Promise<AuthResult | AuthError> {
+  return requireAuthInternal({ permission });
+}
+
+/**
+ * @deprecated Legacy guard — a hardcoded role-name whitelist. Kept only for
+ * call sites not yet migrated to `requirePermission`; new code must not use it.
+ */
+export async function requireAuthWithRoles(
+  allowedRoles: readonly ApplicationRole[]
+): Promise<AuthResult | AuthError> {
+  return requireAuthInternal({ allowedRoles });
+}
+
+async function requireAuthInternal(
+  check?: { permission?: Permission; allowedRoles?: readonly ApplicationRole[] }
 ): Promise<AuthResult | AuthError> {
   const session = await getServerSession(authOptions);
 
@@ -78,17 +102,28 @@ export async function requireAuth(
     name: userRecord.name,
     role: userRecord.roles[0]?.name || 'Candidate',
     organizationId: userRecord.organizationId,
+    departmentRestrictions: userRecord.departmentRestrictions,
   };
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return {
-      user: null,
-      error: NextResponse.json(
-        { error: 'Forbidden: Insufficient role permissions' },
-        { status: 403 }
-      ),
-    };
+  if (check) {
+    const forbidden = NextResponse.json(
+      { error: 'Forbidden: Insufficient role permissions' },
+      { status: 403 }
+    );
+
+    if ('permission' in check && check.permission && !roleHasPermission(user.role, check.permission)) {
+      return { user: null, error: forbidden };
+    }
+
+    if ('allowedRoles' in check && check.allowedRoles && !check.allowedRoles.includes(user.role as ApplicationRole)) {
+      return { user: null, error: forbidden };
+    }
   }
 
   return { user, error: null };
+}
+
+export function canAccessDepartment(user: AuthenticatedUser, department?: string | null): boolean {
+  if (!department || user.departmentRestrictions.length === 0) return true;
+  return user.departmentRestrictions.includes(department);
 }

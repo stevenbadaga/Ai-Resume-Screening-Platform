@@ -18,7 +18,7 @@ export const authOptions: AuthOptions = {
 
         // Rate limiting on login attempts (keyed by email to prevent brute-force on specific accounts)
         const rateLimitKey = `login:${credentials.email.toLowerCase().trim()}`;
-        const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.login);
+        const rateCheck = await checkRateLimit(rateLimitKey, RATE_LIMITS.login);
         if (!rateCheck.allowed) {
           throw new Error('Too many login attempts. Please try again later.');
         }
@@ -35,6 +35,13 @@ export const authOptions: AuthOptions = {
         // Secure password comparison using bcrypt
         const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValidPassword) return null;
+
+        // Email verification (spec §6.1): the credentials are correct at this
+        // point, so telling the user their email is unverified leaks nothing.
+        // next-auth surfaces thrown messages to the client's `error` field.
+        if (!user.emailVerifiedAt) {
+          throw new Error('EMAIL_NOT_VERIFIED');
+        }
 
         const role = user.roles.length > 0 ? user.roles[0].name : "Candidate";
         return {
@@ -67,8 +74,37 @@ export const authOptions: AuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-  }
+  },
+  // Spec §6.1: secure session handling with expiry. Sessions expire after 8
+  // hours of inactivity (checked on every request) instead of the NextAuth
+  // default of 30 days, and the cookie is HTTPS-only in production.
+  session: {
+    strategy: 'jwt',
+    maxAge: 8 * 60 * 60, // 8 hours
+    updateAge: 60 * 60, // refresh the expiry window hourly on activity
+  },
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === 'production'
+          ? '__Secure-next-auth.session-token'
+          : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
 };
+
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    'NEXTAUTH_SECRET is not set — sessions cannot be signed securely. ' +
+      'Generate one with: openssl rand -base64 32'
+  );
+}
 
 const handler = NextAuth(authOptions);
 

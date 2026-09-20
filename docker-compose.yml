@@ -1,5 +1,8 @@
 version: '3.8'
 
+# All secrets/credentials come from the .env file next to this compose file
+# (see .env.example). No hardcoded secrets — compose interpolates ${VAR} from .env.
+
 services:
   app:
     build:
@@ -8,11 +11,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/codafriqa_db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
+      - DIRECT_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
       - REDIS_URL=redis://redis:6379
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=changeme_in_production_12345
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?Set NEXTAUTH_SECRET in .env (generate with: openssl rand -base64 32)}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+      - CLAMAV_HOST=${CLAMAV_HOST:-}
     depends_on:
       db:
         condition: service_healthy
@@ -25,9 +32,10 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/codafriqa_db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
       - REDIS_URL=redis://redis:6379
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
+      - CLAMAV_HOST=${CLAMAV_HOST:-}
     depends_on:
       db:
         condition: service_healthy
@@ -35,7 +43,7 @@ services:
         condition: service_started
     # The worker script must be executed
     # Notice: In a standalone build, server.js runs the web server.
-    # To run the worker in production, we execute the tsx/node script. 
+    # To run the worker in production, we execute the tsx/node script.
     # For robust production, it's compiled or run via node.
     command: npx tsx src/lib/worker.ts
 
@@ -44,13 +52,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: codafriqa_db
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-recruitai}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -61,6 +69,15 @@ services:
       - "6379:6379"
     volumes:
       - redisdata:/data
+
+  # Optional document malware scanner (spec §6.4). The app enables ClamAV
+  # scanning by setting CLAMAV_HOST=clamav in .env; remove the variable to run
+  # signature-only scanning.
+  clamav:
+    image: clamav/clamav:latest
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
 
 volumes:
   pgdata:

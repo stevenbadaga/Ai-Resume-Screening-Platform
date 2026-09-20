@@ -10,6 +10,7 @@ export interface TranslationDictionary {
   nav_audit: string;
   nav_privacy: string;
   nav_team: string;
+  nav_analytics: string;
   nav_my_applications: string;
   nav_quick_apply: string;
 
@@ -225,6 +226,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     nav_audit: 'Audit Trail',
     nav_privacy: 'Data Privacy',
     nav_team: 'Team & RBAC',
+    nav_analytics: 'Manager Analytics',
     nav_my_applications: 'My Applications',
     nav_quick_apply: 'Browse Open Roles',
 
@@ -422,6 +424,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     nav_audit: 'Journal d’audit',
     nav_privacy: 'Confidentialité RGPD',
     nav_team: 'Équipe & Rôles',
+    nav_analytics: 'Analytique',
     nav_my_applications: 'Mes candidatures',
     nav_quick_apply: 'Explorer les postes',
 
@@ -619,6 +622,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     nav_audit: 'Registro de Auditoría',
     nav_privacy: 'Privacidad RGPD',
     nav_team: 'Equipo y Roles',
+    nav_analytics: 'Analítica',
     nav_my_applications: 'Mis Solicitudes',
     nav_quick_apply: 'Ver Ofertas Abiertas',
 
@@ -816,6 +820,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     nav_audit: 'Audit-Protokoll',
     nav_privacy: 'DSGVO-Datenschutz',
     nav_team: 'Team & Rollen',
+    nav_analytics: 'Analytik',
     nav_my_applications: 'Meine Bewerbungen',
     nav_quick_apply: 'Offene Stellen ansehen',
 
@@ -1013,6 +1018,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     nav_audit: 'Inyandiko z’Igenzura',
     nav_privacy: 'Umutekano w’Amakuru',
     nav_team: 'Ikipe n’Inshingano',
+    nav_analytics: 'Imibare y’Akazi',
     nav_my_applications: 'Ubusabe Bwanjye',
     nav_quick_apply: 'Reba Imyanya Ihari',
 

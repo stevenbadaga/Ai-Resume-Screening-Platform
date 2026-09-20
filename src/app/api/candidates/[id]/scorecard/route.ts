@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { scorecardSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { logAuditEvent } from '@/lib/auditLogger';
 
@@ -9,22 +10,29 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager', 'Interviewer', 'ComplianceAuditor']);
+    const auth = await requirePermission(Permission.ViewScorecards);
     if (auth.error) return auth.error;
 
     const { id } = await params;
+
+    // Spec §5 (Interviewer role): interviewers view only their assigned
+    // interviews — block access to applications they are not assigned to.
+    if (auth.user.role === 'Interviewer') {
+      const participationCount = await prisma.interviewParticipant.count({
+        where: { userId: auth.user.id, interview: { applicationId: id } },
+      });
+      if (participationCount === 0) {
+        return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+      }
+    }
+
     const application = await prisma.application.findFirst({
-      where: {
-        id,
-        job: { organizationId: auth.user.organizationId }
-      },
+      where: { id, job: { organizationId: auth.user.organizationId } },
       include: {
         interviews: {
           include: {
             participants: {
-              include: {
-                user: { select: { id: true, name: true, email: true } }
-              }
+              include: { user: { select: { id: true, name: true, email: true } } }
             }
           },
           orderBy: { createdAt: 'desc' }
@@ -36,16 +44,20 @@ export async function GET(
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
+    // C6 FIX: Interviewers only see their own scorecard; privileged roles see all
+    const canSeeAll = ['Admin', 'Recruiter', 'HiringManager', 'ComplianceAuditor'].includes(auth.user.role);
+
     const scorecards = application.interviews.flatMap((interview) =>
       interview.participants
-        .filter((p) => p.structuredFeedback || p.recommendation || p.comments)
+        .filter((p) => {
+          const hasContent = p.structuredFeedback || p.recommendation || p.comments;
+          return hasContent && (canSeeAll || p.userId === auth.user.id);
+        })
         .map((p) => {
-          let parsedFeedback: any = {};
+          let parsedFeedback: Record<string, unknown> = {};
           try {
             parsedFeedback = p.structuredFeedback ? JSON.parse(p.structuredFeedback) : {};
-          } catch {
-            parsedFeedback = {};
-          }
+          } catch { /* ignore */ }
           return {
             id: p.id,
             interviewId: interview.id,
@@ -70,20 +82,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager', 'Interviewer']);
+    const auth = await requirePermission(Permission.SubmitScorecards);
     if (auth.error) return auth.error;
 
     const { id } = await params;
-    const body = await req.json();
-
-    const { data, error } = validateBody(scorecardSchema, body);
+    const { data, error } = validateBody(scorecardSchema, await req.json());
     if (error) return error;
 
     const application = await prisma.application.findFirst({
-      where: {
-        id,
-        job: { organizationId: auth.user.organizationId }
-      },
+      where: { id, job: { organizationId: auth.user.organizationId } },
       include: {
         job: true,
         candidate: true,
@@ -95,7 +102,21 @@ export async function POST(
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Find existing interview or create default interview session
+    // Spec §5 (Interviewer role): interviewers may only complete scorecards for
+    // interviews they are assigned to — not for any application in the org.
+    // (Checked against ALL interviews on this application, not just the latest.)
+    if (auth.user.role === 'Interviewer') {
+      const participationCount = await prisma.interviewParticipant.count({
+        where: { userId: auth.user.id, interview: { applicationId: id } },
+      });
+      if (participationCount === 0) {
+        return NextResponse.json(
+          { error: 'You are not assigned to an interview for this application' },
+          { status: 403 }
+        );
+      }
+    }
+
     let interview = application.interviews[0];
     if (!interview) {
       interview = await prisma.interview.create({
@@ -115,37 +136,25 @@ export async function POST(
       problemRating: data.problemRating
     });
 
-    // Check if participant record exists for this user on this interview
     const existingParticipant = await prisma.interviewParticipant.findFirst({
-      where: {
-        interviewId: interview.id,
-        userId: auth.user.id
-      }
+      where: { interviewId: interview.id, userId: auth.user.id }
     });
 
-    let participant;
-    if (existingParticipant) {
-      participant = await prisma.interviewParticipant.update({
-        where: { id: existingParticipant.id },
-        data: {
-          structuredFeedback,
-          recommendation: data.recommendation,
-          comments: data.comments || ''
-        }
-      });
-    } else {
-      participant = await prisma.interviewParticipant.create({
-        data: {
-          interviewId: interview.id,
-          userId: auth.user.id,
-          structuredFeedback,
-          recommendation: data.recommendation,
-          comments: data.comments || ''
-        }
-      });
-    }
+    const participant = existingParticipant
+      ? await prisma.interviewParticipant.update({
+          where: { id: existingParticipant.id },
+          data: { structuredFeedback, recommendation: data.recommendation, comments: data.comments || '' }
+        })
+      : await prisma.interviewParticipant.create({
+          data: {
+            interviewId: interview.id,
+            userId: auth.user.id,
+            structuredFeedback,
+            recommendation: data.recommendation,
+            comments: data.comments || ''
+          }
+        });
 
-    // Log Audit Event
     await logAuditEvent({
       action: 'INTERVIEW_SCORECARD_SUBMITTED',
       actorId: auth.user.id,

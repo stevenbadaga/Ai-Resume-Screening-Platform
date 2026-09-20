@@ -17,6 +17,7 @@ export default async function DuplicatesPage() {
     redirect('/dashboard/my-applications');
   }
 
+  // §6.3: duplicate review-before-merge is a recruiter/manager capability.
   const isStaff = ['Admin', 'Recruiter', 'HiringManager'].includes(userRole);
 
   if (!isStaff) {
@@ -43,12 +44,28 @@ export default async function DuplicatesPage() {
     );
   }
 
-  const allCandidates = await prisma.candidate.findMany({
-    include: { applications: true }
+  const organizationId = (session.user as any)?.organizationId;
+
+  const orgCandidates = await prisma.candidate.findMany({
+    where: {
+      applications: {
+        some: {
+          job: { organizationId }
+        }
+      }
+    },
+    include: {
+      applications: {
+        where: {
+          job: { organizationId }
+        },
+        include: { job: true }
+      }
+    }
   });
 
   const emailMap = new Map<string, any[]>();
-  for (const c of allCandidates) {
+  for (const c of orgCandidates) {
     const list = emailMap.get(c.email) || [];
     list.push(c);
     emailMap.set(c.email, list);

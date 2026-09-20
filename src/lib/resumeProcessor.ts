@@ -1,7 +1,6 @@
 import fs from 'fs/promises';
-import OpenAI from 'openai';
-
 import prisma from '@/lib/prisma';
+import { getOpenAI, isOpenAIConfigured } from '@/lib/aiConfig';
 
 // --- A+ BIAS MITIGATION: PII REDACTION ---
 // To prevent proxy risk, we redact obvious personal identifiers before sending to OpenAI.
@@ -9,33 +8,58 @@ export function redactPII(text: string): string {
   let redacted = text;
   // Redact Emails
   redacted = redacted.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi, '[EMAIL_REDACTED]');
-  // Redact Phone Numbers (Basic format matches)
-  redacted = redacted.replace(/(\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/g, '[PHONE_REDACTED]');
+  // Redact Phone Numbers — supports 9-digit international local parts
+  // (e.g. +250 788 123 456) as well as 10-digit US-style numbers
+  // (e.g. +1 555 123 4567, (123) 456-7890). The final group is 3 or 4
+  // digits to cover both conventions.
+  redacted = redacted.replace(/(\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4}/g, '[PHONE_REDACTED]');
   // Notice: A production system would use AWS Comprehend Medical or Google DLP for names/addresses,
   // but for the MVP this prevents the most common leaks.
   return redacted;
 }
 
+async function extractText(filePath: string): Promise<string> {
+  const dataBuffer = await fs.readFile(filePath);
+  const ext = filePath.split('.').pop()?.toLowerCase();
+
+  if (ext === 'txt' || ext === 'md') {
+    return dataBuffer.toString('utf-8');
+  }
+
+  if (ext === 'docx') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mammoth = require('mammoth');
+    const result = await mammoth.extractRawText({ buffer: dataBuffer });
+    return result.value;
+  }
+
+  // Default: PDF
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfParse = require('pdf-parse');
+  const pdfData = await pdfParse(dataBuffer);
+  return pdfData.text;
+}
+
 export async function processResume(applicationId: string, resumeDocumentId: string, filePath: string) {
   try {
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder-key' });
+    // Explicit config failure instead of a junk-credential request (aiConfig gate).
+    if (!isOpenAIConfigured()) {
+      throw new Error('OPENAI_API_KEY is not configured — resume parsing cannot run.');
+    }
+    const openai = getOpenAI();
     // 1. Update status to PROCESSING
     await prisma.resumeDocument.update({
       where: { id: resumeDocumentId },
       data: { processingStatus: 'PROCESSING' }
     });
 
-    // 2. Extract Text
-    const dataBuffer = await fs.readFile(filePath);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require('pdf-parse');
-    const pdfData = await pdfParse(dataBuffer);
-    const rawText = pdfData.text;
+    // 2. Extract Text (PDF, DOCX, TXT all handled)
+    const rawText = await extractText(filePath);
 
-    // A+ Feature: Redact PII before sending to AI screening
+    // Redact PII before sending to AI — prevents proxy bias
     const sanitizedText = redactPII(rawText);
 
-    // Save extracted text
+    // Save extracted text (raw, before redaction)
     await prisma.resumeDocument.update({
       where: { id: resumeDocumentId },
       data: { extractedText: rawText }

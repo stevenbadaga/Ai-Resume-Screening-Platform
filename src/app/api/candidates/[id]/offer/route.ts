@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { sendTransactionalEmail } from '@/lib/emailService';
-import { requireAuth } from '@/lib/auth';
+import { sendRecordedEmail } from '@/lib/emailService';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { offerSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(
@@ -10,7 +11,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireAuth(['Admin', 'Recruiter']);
+    const auth = await requirePermission(Permission.OfferJob);
     if (auth.error) return auth.error;
 
     const resolvedParams = await params;
@@ -45,8 +46,10 @@ export async function POST(
       }
     });
 
-    // Send transactional email
-    await sendTransactionalEmail({
+    // Send offer letter email, recording the real delivery outcome (spec §6.9).
+    // Delivery failure does not roll back the offer — it is surfaced in the response
+    // and recorded on the Communication row for follow-up.
+    const delivery = await sendRecordedEmail({
       to: application.candidate.email,
       template: 'OFFER_LETTER',
       data: {
@@ -58,7 +61,9 @@ export async function POST(
           equity
         }
       },
-      applicationId: application.id
+      applicationId: application.id,
+      jobId: application.job.id,
+      senderId: auth.user.id
     });
 
     // Log to immutable audit trail
@@ -71,7 +76,9 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: `Formal offer extended to ${application.candidate.firstName} successfully!`
+      message: `Formal offer extended to ${application.candidate.firstName} successfully!`,
+      emailDelivered: delivery.delivered,
+      emailError: delivery.delivered ? undefined : delivery.error
     });
   } catch (error: any) {
     console.error('Offer letter error:', error);

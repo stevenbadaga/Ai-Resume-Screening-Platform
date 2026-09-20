@@ -18,26 +18,33 @@ export default async function DashboardPage() {
     redirect('/dashboard/my-applications');
   }
 
-  // Exact Core Requirements & Schema Metrics
+  // Exact Core Requirements & Schema Metrics (including spec §6.10 Quality Indicators).
+  // §6.10: metric definitions must be consistent — pipeline counts use the
+  // `stage` field, which is the field every decision route actually writes
+  // (status is a secondary lifecycle field and diverges, e.g. SHORTLISTED
+  // applications keep status='ACTIVE').
   const [
     totalJobs,
     totalCandidates,
-    failedJobs,
     newApplications,
     screeningApps,
     reviewApps,
     shortlistedApps,
     rejectedApps,
-    recentAudit
+    recentAudit,
+    lowConfidenceCount,
+    failedProcessingCount,
+    manualCorrectionsCount,
+    scoreOverridesCount,
+    upcomingInterviewsCount
   ] = await Promise.all([
     prisma.jobRequisition.count({ where: { organizationId } }),
     prisma.candidate.count({ where: { applications: { some: { job: { organizationId } } } } }),
-    prisma.application.count({ where: { status: 'FAILED', job: { organizationId } } }),
-    prisma.application.count({ where: { status: 'NEW', job: { organizationId } } }),
-    prisma.application.count({ where: { status: 'SCREENING', job: { organizationId } } }),
-    prisma.application.count({ where: { status: 'NEEDS_REVIEW', job: { organizationId } } }),
-    prisma.application.count({ where: { status: 'SHORTLISTED', job: { organizationId } } }),
-    prisma.application.count({ where: { status: 'REJECTED', job: { organizationId } } }),
+    prisma.application.count({ where: { stage: 'NEW', job: { organizationId } } }),
+    prisma.application.count({ where: { stage: 'SCREENING', job: { organizationId } } }),
+    prisma.application.count({ where: { stage: 'NEEDS_REVIEW', job: { organizationId } } }),
+    prisma.application.count({ where: { stage: 'SHORTLISTED', job: { organizationId } } }),
+    prisma.application.count({ where: { stage: 'REJECTED', job: { organizationId } } }),
     prisma.auditEvent.findMany({
       where: { organizationId },
       include: {
@@ -47,6 +54,28 @@ export default async function DashboardPage() {
       },
       orderBy: { timestamp: 'desc' },
       take: 5
+    }),
+    prisma.resumeDocument.count({
+      where: { processingStatus: 'NEEDS_REVIEW', application: { job: { organizationId } } }
+    }),
+    prisma.resumeDocument.count({
+      where: { processingStatus: 'FAILED', application: { job: { organizationId } } }
+    }),
+    prisma.parsedProfile.count({
+      where: { manualCorrections: { not: null }, application: { job: { organizationId } } }
+    }),
+    prisma.auditEvent.count({
+      where: {
+        organizationId,
+        action: { in: ['SCORE_OVERRIDDEN', 'CRITERION_OVERRIDDEN'] }
+      }
+    }),
+    prisma.interview.count({
+      where: {
+        application: { job: { organizationId } },
+        status: 'SCHEDULED',
+        schedule: { gte: new Date() }
+      }
     })
   ]);
 
@@ -55,13 +84,17 @@ export default async function DashboardPage() {
       userRole={userRole}
       totalJobs={totalJobs}
       totalCandidates={totalCandidates}
-      failedJobs={failedJobs}
       newApplications={newApplications}
       screeningApps={screeningApps}
       reviewApps={reviewApps}
       shortlistedApps={shortlistedApps}
       rejectedApps={rejectedApps}
       recentAudit={JSON.parse(JSON.stringify(recentAudit))}
+      lowConfidenceCount={lowConfidenceCount}
+      failedProcessingCount={failedProcessingCount}
+      manualCorrectionsCount={manualCorrectionsCount}
+      scoreOverridesCount={scoreOverridesCount}
+      upcomingInterviewsCount={upcomingInterviewsCount}
     />
   );
 }

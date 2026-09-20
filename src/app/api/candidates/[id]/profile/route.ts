@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requireAuth } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { profileUpdateSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // SECURITY: Fixed getServerSession() → requireAuth (uses authOptions)
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    const auth = await requirePermission(Permission.EditParsedProfile);
     if (auth.error) return auth.error;
     
     const { id } = await params;
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { skills, experience } = data;
 
-    const application = await prisma.application.findUnique({
+    const application = await prisma.application.findFirst({
       where: { id, job: { organizationId: auth.user.organizationId } },
       include: { parsedProfile: true }
     });

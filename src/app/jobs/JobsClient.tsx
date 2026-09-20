@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { roleCapabilities } from '@/lib/roleAccess';
 
 interface Props {
   initialJobs: any[];
@@ -15,6 +16,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewJob, setPreviewJob] = useState<any>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('Engineering');
@@ -28,7 +30,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
   const { showToast } = useToast();
   const { t } = useLanguage();
 
-  const isStaff = ['Admin', 'Recruiter', 'HiringManager'].includes(userRole);
+  const isStaff = roleCapabilities.canManageJobs(userRole);
 
   const handleAddCriteria = () => {
     setCriteria([...criteria, { category: 'Core Skill', description: '', isRequired: false, weight: 3 }]);
@@ -99,6 +101,165 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
     setPreviewModalOpen(true);
   };
 
+  // ── Rubric edit (§6.2: changes to an approved rubric create a NEW version) ──
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<any>(null);
+  const [editCriteria, setEditCriteria] = useState<{ description: string; isRequired: boolean; weight: number }[]>([]);
+  const [editChangeReason, setEditChangeReason] = useState('');
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const openRubricEdit = (job: any) => {
+    const rubric = job.rubrics?.[0];
+    if (!rubric) {
+      showToast('This requisition has no rubric to edit', 'error');
+      return;
+    }
+    setEditingJob(job);
+    setEditCriteria(
+      (rubric.criteria || []).map((c: any) => ({
+        description: c.description || c.name || '',
+        isRequired: Boolean(c.isRequired),
+        weight: c.weight || 1,
+      }))
+    );
+    setEditChangeReason('');
+    setEditModalOpen(true);
+  };
+
+  const handleEditCriteriaChange = (index: number, field: string, value: any) => {
+    const updated = [...editCriteria];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditCriteria(updated);
+  };
+
+  const submitRubricEdit = async () => {
+    if (!editingJob) return;
+    const rubricId = editingJob.rubrics?.[0]?.id;
+    const isApproved = editingJob.rubrics?.[0]?.status === 'APPROVED';
+    const cleanedCriteria = editCriteria.filter((c) => c.description.trim().length > 0);
+
+    if (cleanedCriteria.length === 0) {
+      showToast('A rubric needs at least one criterion', 'error');
+      return;
+    }
+    if (isApproved && !editChangeReason.trim()) {
+      showToast('A change reason is required when editing an approved rubric', 'error');
+      return;
+    }
+
+    setEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/jobs/${editingJob.id}/rubric`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rubricId,
+          changeReason: editChangeReason.trim() || undefined,
+          criteria: cleanedCriteria,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showToast(data?.error || 'Failed to update the rubric', 'error');
+        return;
+      }
+      setJobs((current) =>
+        current.map((j) =>
+          j.id === editingJob.id
+            ? { ...j, rubrics: [data.rubric, ...(j.rubrics || []).filter((r: any) => r.id !== data.rubric.id)] }
+            : j
+        )
+      );
+      setEditModalOpen(false);
+      showToast(
+        data.supersededRubricId
+          ? 'New rubric version created as DRAFT — approve it to use it for screening'
+          : 'Rubric criteria updated',
+        'success',
+        'Rubric Saved'
+      );
+    } catch {
+      showToast('Network error while updating the rubric', 'error');
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  // Jobs are created as DRAFT and only become visible to applicants once the
+  // rubric is APPROVED (the approval flips the requisition to OPEN). This
+  // drives the rubric state machine (DRAFT → REVIEW → APPROVED) from the UI.
+  const handlePublishJob = async (job: any) => {
+    if (publishingId) return;
+    const rubricId = job.rubrics?.[0]?.id;
+    if (!rubricId) {
+      showToast('This requisition has no rubric to approve', 'error');
+      return;
+    }
+    setPublishingId(job.id);
+    try {
+      const steps = job.status === 'DRAFT' ? ['REVIEW', 'APPROVED'] : ['APPROVED'];
+      for (const newStatus of steps) {
+        const res = await fetch(`/api/jobs/${job.id}/rubric`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rubricId, newStatus, changeReason: 'Published for applicant visibility' })
+        });
+        if (!res.ok) {
+          const result = await res.json().catch(() => null);
+          showToast(result?.error || `Failed to publish requisition (${newStatus})`, 'error');
+          return;
+        }
+      }
+      setJobs((current) => current.map((j) => (j.id === job.id ? { ...j, status: 'OPEN' } : j)));
+      showToast(`"${job.title}" is now visible to applicants`, 'success', 'Requisition Published');
+    } catch (err) {
+      showToast('Network error while publishing requisition', 'error');
+    } finally {
+      setPublishingId(null);
+    }
+  };
+
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+
+  const handleDuplicateJob = async (job: any) => {
+    if (duplicatingId) return;
+    setDuplicatingId(job.id);
+    try {
+      const res = await fetch(`/api/jobs/${job.id}/duplicate`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setJobs((current) => [data.job, ...current]);
+        showToast(`Requisition duplicated as "${data.job.title}"`, 'success', 'Requisition Cloned');
+      } else {
+        const err = await res.json().catch(() => null);
+        showToast(err?.error || 'Failed to duplicate requisition', 'error');
+      }
+    } catch {
+      showToast('Network error while duplicating requisition', 'error');
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
+
+  const handleCloseJob = async (job: any) => {
+    try {
+      const res = await fetch(`/api/jobs/${job.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CLOSED' }),
+      });
+      if (res.ok) {
+        setJobs((current) => current.map((j) => (j.id === job.id ? { ...j, status: 'CLOSED' } : j)));
+        showToast(`Job requisition "${job.title}" is now closed`, 'success', 'Requisition Closed');
+      } else {
+        const err = await res.json().catch(() => null);
+        showToast(err?.error || 'Failed to close requisition', 'error');
+      }
+    } catch {
+      showToast('Network error while closing requisition', 'error');
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-[1440px] mx-auto">
       {/* Top Header */}
@@ -156,7 +317,19 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
                         {job.department}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-500 font-bold shrink-0">● ACTIVE</span>
+                    <span
+                      className={`text-[10px] font-mono font-bold shrink-0 ${
+                        job.status === 'OPEN'
+                          ? 'text-emerald-500'
+                          : job.status === 'DRAFT'
+                          ? 'text-amber-500'
+                          : job.status === 'CLOSED'
+                          ? 'text-rose-500'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      ● {job.status === 'OPEN' ? 'OPEN' : (job.status || 'DRAFT').toUpperCase()}
+                    </span>
                   </div>
 
                   <div>
@@ -172,12 +345,22 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
                     <div className="pt-2 border-t dark:border-slate-800/60 border-slate-100 space-y-1.5">
                       <div className="flex items-center justify-between text-[10px] font-mono font-semibold dark:text-slate-400 text-slate-500">
                         <span>{t('scored_criteria')} ({criteriaList.length})</span>
-                        <button
-                          onClick={() => openRubricPreview(job)}
-                          className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
-                        >
-                          🔍 Preview Rubric
-                        </button>
+                        <span className="flex items-center gap-2">
+                          {isStaff && (
+                            <button
+                              onClick={() => openRubricEdit(job)}
+                              className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
+                            >
+                              ✏️ Edit Rubric
+                            </button>
+                          )}
+                          <button
+                            onClick={() => openRubricPreview(job)}
+                            className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
+                          >
+                            🔍 Preview Rubric
+                          </button>
+                        </span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {criteriaList.slice(0, 3).map((crit: any) => (
@@ -198,20 +381,157 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
                   )}
                 </div>
 
-                <div className="pt-2 border-t dark:border-slate-800/60 border-slate-100 flex items-center justify-between">
+                <div className="pt-2 border-t dark:border-slate-800/60 border-slate-100 flex flex-wrap items-center justify-between gap-2">
                   <span className="text-[10px] dark:text-slate-400 text-slate-500 font-mono">
                     {job._count?.applications || job.applications?.length || 0} applicants
                   </span>
-                  <Link
-                    href={`/jobs/${job.id}/apply`}
-                    className="px-3 py-1 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition"
-                  >
-                    {t('apply_role')} &rarr;
-                  </Link>
+                  <div className="flex items-center gap-1.5">
+                    {isStaff && (
+                      <button
+                        onClick={() => handleDuplicateJob(job)}
+                        disabled={duplicatingId === job.id}
+                        title="Duplicate this requisition"
+                        className="px-2 py-1 rounded text-[11px] font-medium border dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      >
+                        {duplicatingId === job.id ? 'Cloning…' : '📋 Copy'}
+                      </button>
+                    )}
+                    {isStaff && job.status === 'OPEN' && (
+                      <button
+                        onClick={() => handleCloseJob(job)}
+                        title="Close this requisition"
+                        className="px-2 py-1 rounded text-[11px] font-medium border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition"
+                      >
+                        Close
+                      </button>
+                    )}
+                    {isStaff && (job.status === 'DRAFT' || job.status === 'REVIEW') ? (
+                      <button
+                        onClick={() => handlePublishJob(job)}
+                        disabled={publishingId === job.id}
+                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition"
+                      >
+                        {publishingId === job.id ? 'Publishing…' : '🚀 Publish'}
+                      </button>
+                    ) : job.status === 'OPEN' ? (
+                      <Link
+                        href={`/jobs/${job.id}/apply`}
+                        className="px-3 py-1 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition"
+                      >
+                        {t('apply_role')} &rarr;
+                      </Link>
+                    ) : (
+                      <span className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded text-xs font-semibold">
+                        Closed
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* RUBRIC EDIT MODAL (§6.2: approved rubrics version on change) */}
+      {editModalOpen && editingJob && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto text-xs">
+            <div className="flex items-center justify-between pb-2 border-b dark:border-slate-800 border-slate-100">
+              <h3 className="text-sm font-bold dark:text-white text-slate-900">
+                Edit Rubric — {editingJob.title}
+              </h3>
+              <button onClick={() => setEditModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            {editingJob.rubrics?.[0]?.status === 'APPROVED' && (
+              <p className="rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300 px-3 py-2 leading-relaxed">
+                This rubric is approved. Saving will create a <strong>new DRAFT version</strong> — the
+                current version keeps scoring applications until the new one is approved, and historical
+                results are never altered.
+              </p>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold dark:text-slate-300 text-slate-700">Criteria ({editCriteria.length})</span>
+                <button
+                  type="button"
+                  onClick={() => setEditCriteria([...editCriteria, { description: '', isRequired: false, weight: 1 }])}
+                  className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold"
+                >
+                  + Add criterion
+                </button>
+              </div>
+              {editCriteria.map((crit, idx) => (
+                <div key={idx} className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={crit.description}
+                    onChange={(e) => handleEditCriteriaChange(idx, 'description', e.target.value)}
+                    placeholder="Criterion description"
+                    className="flex-1 dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2.5 py-1"
+                  />
+                  <select
+                    value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
+                    onChange={(e) => handleEditCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
+                    className="dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-1.5 py-1 text-[10px] font-mono text-teal-600 dark:text-teal-400"
+                  >
+                    <option value="REQUIRED">Required</option>
+                    <option value="PREFERRED">Preferred</option>
+                  </select>
+                  <select
+                    value={crit.weight}
+                    onChange={(e) => handleEditCriteriaChange(idx, 'weight', Number(e.target.value))}
+                    className="dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2 py-1 font-mono"
+                  >
+                    {[1, 2, 3, 4, 5].map((w) => (
+                      <option key={w} value={w}>w:{w}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setEditCriteria(editCriteria.filter((_, i) => i !== idx))}
+                    className="text-rose-400 hover:text-rose-300 p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <label htmlFor="edit-change-reason" className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
+                Change reason {editingJob.rubrics?.[0]?.status === 'APPROVED' ? '*' : '(optional)'}
+              </label>
+              <textarea
+                id="edit-change-reason"
+                rows={2}
+                value={editChangeReason}
+                onChange={(e) => setEditChangeReason(e.target.value)}
+                placeholder="Why is the rubric changing? (recorded in the audit trail)"
+                className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg p-2.5 leading-relaxed focus:outline-none focus:border-teal-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-slate-800 border-slate-100">
+              <button
+                type="button"
+                onClick={() => setEditModalOpen(false)}
+                className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={submitRubricEdit}
+                disabled={editSubmitting}
+                className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs disabled:opacity-60"
+              >
+                {editSubmitting ? t('loading') : 'Save Rubric'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

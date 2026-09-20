@@ -42,6 +42,13 @@ next-env.d.ts
 uploads/
 *.log
 
+# tool / artifact outputs
+.freebuff/
+test-results/
+playwright-report/
+backups/
+pdf-extract.txt
+
 AGENTS.md
 CLAUDE.md
 .system_generated/

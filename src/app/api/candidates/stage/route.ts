@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requireAuth } from '@/lib/auth';
+import { canAccessDepartment, requirePermission } from '@/lib/auth';
+import { Permission } from '@/lib/roleAccess';
 import { stageChangeSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function PATCH(req: Request) {
   try {
-    const auth = await requireAuth(['Admin', 'Recruiter', 'HiringManager']);
+    const auth = await requirePermission(Permission.MakeHiringDecisions);
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -30,6 +31,9 @@ export async function PATCH(req: Request) {
     }
 
     if (existingApp.job.organizationId !== auth.user.organizationId) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+    if (!canAccessDepartment(auth.user, existingApp.job.department)) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 

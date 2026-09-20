@@ -5,14 +5,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
 import prisma from '@/lib/prisma';
-import { validateFileMagicBytes, safeErrorResponse } from '@/lib/validation';
+import { validateFileMagicBytes, safeErrorResponse, PRIVACY_NOTICE_VERSION } from '@/lib/validation';
+import { scanDocumentForMalware } from '@/lib/malwareScan';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
     // Rate limiting on uploads
     const rateLimitKey = getRateLimitKey(req, 'upload');
-    const rateCheck = checkRateLimit(rateLimitKey, RATE_LIMITS.upload);
+    const rateCheck = await checkRateLimit(rateLimitKey, RATE_LIMITS.upload);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { success: false, error: 'Too many upload attempts. Please try again later.' },
@@ -32,9 +33,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
+    // SECURITY/§6.2: only valid, OPEN requisitions may receive applications —
+    // an arbitrary jobId must never create an orphaned application.
+    const job = await prisma.jobRequisition.findFirst({
+      where: { id: jobId, status: 'OPEN' },
+      include: { rubrics: { orderBy: { version: 'desc' } } },
+    });
+    if (!job) {
+      return NextResponse.json(
+        { success: false, error: 'This job is not accepting applications' },
+        { status: 404 }
+      );
+    }
+    // §6.2/§6.5: official screening may only use an APPROVED rubric version.
+    const approvedRubric = job.rubrics.find((r) => r.status === 'APPROVED') ?? job.rubrics[0];
+
     // MIME type validation
-    if (file.type !== 'application/pdf' && file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      return NextResponse.json({ success: false, error: 'Only PDF or DOCX files are allowed' }, { status: 400 });
+    const extension = file.name.toLowerCase().split('.').pop();
+    if (!extension || !['pdf', 'docx', 'txt', 'md'].includes(extension)) {
+      return NextResponse.json({ success: false, error: 'Only PDF, DOCX, TXT, and Markdown files are allowed' }, { status: 400 });
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
@@ -44,8 +61,22 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // SECURITY/§6.4: full malware scan BEFORE the file is stored, made
+    // available to staff, or queued for processing. Signature layer always
+    // runs; when CLAMAV_HOST is configured the ClamAV daemon verdict is
+    // required too (fail-closed when the daemon is unreachable).
+    const scan = await scanDocumentForMalware(buffer);
+    if (!scan.clean) {
+      await logAuditEvent({
+        action: 'MALWARE_SCAN_REJECTED',
+        actorId: null,
+        newValues: { filename: file.name, engine: scan.engine, threats: scan.threats },
+      });
+      return NextResponse.json({ success: false, error: 'Upload rejected by security scanner' }, { status: 403 });
+    }
+
     // SECURITY: Magic-byte validation — MIME types are client-supplied and easily spoofed
-    const detectedType = validateFileMagicBytes(buffer);
+    const detectedType = extension === 'pdf' || extension === 'docx' ? validateFileMagicBytes(buffer) : extension;
     if (!detectedType) {
       return NextResponse.json(
         { success: false, error: 'Invalid file content. The file does not appear to be a valid PDF or DOCX document.' },
@@ -66,14 +97,26 @@ export async function POST(req: NextRequest) {
     // 1. Duplicate Review & Candidate Creation
     const existingCandidates = await prisma.candidate.findMany({ where: { email } });
     const isDuplicate = existingCandidates.length > 0;
-    
+
+    // Spec §6.11: consent alone is not enough — record the privacy-notice
+    // version accepted and the timestamp of acceptance with the consent choice.
+    if (!consent) {
+      return NextResponse.json(
+        { success: false, error: 'Consent to data processing is required' },
+        { status: 400 }
+      );
+    }
+
     // Always create a new candidate record for the new application
     const candidate = await prisma.candidate.create({
-      data: { 
-        firstName, 
-        lastName, 
-        email, 
+      data: {
+        firstName,
+        lastName,
+        email,
         consentGiven: consent,
+        consentNoticeVersion: PRIVACY_NOTICE_VERSION,
+        consentGivenAt: new Date(),
+        consentChoices: JSON.stringify({ dataProcessing: true }),
         tags: isDuplicate ? ['POTENTIAL_DUPLICATE'] : []
       }
     });
@@ -90,29 +133,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Malware Scanning Simulation (Week 3 Requirement)
-    // In a real system, this would call an external AV scanner like ClamAV.
-    const isMalware = file.name.toLowerCase().includes('malware') || file.name.toLowerCase().includes('virus');
-    if (isMalware) {
-      await logAuditEvent({
-        action: 'MALWARE_DETECTED',
-        actorId: 'SYSTEM_USER',
-        affectedRecordId: candidate.id,
-        newValues: { filename: file.name }
-      });
-      return NextResponse.json({ success: false, error: 'Upload rejected by security scanner. Malicious content detected.' }, { status: 403 });
-    }
-
-    // 3. Create Application
+    // 2. Create Application — stage vocabulary consistent with the pipeline UI
+    // and decisions routes ('NEW' = awaiting screening).
     const application = await prisma.application.create({
       data: {
         candidateId: candidate.id,
         jobId: jobId,
-        stage: 'NEW'
+        stage: 'NEW',
+        status: 'NEW'
       }
     });
 
-    // 4. Create ResumeDocument with status QUEUED
+    // 3. Create ResumeDocument with status QUEUED
     const resumeDoc = await prisma.resumeDocument.create({
       data: {
         applicationId: application.id,
@@ -122,16 +154,20 @@ export async function POST(req: NextRequest) {
     });
 
     // 4. Trigger background processing asynchronously via BullMQ Message Queue
+    // (approved-rubric id is passed through so the worker screens against the
+    // correct version per §6.5).
     await resumeQueue.add('process-resume', {
       applicationId: application.id,
       resumeDocumentId: resumeDoc.id,
-      filePath: path
+      filePath: path,
+      rubricId: approvedRubric?.id
     });
 
     // 5. Audit Log
     await logAuditEvent({
       action: 'APPLICATION_SUBMITTED',
       actorId: 'SYSTEM_USER',
+      organizationId: job.organizationId,
       affectedRecordId: application.id,
       newValues: { jobId: application.jobId, candidateId: application.candidateId }
     });

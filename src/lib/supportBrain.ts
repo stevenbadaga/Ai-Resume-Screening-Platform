@@ -1,4 +1,5 @@
 import { MultilingualKnowledgeItem, RECRUIT_AI_MULTILINGUAL_KNOWLEDGE } from './supportKnowledge';
+import { CANONICAL_SKILL_NAMES, getSkillTaxonomy } from './skillNormalization';
 
 type LangCode = 'en' | 'fr' | 'es' | 'de' | 'rw';
 type SupportRole = 'user' | 'assistant';
@@ -68,12 +69,41 @@ export function findKnowledgeMatch(query: string): KnowledgeMatch | null {
 }
 
 export function getGroundedKnowledgeContext(language: LangCode): string {
-  return RECRUIT_AI_MULTILINGUAL_KNOWLEDGE
+  const knowledge = RECRUIT_AI_MULTILINGUAL_KNOWLEDGE
     .map((item) => {
       const answer = item.answers[language] || item.answers.en;
       return `Topic keywords: ${item.keywords.join(', ')}\nVerified answer: ${answer}`;
     })
     .join('\n\n');
+
+  // The skill taxonomy is rendered from the same shared table the screening
+  // engine uses (src/lib/skillNormalization.ts) — one source of truth, so the
+  // copilot can never describe a skill list that diverges from what screening
+  // actually normalizes (spec §6.6).
+  const skillContext = renderSkillKnowledge();
+  return skillContext ? `${knowledge}\n\n${skillContext}` : knowledge;
+}
+
+/**
+ * Renders the shared skill taxonomy as copilot knowledge: a compact canonical
+ * list plus the alias mappings, so users can ask "do you recognize k8s?" or
+ * "which skills do you screen for?" and get answers consistent with screening.
+ */
+export function renderSkillKnowledge(): string {
+  const taxonomy = getSkillTaxonomy();
+  if (taxonomy.length === 0) return '';
+
+  const aliasLines = taxonomy
+    .map((entry) => {
+      const aliases = entry.aliases.filter((a) => a !== entry.canonical.toLowerCase());
+      return `- ${entry.canonical}${aliases.length > 0 ? ` (also recognized as: ${aliases.join(', ')})` : ''}`;
+    })
+    .join('\n');
+
+  return [
+    'Topic keywords: skills, skill list, skill matching, skill normalization, abbreviations, skill taxonomy',
+    `Verified answer: RecruitAI screening recognizes ${CANONICAL_SKILL_NAMES.length} canonical skills and normalizes common abbreviations and variations (for example "JS" and "javascript" both map to JavaScript). The recognized skills and their aliases are:\n${aliasLines}`,]
+    .join('\n');
 }
 
 export function getSafeFallback(language: LangCode): string {

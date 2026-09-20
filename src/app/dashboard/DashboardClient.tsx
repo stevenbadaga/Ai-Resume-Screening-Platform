@@ -9,26 +9,34 @@ interface DashboardClientProps {
   userRole?: string;
   totalJobs?: number;
   totalCandidates?: number;
-  failedJobs?: number;
   newApplications?: number;
   screeningApps?: number;
   reviewApps?: number;
   shortlistedApps?: number;
   rejectedApps?: number;
   recentAudit?: any[];
+  lowConfidenceCount?: number;
+  failedProcessingCount?: number;
+  manualCorrectionsCount?: number;
+  scoreOverridesCount?: number;
+  upcomingInterviewsCount?: number;
 }
 
 export default function DashboardClient({
   userRole = 'Admin',
   totalJobs = 0,
   totalCandidates = 0,
-  failedJobs = 0,
   newApplications = 0,
   screeningApps = 0,
   reviewApps = 0,
   shortlistedApps = 0,
   rejectedApps = 0,
-  recentAudit = []
+  recentAudit = [],
+  lowConfidenceCount = 0,
+  failedProcessingCount = 0,
+  manualCorrectionsCount = 0,
+  scoreOverridesCount = 0,
+  upcomingInterviewsCount = 0,
 }: DashboardClientProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const { showToast } = useToast();
@@ -160,6 +168,90 @@ export default function DashboardClient({
           <span className="text-[10px] text-purple-500 dark:text-purple-400 font-mono mt-1 block">
             SHA-256 timeline logs
           </span>
+        </div>
+      </div>
+
+      {/* Spec §6.10: Screening Quality & Reliability Indicators */}
+      <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b dark:border-[#30424A] border-slate-200/80 pb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-bold dark:text-white text-slate-900 uppercase tracking-wider">
+              Screening Quality & Reliability Telemetry (§6.10)
+            </h2>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/30">
+              AUDITED METRICS
+            </span>
+          </div>
+          <span className="text-[11px] dark:text-slate-400 text-slate-500">
+            Automated monitoring for extraction confidence, human overrides & system health
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+          <div className="p-3 rounded-lg dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200">
+            <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
+              <span>Low-Confidence Flags</span>
+              <span>⚠️</span>
+            </div>
+            <div className="mt-1 text-xl font-bold font-mono text-amber-500">
+              {lowConfidenceCount}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Confidence &lt; 80% (Review required)
+            </span>
+          </div>
+
+          <div className="p-3 rounded-lg dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200">
+            <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
+              <span>Manual Corrections</span>
+              <span>✏️</span>
+            </div>
+            <div className="mt-1 text-xl font-bold font-mono text-indigo-500">
+              {manualCorrectionsCount}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Profiles corrected by recruiter
+            </span>
+          </div>
+
+          <div className="p-3 rounded-lg dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200">
+            <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
+              <span>Score Overrides</span>
+              <span>⚖️</span>
+            </div>
+            <div className="mt-1 text-xl font-bold font-mono text-sky-500">
+              {scoreOverridesCount}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Human recalibrated scores
+            </span>
+          </div>
+
+          <div className="p-3 rounded-lg dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200">
+            <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
+              <span>Processing Failures</span>
+              <span>🔴</span>
+            </div>
+            <div className={`mt-1 text-xl font-bold font-mono ${failedProcessingCount > 0 ? 'text-rose-500' : 'text-slate-400'}`}>
+              {failedProcessingCount}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Safe retry available
+            </span>
+          </div>
+
+          <div className="p-3 rounded-lg dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200">
+            <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
+              <span>Upcoming Interviews</span>
+              <span>📅</span>
+            </div>
+            <div className="mt-1 text-xl font-bold font-mono text-teal-600 dark:text-teal-400">
+              {upcomingInterviewsCount}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Scheduled &amp; active
+            </span>
+          </div>
         </div>
       </div>
 
