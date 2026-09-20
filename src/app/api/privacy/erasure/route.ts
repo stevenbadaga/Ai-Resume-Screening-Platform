@@ -4,8 +4,8 @@ import path from 'path';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { isPathWithinUploads, safeErrorResponse } from '@/lib/validation';
-import { unlink } from 'fs/promises';
+import { safeErrorResponse } from '@/lib/validation';
+import { deleteObject } from '@/lib/storage';
 
 export async function POST() {
   try {
@@ -25,20 +25,15 @@ export async function POST() {
       }
     });
 
-    // 1. Delete physical resume files safely
+    // 1. Delete the stored resume documents (cloud bucket or legacy local
+    // row) — §6.11 requires linked files to be addressed by erasure.
     if (candidate) {
       for (const app of candidate.applications) {
         if (app.resumeDocument?.fileReference) {
-          // C2 FIX: Always resolve to absolute path before unlinking
-          const absolutePath = path.isAbsolute(app.resumeDocument.fileReference)
-            ? app.resumeDocument.fileReference
-            : path.resolve(process.cwd(), /* turbopackIgnore: true */ app.resumeDocument.fileReference);
-          if (isPathWithinUploads(absolutePath)) {
-            try {
-              await unlink(absolutePath);
-            } catch (fsErr) {
-              console.warn('Physical file already unlinked or missing:', fsErr);
-            }
+          try {
+            await deleteObject(app.resumeDocument.fileReference);
+          } catch (storageErr) {
+            console.warn('Resume object already deleted or unreachable:', storageErr);
           }
         }
       }

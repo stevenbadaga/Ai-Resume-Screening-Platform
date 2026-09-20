@@ -1,4 +1,3 @@
-import fs from 'fs/promises';
 import prisma from '@/lib/prisma';
 import { getOpenAI, isOpenAIConfigured } from '@/lib/aiConfig';
 
@@ -18,29 +17,33 @@ export function redactPII(text: string): string {
   return redacted;
 }
 
-async function extractText(filePath: string): Promise<string> {
-  const dataBuffer = await fs.readFile(filePath);
-  const ext = filePath.split('.').pop()?.toLowerCase();
+async function extractText(fileBytes: Buffer, reference: string): Promise<string> {
+  const ext = reference.split('.').pop()?.toLowerCase();
 
   if (ext === 'txt' || ext === 'md') {
-    return dataBuffer.toString('utf-8');
+    return fileBytes.toString('utf-8');
   }
 
   if (ext === 'docx') {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mammoth = require('mammoth');
-    const result = await mammoth.extractRawText({ buffer: dataBuffer });
+    const result = await mammoth.extractRawText({ buffer: fileBytes });
     return result.value;
   }
 
   // Default: PDF
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const pdfParse = require('pdf-parse');
-  const pdfData = await pdfParse(dataBuffer);
+  const pdfData = await pdfParse(fileBytes);
   return pdfData.text;
 }
 
-export async function processResume(applicationId: string, resumeDocumentId: string, filePath: string) {
+export async function processResume(
+  applicationId: string,
+  resumeDocumentId: string,
+  fileBytes: Buffer,
+  fileReference: string
+) {
   try {
     // Explicit config failure instead of a junk-credential request (aiConfig gate).
     if (!isOpenAIConfigured()) {
@@ -53,8 +56,8 @@ export async function processResume(applicationId: string, resumeDocumentId: str
       data: { processingStatus: 'PROCESSING' }
     });
 
-    // 2. Extract Text (PDF, DOCX, TXT all handled)
-    const rawText = await extractText(filePath);
+    // 2. Extract Text (PDF, DOCX, TXT all handled — bytes come from cloud storage)
+    const rawText = await extractText(fileBytes, fileReference);
 
     // Redact PII before sending to AI — prevents proxy bias
     const sanitizedText = redactPII(rawText);

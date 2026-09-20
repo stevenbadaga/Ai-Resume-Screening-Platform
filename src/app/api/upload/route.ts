@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
 import prisma from '@/lib/prisma';
 import { validateFileMagicBytes, safeErrorResponse, PRIVACY_NOTICE_VERSION } from '@/lib/validation';
 import { scanDocumentForMalware } from '@/lib/malwareScan';
+import { putObject, buildObjectKey, contentTypeFromKey } from '@/lib/storage';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
@@ -84,15 +82,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Save to local storage for dev (simulating S3)
-    const uploadDir = process.env.STORAGE_LOCAL_PATH || './uploads';
-    await mkdir(uploadDir, { recursive: true });
-    
-    // Create unique safe filename
-    const safeFilename = `${uuidv4()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const path = join(uploadDir, safeFilename);
-    
-    await writeFile(path, buffer);
+    // Cloud object storage (Supabase, private bucket) — resume bytes never
+    // persist on the host machine. Server-side only, unique safe key (§6.4).
+    const stored = await putObject(
+      buffer,
+      buildObjectKey(file.name),
+      file.type || contentTypeFromKey(file.name)
+    );
 
     // 1. Duplicate Review & Candidate Creation
     const existingCandidates = await prisma.candidate.findMany({ where: { email } });
@@ -148,7 +144,7 @@ export async function POST(req: NextRequest) {
     const resumeDoc = await prisma.resumeDocument.create({
       data: {
         applicationId: application.id,
-        fileReference: path,
+        fileReference: stored.reference,
         processingStatus: 'QUEUED'
       }
     });
@@ -159,7 +155,6 @@ export async function POST(req: NextRequest) {
     await resumeQueue.add('process-resume', {
       applicationId: application.id,
       resumeDocumentId: resumeDoc.id,
-      filePath: path,
       rubricId: approvedRubric?.id
     });
 

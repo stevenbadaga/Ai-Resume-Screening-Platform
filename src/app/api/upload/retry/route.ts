@@ -38,11 +38,12 @@ export async function POST(req: NextRequest) {
       data: { processingStatus: 'QUEUED' }
     });
 
-    // Re-queue for processing
+    // Re-queue for processing (the worker reads bytes via the storage
+    // abstraction using the stored fileReference — cloud or legacy local).
     await resumeQueue.add('process-resume', {
       applicationId: application.id,
       resumeDocumentId: application.resumeDocument.id,
-      filePath: application.resumeDocument.fileReference
+      rubricId: undefined
     });
 
     await logAuditEvent({

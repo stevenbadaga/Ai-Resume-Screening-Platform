@@ -1,18 +1,10 @@
 import { NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
 import path from 'path';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { isPathWithinUploads, safeErrorResponse } from '@/lib/validation';
+import { safeErrorResponse } from '@/lib/validation';
 import { logAuditEvent } from '@/lib/auditLogger';
-
-function contentType(fileReference: string): string {
-  const extension = path.extname(fileReference).toLowerCase();
-  if (extension === '.pdf') return 'application/pdf';
-  if (extension === '.docx') return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-  if (extension === '.md') return 'text/markdown; charset=utf-8';
-  return 'text/plain; charset=utf-8';
-}
+import { getObject, contentTypeFromKey } from '@/lib/storage';
 
 export async function GET(
   _request: Request,
@@ -34,12 +26,11 @@ export async function GET(
     const isCandidate = auth.user.email.toLowerCase() === resume.application.candidate.email.toLowerCase();
     if (!isStaff && !isCandidate) return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
 
-    const filePath = path.isAbsolute(resume.fileReference)
-      ? resume.fileReference
-      : path.resolve(process.cwd(), resume.fileReference);
-    if (!isPathWithinUploads(filePath)) return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
-
-    const file = await readFile(filePath);
+    // Stream the document through the storage abstraction (cloud bucket or
+    // legacy local row). The key's extension drives the content type.
+    const referenceTail = resume.fileReference.split('/').pop() || resume.fileReference;
+    const { bytes: file, contentType: detectedType } = await getObject(resume.fileReference);
+    const contentTypeHeader = detectedType || contentTypeFromKey(referenceTail);
 
     // Spec §6.11: resume downloads are controlled personal-data access and
     // must be logged. Candidate self-downloads are also recorded.
@@ -54,10 +45,10 @@ export async function GET(
       },
     });
 
-    return new NextResponse(file, {
+    return new NextResponse(new Uint8Array(file), {
       headers: {
-        'Content-Type': contentType(filePath),
-        'Content-Disposition': `attachment; filename="resume-${resume.id}${path.extname(filePath).toLowerCase()}"`,
+        'Content-Type': contentTypeHeader,
+        'Content-Disposition': `attachment; filename="resume-${resume.id}${path.extname(referenceTail).toLowerCase()}"`,
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
       },

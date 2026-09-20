@@ -14,12 +14,14 @@ Aligned with the CODAFRIQA specification: §9 (Backup and Recovery, Monitoring a
 
 | Asset | Tool | Location |
 |---|---|---|
-| Application database (all recruitment records, audit ledger) | `scripts/backup.sh` (`pg_dump` + gzip) | `./backups/` or external volume/object storage |
-| Uploaded resume documents | filesystem sync of `STORAGE_LOCAL_PATH` (e.g. `rsync`, `restic`, S3 sync) | same cadence as the database |
+| Application database (all recruitment records, audit ledger) | `scripts/backup.sh` (`pg_dump` + gzip) **or Neon console snapshots / point-in-time restore** | `./backups/` or Neon's managed backups |
+| Uploaded resume documents | stored in the **Supabase Storage** private bucket — durable by default; bucket versioning optional in the Supabase dashboard | Supabase (cloud) |
 | Configuration | `.env` (kept out of git; copy to the secret manager or an encrypted store) | manual, per environment change |
 
-> The database and the upload directory must be backed up together (or both restored to the
-> same point in time) so `ResumeDocument.fileReference` rows match files that still exist.
+> Resume documents live in the cloud bucket (never on the host), so the database and documents
+> back up independently: `fileReference` keys remain valid across restores as long as the
+> bucket is not emptied. Prefer Neon's managed backup/PITR where available — it needs no
+> local tooling; `scripts/backup.sh` remains for hosts that have `pg_dump`.
 
 ### 1.2 Taking a backup
 
@@ -117,12 +119,13 @@ with no retention arrangement beyond the provider's API processing.
 
 1. `.env` complete (all `?:` required vars in `docker-compose.yml`) — generate
    `NEXTAUTH_SECRET` with `openssl rand -base64 32`; never reuse secrets across environments.
-2. `docker compose up -d db redis` (add `clamav` and set `CLAMAV_HOST=clamav` for full AV).
-3. `npx prisma migrate deploy` (runs automatically in the compose `app` service).
-4. First staff signup for the workspace's email domain becomes its Admin (founder bootstrap) —
+2. Create the private `resumes` bucket in Supabase Storage and set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` — uploads fail loudly without them (nothing is stored locally). If migrating from a local-filesystem deployment, run `npx tsx scripts/migrateUploadsToCloud.ts --apply` once.
+4. `docker compose up -d db redis` (add `clamav` and set `CLAMAV_HOST=clamav` for full AV).
+5. `npx prisma migrate deploy` (runs automatically in the compose `app` service).
+6. First staff signup for the workspace's email domain becomes its Admin (founder bootstrap) —
    complete DNS domain claiming on the Team page to let teammates auto-join.
-5. Configure a real email sender (Brevo verified sender or Resend domain) — the staging IP
+7. Configure a real email sender (Brevo verified sender or Resend domain) — the staging IP
    allow-list note in `docs/staging-evidence-auth-domain-claim.md` applies.
-6. Smoke-test `GET /api/health` (public) and the authenticated detail view.
-7. Schedule backups (§1.2) and the nightly audit-chain verification (§2.2); run one restore
+8. Smoke-test `GET /api/health` (public) and the authenticated detail view.
+9. Schedule backups (§1.2) and the nightly audit-chain verification (§2.2); run one restore
    drill (§1.3) before go-live.
