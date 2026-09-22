@@ -1,0 +1,28 @@
+Jane Smith
+Email: j.smith@example.com
+Phone: (555) 867-5309
+
+Summary:
+Recent graduate with a passion for technology and eager to learn new skills. Strong background in customer service and team collaboration.
+
+Skills:
+- Microsoft Word, Excel, PowerPoint
+- HTML, CSS (Basic)
+- Customer Service, Communication
+- Time Management
+
+Experience:
+Sales Associate | Retail Store
+August 2021 - Present
+- Handled customer inquiries and resolved complaints.
+- Managed cash register and end-of-day reconciliation.
+- Trained 3 new employees on store policies.
+
+Administrative Assistant | Local Office
+June 2019 - August 2021
+- Organized files and managed schedules for 4 managers.
+- Answered phones and routed calls.
+
+Education:
+B.A. in Communications
+State University, Graduated 2022

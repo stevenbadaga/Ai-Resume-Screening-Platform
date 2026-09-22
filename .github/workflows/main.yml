@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    # Type errors fail the build. (Script is "typecheck" — do not add "|| true".)
+    - name: Run Type Check
+      run: npm run typecheck
+
+    # Test failures fail the build.
+    - name: Run Tests
+      run: npm run test
+
+    - name: Build Next.js
+      run: npm run build
+      env:
+        # Build-time placeholders: the app must not connect to real services during `next build`.
+        DATABASE_URL: 'postgresql://ci:ci@localhost:5432/ci'
+        NEXTAUTH_URL: 'http://localhost:3000'
+        NEXTAUTH_SECRET: 'ci-placeholder-secret-min-32-characters-long!!'
