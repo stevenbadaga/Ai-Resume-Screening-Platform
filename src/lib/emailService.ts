@@ -128,6 +128,42 @@ END:VCALENDAR`;
 }
 
 /**
+ * Turns provider rejections into actionable hints appended to the thrown error
+ * (which lands in server logs and Communication.failureInfo). Brevo accounts
+ * with IP allowlisting enabled reject EVERY request from an unknown IP with a
+ * 401 — from the outside that is indistinguishable from "email never sends",
+ * so the fix must be discoverable from the failure record itself.
+ */
+function providerFailureHint(provider: 'Brevo' | 'Resend', status: number, data: unknown): string {
+  const detail = JSON.stringify(data ?? {}).toLowerCase();
+  if (provider === 'Brevo') {
+    if (status === 401 && detail.includes('ip')) {
+      return (
+        ' Hint: this Brevo account restricts API access to authorized IPs. Add this ' +
+          "server's IP at https://app.brevo.com/security/authorised_ips (or disable IP " +
+          'restrictions in Brevo security settings), then retry the send.'
+      );
+    }
+    if (status === 401) {
+      return (
+        ' Hint: check that BREVO_API_KEY is valid and that this server\'s IP is ' +
+          'authorized at https://app.brevo.com/security/authorised_ips.'
+      );
+    }
+  }
+  if (provider === 'Resend' && status === 401) {
+    return ' Hint: check that RESEND_API_KEY is valid and belongs to this Resend account.';
+  }
+  if (status === 403) {
+    return (
+      ' Hint: the EMAIL_FROM address may not be verified/allowed to send with this provider ' +
+        '(verify the sender or domain in the provider dashboard).'
+    );
+  }
+  return '';
+}
+
+/**
  * Sends an email through the configured provider. Throws on misconfiguration or
  * delivery failure — callers decide how to surface it. NO console.log fake-send path.
  *
@@ -176,7 +212,10 @@ export async function sendTransactionalEmail(
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(`Email delivery failed (Brevo HTTP ${res.status}): ${JSON.stringify(data)}`);
+      throw new Error(
+        `Email delivery failed (Brevo HTTP ${res.status}): ${JSON.stringify(data)}` +
+          providerFailureHint('Brevo', res.status, data)
+      );
     }
     return { success: true, id: String(data.messageId ?? 'unknown') };
   }
@@ -205,7 +244,10 @@ export async function sendTransactionalEmail(
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`Email delivery failed (HTTP ${res.status}): ${JSON.stringify(data)}`);
+    throw new Error(
+      `Email delivery failed (Resend HTTP ${res.status}): ${JSON.stringify(data)}` +
+        providerFailureHint('Resend', res.status, data)
+    );
   }
   return { success: true, id: String(data.id ?? 'unknown') };
 }
@@ -229,8 +271,15 @@ export interface RecordedEmailResult {
  * Sends an email AND records the attempt in the Communication table with an
  * honest delivery state (SENT / FAILED) and failure information, so admins
  * can see and follow up on failed notifications (spec §6.9).
+ *
+ * `customHtmlBody` (optional) replaces the template-rendered body — used by
+ * flows like password reset whose email content lives next to their token
+ * logic (src/lib/passwordReset.ts).
  */
-export async function sendRecordedEmail(input: RecordedEmailInput): Promise<RecordedEmailResult> {
+export async function sendRecordedEmail(
+  input: RecordedEmailInput,
+  customHtmlBody?: string
+): Promise<RecordedEmailResult> {
   const comm = await prisma.communication.create({
     data: {
       applicationId: input.applicationId,
@@ -244,12 +293,15 @@ export async function sendRecordedEmail(input: RecordedEmailInput): Promise<Reco
   });
 
   try {
-    await sendTransactionalEmail({
-      to: input.to,
-      template: input.template,
-      data: input.data,
-      applicationId: input.applicationId
-    });
+    await sendTransactionalEmail(
+      {
+        to: input.to,
+        template: input.template,
+        data: input.data,
+        applicationId: input.applicationId,
+      },
+      customHtmlBody
+    );
     await prisma.communication.update({
       where: { id: comm.id },
       data: { deliveryState: 'SENT' }
