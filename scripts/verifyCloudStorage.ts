@@ -7,11 +7,15 @@ import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 
 async function main() {
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
-  );
+  const url = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set — nothing to verify.');
+    process.exit(1);
+  }
+  const supabase = createClient(url, serviceKey, {
+    auth: { persistSession: false },
+  });
   const bucket = process.env.SUPABASE_RESUME_BUCKET || 'resumes';
 
   const { data, error } = await supabase.storage.listBuckets();

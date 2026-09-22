@@ -4,6 +4,7 @@
  * ANON-<runid> emails, role-recruiter-<runid> role), in FK-safe order.
  */
 import fs from 'fs';
+import path from 'path';
 import { E2E, RUN_ID } from './constants';
 import { createE2EPrisma } from './prismaClient';
 
@@ -63,6 +64,12 @@ export default async function globalTeardown() {
     console.warn('[e2e] teardown failed (artifacts may remain):', err);
   } finally {
     if (fs.existsSync(E2E.resumePath)) fs.unlinkSync(E2E.resumePath);
+    // Remove the shared run-id marker so the next run generates a fresh one.
+    try {
+      fs.unlinkSync(path.join(process.cwd(), 'test-results', '.e2e-run-id'));
+    } catch {
+      // already gone
+    }
     await prisma.$disconnect();
   }
 }

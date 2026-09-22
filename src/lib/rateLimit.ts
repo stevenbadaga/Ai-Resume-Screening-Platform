@@ -204,8 +204,13 @@ export function getRateLimitKey(req: Request, prefix = 'global'): string {
  * Pre-configured rate limit profiles for common use cases.
  */
 export const RATE_LIMITS = {
-  /** Login: 10 attempts per 15 minutes */
-  login: { maxRequests: 10, windowSeconds: 900 } as RateLimitConfig,
+  /**
+   * Login: 30 attempts per 15 minutes per IP. Sized for real deployments
+   * where an entire office shares one egress IP (and the limiter key falls
+   * back to a constant when no proxy headers are present), while still
+   * bounding online guessing to ~2 attempts/minute per source.
+   */
+  login: { maxRequests: 30, windowSeconds: 900 } as RateLimitConfig,
   /** Signup: 5 per 15 minutes */
   signup: { maxRequests: 5, windowSeconds: 900 } as RateLimitConfig,
   /** File upload: 10 per 5 minutes */

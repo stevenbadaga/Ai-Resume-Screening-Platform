@@ -3,8 +3,38 @@
  * strictly scoped inside the target database (same discipline as the
  * integration suite: unique org/role/user ids and emails per run, cleaned
  * up in global-teardown).
+ *
+ * RUN_ID stability: Playwright runs globalSetup and the test workers in
+ * DIFFERENT processes, so a bare `Date.now()` here would produce different
+ * ids in each — global-setup would seed one email and the tests would log
+ * in with another. The id is therefore generated once (by the first process
+ * to import this module, i.e. global-setup) and persisted to a file that
+ * worker processes read back. Teardown removes the file.
  */
-export const RUN_ID = `e2e${Date.now().toString(36)}`;
+import fs from 'fs';
+import path from 'path';
+
+const RUN_ID_FILE = path.join(process.cwd(), 'test-results', '.e2e-run-id');
+
+function resolveRunId(): string {
+  try {
+    const existing = fs.readFileSync(RUN_ID_FILE, 'utf8').trim();
+    if (existing) return existing;
+  } catch {
+    // No file yet — this process is the first importer (global-setup).
+  }
+  const id = `e2e${Date.now().toString(36)}`;
+  try {
+    fs.mkdirSync(path.dirname(RUN_ID_FILE), { recursive: true });
+    fs.writeFileSync(RUN_ID_FILE, id);
+  } catch {
+    // Read-only filesystem: fall back to per-process ids (suite would be
+    // broken anyway, but nothing crashes).
+  }
+  return id;
+}
+
+export const RUN_ID = resolveRunId();
 
 export const E2E = {
   orgId: `org-a-${RUN_ID}`,

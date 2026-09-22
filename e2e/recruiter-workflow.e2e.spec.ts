@@ -28,9 +28,12 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
     await page.fill('#signin-password', E2E.recruiter.password);
     await page.getByRole('button', { name: /sign in/i }).click();
 
-    // Successful sign-in lands on the dashboard
+    // Successful sign-in lands on the dashboard; the UserNav button's
+    // accessible name contains "<firstName> <role>" (e.g. "Rosa Admin").
     await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
-    await expect(page.getByText(E2E.recruiter.name).first()).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: new RegExp(E2E.recruiter.name.split(' ')[0]) }).first()
+    ).toBeVisible();
   });
 
   test('creates a job requisition from the UI', async ({ page }) => {
@@ -46,10 +49,13 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
     const jobTitle = `E2E UI Job ${Date.now().toString(36)}`;
     await page.fill('input[placeholder*="Senior Frontend Architect"]', jobTitle);
     await page.fill('textarea[placeholder*="Responsibilities"]', 'Created by the browser E2E test.');
-    await page.getByRole('button', { name: /create requisition|create job/i }).last().click();
+    // The modal's submit button (distinct from the "+ Create Requisition"
+    // trigger behind the backdrop, which intercepts pointer events).
+    await page.getByRole('button', { name: /publish requisition/i }).click();
 
     // The new requisition appears as a DRAFT card with its default rubric
-    await expect(page.getByText(jobTitle)).toBeVisible({ timeout: 20_000 });
+    // (the title also appears in the success toast — assert the card heading)
+    await expect(page.getByRole('heading', { name: jobTitle })).toBeVisible({ timeout: 20_000 });
   });
 
   test('shows the seeded job with rubric preview', async ({ page }) => {
@@ -100,17 +106,19 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
     await page.getByText(`${E2E.candidate.firstName} ${E2E.candidate.lastName}`).first().click();
     await page.waitForURL(/\/candidates\/[^/]+$/);
 
-    // PII is visible initially
-    await expect(page.getByText(E2E.candidate.email)).toBeVisible();
-
-    // §7: blind screening toggle hides name + email
-    await page.getByRole('button', { name: /blind screen/i }).click();
-    await expect(page.getByText(/Candidate #/)).toBeVisible();
+    // §7: blind screening is the DEFAULT — the profile anonymizes the
+    // candidate ("Candidate #XXXXXXXX") and hides the email until revealed.
+    await expect(page.getByText(/Candidate #/).first()).toBeVisible();
     await expect(page.getByText(E2E.candidate.email)).toBeHidden();
 
-    // Toggle back
+    // Reveal PII shows the email
     await page.getByRole('button', { name: /reveal pii/i }).click();
-    await expect(page.getByText(E2E.candidate.email)).toBeVisible();
+    await expect(page.getByText(E2E.candidate.email).first()).toBeVisible();
+
+    // And blind screening hides it again
+    await page.getByRole('button', { name: /blind screen/i }).click();
+    await expect(page.getByText(/Candidate #/).first()).toBeVisible();
+    await expect(page.getByText(E2E.candidate.email)).toBeHidden();
   });
 
   test('recalibrates the AI score with a mandatory reason (§6.5 override)', async ({ page }) => {
@@ -132,8 +140,9 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
     });
     await page.getByRole('button', { name: /save|apply|confirm/i }).last().click();
 
-    // Toast confirms the recalibration and the score updates
-    await expect(page.getByText(/recalibrated/i)).toBeVisible({ timeout: 20_000 });
+    // Toast confirms the recalibration and the score updates (assert the
+    // toast heading once — the description also contains "recalibrated")
+    await expect(page.getByRole('heading', { name: /score recalibrated/i })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('91%').first()).toBeVisible();
   });
 
@@ -261,8 +270,8 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForURL(/\/dashboard/);
 
-    // Sign out via the user menu
-    const userMenu = page.getByText(/rosa recruiter/i).first();
+    // Sign out via the user menu (UserNav button name contains "<firstName>")
+    const userMenu = page.getByRole('button', { name: new RegExp(E2E.recruiter.name.split(' ')[0]) }).first();
     if (await userMenu.isVisible()) {
       await userMenu.click();
       await page.getByText(/sign out/i).first().click();
