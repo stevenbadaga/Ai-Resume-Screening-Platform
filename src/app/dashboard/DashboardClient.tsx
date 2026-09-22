@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -52,6 +53,7 @@ export default function DashboardClient({
   recentFailedEmailDeliveries = [],
 }: DashboardClientProps) {
   const [isSyncing, setIsSyncing] = useState(false);
+  const router = useRouter();
   const { showToast } = useToast();
   const { t } = useLanguage();
 
@@ -59,11 +61,14 @@ export default function DashboardClient({
   // permission in the RBAC matrix (src/lib/roleAccess.ts).
   const isAdmin = userRole === 'Admin';
 
+  // Re-fetches the server-rendered telemetry via the Next.js router so the
+  // numbers on screen are real data, not a simulated refresh.
   const handleSyncTelemetry = async () => {
     setIsSyncing(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      showToast('Live pipeline distribution synchronized', 'success', 'Telemetry Updated');
+      router.refresh();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      showToast('Pipeline telemetry refreshed from the database', 'success', 'Telemetry Updated');
     } finally {
       setIsSyncing(false);
     }
