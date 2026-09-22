@@ -5,6 +5,15 @@ import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
+interface FailedDeliveryRow {
+  id: string;
+  recipient: string;
+  template: string;
+  deliveryState: string;
+  failureInfo?: string | null;
+  createdAt: string | Date;
+}
+
 interface DashboardClientProps {
   userRole?: string;
   totalJobs?: number;
@@ -20,6 +29,8 @@ interface DashboardClientProps {
   manualCorrectionsCount?: number;
   scoreOverridesCount?: number;
   upcomingInterviewsCount?: number;
+  failedEmailDeliveriesCount?: number;
+  recentFailedEmailDeliveries?: FailedDeliveryRow[];
 }
 
 export default function DashboardClient({
@@ -37,10 +48,16 @@ export default function DashboardClient({
   manualCorrectionsCount = 0,
   scoreOverridesCount = 0,
   upcomingInterviewsCount = 0,
+  failedEmailDeliveriesCount = 0,
+  recentFailedEmailDeliveries = [],
 }: DashboardClientProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const { showToast } = useToast();
   const { t } = useLanguage();
+
+  // Ops telemetry (spec §6.9) is Admin-only — mirrors the ViewEmailDelivery
+  // permission in the RBAC matrix (src/lib/roleAccess.ts).
+  const isAdmin = userRole === 'Admin';
 
   const handleSyncTelemetry = async () => {
     setIsSyncing(true);
@@ -171,6 +188,20 @@ export default function DashboardClient({
         </div>
       </div>
 
+      {/* Ops alert (spec §6.9): failed transactional-email deliveries — Admin only */}
+      {isAdmin && failedEmailDeliveriesCount > 0 && (
+        <Link
+          href="/dashboard/email-delivery"
+          className="flex items-center gap-3 p-3.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-200 text-xs font-semibold shadow-xs transition hover:opacity-90"
+        >
+          <span className="text-base">📧</span>
+          <span className="flex-1">
+            {failedEmailDeliveriesCount} email deliver{failedEmailDeliveriesCount === 1 ? 'y' : 'ies'} failed in the last 7 days — some recipients were never notified. Review delivery errors
+          </span>
+          <span aria-hidden="true">&rarr;</span>
+        </Link>
+      )}
+
       {/* Spec §6.10: Screening Quality & Reliability Indicators */}
       <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b dark:border-[#30424A] border-slate-200/80 pb-2">
@@ -187,7 +218,7 @@ export default function DashboardClient({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+        <div className={`grid grid-cols-2 sm:grid-cols-3 ${isAdmin ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3 pt-1`}>
           <div className="p-3 rounded-lg dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200">
             <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
               <span>Low-Confidence Flags</span>
@@ -252,6 +283,29 @@ export default function DashboardClient({
               Scheduled &amp; active
             </span>
           </div>
+
+          {/* Admin-only ops tile (spec §6.9): failed email deliveries */}
+          <Link
+            href="/dashboard/email-delivery"
+            className={`p-3 rounded-lg border block transition hover:opacity-90 ${
+              failedEmailDeliveriesCount > 0
+                ? 'bg-rose-950/40 border-rose-800/60'
+                : 'dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200'
+            }`}
+          >
+            <div className="flex items-center justify-between text-[11px] font-medium dark:text-slate-400 text-slate-500">
+              <span>Failed Emails (7d)</span>
+              <span>📧</span>
+            </div>
+            <div className={`mt-1 text-xl font-bold font-mono ${failedEmailDeliveriesCount > 0 ? 'text-rose-500' : 'text-slate-400'}`}>
+              {failedEmailDeliveriesCount}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              {recentFailedEmailDeliveries.length > 0
+                ? `Latest: ${recentFailedEmailDeliveries[0].template.replace(/_/g, ' ').toLowerCase()}`
+                : 'Transactional delivery health'}
+            </span>
+          </Link>
         </div>
       </div>
 

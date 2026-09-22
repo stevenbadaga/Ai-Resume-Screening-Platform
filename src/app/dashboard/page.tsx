@@ -6,6 +6,21 @@ import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
+// Ops telemetry window for failed-email counters: 7 days. Deliberately a
+// module constant so the tile and its detail view (/dashboard/email-delivery)
+// measure the same period.
+const EMAIL_TELEMETRY_WINDOW_START = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+// Shared field list for failed-delivery rows surfaced to the Admin.
+const DELIVERY_SELECT = {
+  id: true,
+  recipient: true,
+  template: true,
+  deliveryState: true,
+  failureInfo: true,
+  createdAt: true,
+} as const;
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect('/auth/signin');
@@ -36,7 +51,9 @@ export default async function DashboardPage() {
     failedProcessingCount,
     manualCorrectionsCount,
     scoreOverridesCount,
-    upcomingInterviewsCount
+    upcomingInterviewsCount,
+    failedEmailDeliveriesCount,
+    recentFailedEmailDeliveries
   ] = await Promise.all([
     prisma.jobRequisition.count({ where: { organizationId } }),
     prisma.candidate.count({ where: { applications: { some: { job: { organizationId } } } } }),
@@ -76,6 +93,35 @@ export default async function DashboardPage() {
         status: 'SCHEDULED',
         schedule: { gte: new Date() }
       }
+    }),
+
+    // Ops telemetry (spec §6.9): failed transactional-email deliveries in the
+    // last 7 days, scoped to the workspace. Every recorded send attributes to
+    // the org either through the job (application notifications) or through
+    // the sender user (auth emails like PASSWORD_RESET / EMAIL_VERIFICATION
+    // and team invitations set senderId to the acting account).
+    prisma.communication.count({
+      where: {
+        deliveryState: 'FAILED',
+        createdAt: { gte: EMAIL_TELEMETRY_WINDOW_START },
+        OR: [
+          { job: { organizationId } },
+          { sender: { organizationId } },
+        ],
+      },
+    }),
+    prisma.communication.findMany({
+      where: {
+        deliveryState: 'FAILED',
+        createdAt: { gte: EMAIL_TELEMETRY_WINDOW_START },
+        OR: [
+          { job: { organizationId } },
+          { sender: { organizationId } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: DELIVERY_SELECT,
     })
   ]);
 
@@ -95,6 +141,8 @@ export default async function DashboardPage() {
       manualCorrectionsCount={manualCorrectionsCount}
       scoreOverridesCount={scoreOverridesCount}
       upcomingInterviewsCount={upcomingInterviewsCount}
+      failedEmailDeliveriesCount={failedEmailDeliveriesCount}
+      recentFailedEmailDeliveries={JSON.parse(JSON.stringify(recentFailedEmailDeliveries))}
     />
   );
 }

@@ -55,6 +55,13 @@ export const Permission = {
   ManagePrivacyRequests: 'compliance:privacy-requests',
   RetryResumeUpload: 'uploads:retry',
 
+  // Operations
+  // Failed transactional-email deliveries (spec §6.9) are platform operations
+  // telemetry: they expose recipient addresses across workflows, so they are
+  // restricted to the workspace Admin (deliberately NOT auditors — the matrix
+  // keeps their grant set strictly read-only compliance data).
+  ViewEmailDelivery: 'ops:email-delivery:view',
+
   // Team administration
   ManageTeam: 'team:manage',
 } as const;
