@@ -115,8 +115,12 @@ export default function SignupPage() {
 
       // Email verification is required (spec §6.1) — the account cannot sign
       // in until the emailed link is clicked, so route to sign-in with a
-      // notice instead of attempting an auto sign-in.
-      router.push('/auth/signin?registered=1');
+      // notice instead of attempting an auto sign-in. The API reports whether
+      // the verification email was ACTUALLY delivered (emailDelivered) — pass
+      // it through so the sign-in page shows an honest delivery-failure
+      // notice instead of a dead-end "check your inbox".
+      const emailDelivered = data?.emailDelivered !== false;
+      router.push(`/auth/signin?registered=1${emailDelivered ? '' : '&emailDelivery=failed'}`);
       router.refresh();
     } catch (err: any) {
       setError(err.message || copy.registrationError);

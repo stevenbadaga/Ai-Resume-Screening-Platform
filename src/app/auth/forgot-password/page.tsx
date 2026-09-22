@@ -7,6 +7,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [emailSystemHealthy, setEmailSystemHealthy] = useState(true);
   const [error, setError] = useState('');
 
   async function handleSubmit(e: FormEvent) {
@@ -23,8 +24,12 @@ export default function ForgotPasswordPage() {
         setError('Something went wrong — please try again');
         return;
       }
-      // Always show the neutral confirmation: the endpoint never reveals
-      // whether the email has an account (anti-enumeration).
+      // The endpoint never reveals whether the email has an account
+      // (anti-enumeration) — but it DOES report platform-wide email health.
+      // A failing mail provider would otherwise make this flow a dead end
+      // with an on-its-way message nobody received.
+      const data = await res.json().catch(() => ({}));
+      setEmailSystemHealthy(data?.emailSystemHealthy !== false);
       setSubmitted(true);
     } catch {
       setError('Network error — please try again');
@@ -50,9 +55,20 @@ export default function ForgotPasswordPage() {
 
         {submitted ? (
           <div role="status" className="space-y-4 text-xs">
-            <div className="p-3.5 bg-emerald-950/80 border border-emerald-800 rounded-xl text-emerald-300 font-bold text-center">
-              ✅ If an account exists for that email, a reset link is on its way.
-            </div>
+            {emailSystemHealthy ? (
+              <div className="p-3.5 bg-emerald-950/80 border border-emerald-800 rounded-xl text-emerald-300 font-bold text-center">
+                ✅ If an account exists for that email, a reset link is on its way.
+              </div>
+            ) : (
+              <div className="p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 font-bold text-center space-y-3">
+                <p>
+                  ⚠️ If an account exists for that email, a reset link was requested — but our email delivery is failing right now, so it may never arrive.
+                </p>
+                <p className="font-medium opacity-90">
+                  Please try again shortly; if it keeps failing, contact support so delivery can be restored.
+                </p>
+              </div>
+            )}
             <div className="text-center">
               <Link href="/auth/signin" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
                 Back to sign in

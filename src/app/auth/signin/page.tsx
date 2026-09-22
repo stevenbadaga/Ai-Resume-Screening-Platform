@@ -138,8 +138,12 @@ function SignInForm() {
   const router = useRouter();
 
   // Signup now requires email verification (spec §6.1) — a redirect from the
-  // signup page shows a heads-up instead of a bare sign-in form.
+  // signup page shows a heads-up instead of a bare sign-in form. When the
+  // verification email could not be delivered (the signup API reports this
+  // honestly via emailDelivered), say so instead of a dead-end "check your
+  // inbox"; the resend button is the recovery path.
   const justRegistered = searchParams.get('registered') === '1';
+  const emailDeliveryFailed = searchParams.get('emailDelivery') === 'failed';
 
   const handleResend = async () => {
     if (!email || resendState === 'sending') return;
@@ -210,8 +214,31 @@ function SignInForm() {
         )}
 
         {justRegistered && !error && !emailNotVerified && (
-          <div className="p-3.5 bg-teal-950/70 border border-teal-800 rounded-xl text-teal-300 text-xs font-semibold text-center">
-            ✅ Account created. Check your inbox and click the verification link we emailed you, then sign in here.
+          <div
+            className={
+              emailDeliveryFailed
+                ? 'p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 text-xs font-semibold text-center space-y-2'
+                : 'p-3.5 bg-teal-950/70 border border-teal-800 rounded-xl text-teal-300 text-xs font-semibold text-center'
+            }
+          >
+            {emailDeliveryFailed ? (
+              <>
+                <p>⚠️ Account created, but the verification email could not be sent (email delivery is not working right now).</p>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendState === 'sending'}
+                  className="px-3 py-1.5 bg-amber-700/80 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                >
+                  {resendState === 'sending' ? copy.resending : copy.resendVerification}
+                </button>
+                {resendState === 'sent' && (
+                  <p className="font-medium opacity-90">✅ {copy.resendSent}</p>
+                )}
+              </>
+            ) : (
+              <p>✅ Account created. Check your inbox and click the verification link we emailed you, then sign in here.</p>
+            )}
           </div>
         )}
 
