@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useToast } from '@/components/Toast';
 import { signOut } from 'next-auth/react';
+import PrivacyRequestForm from './PrivacyRequestForm';
 
 export default function PrivacyClient() {
   const { t } = useLanguage();
@@ -118,6 +119,9 @@ export default function PrivacyClient() {
           </button>
         </div>
       </div>
+
+      {/* §6.11: tracked correction / access / withdrawal requests routed to staff */}
+      <PrivacyRequestForm />
     </div>
   );
 }
