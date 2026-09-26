@@ -12,6 +12,7 @@
         "typecheck": "tsc --noEmit",
         "cleanup-accounts": "tsx scripts/cleanupAccounts.ts",
         "verify-audit-chain": "tsx scripts/verifyAuditChain.ts",
+        "sweep-stale-runs": "tsx scripts/sweepStaleRuns.ts",
         "backup": "bash scripts/backup.sh",
         "restore": "bash scripts/restore.sh",
         "postinstall": "prisma generate"
@@ -19,6 +20,7 @@
     "dependencies": {
         "@prisma/adapter-pg": "^7.9.1",
         "@prisma/client": "^7.9.1",
+        "@sentry/node": "^11.0.0",
         "@supabase/supabase-js": "^2.116.0",
         "@types/pg": "^8.21.0",
         "bcryptjs": "^3.0.3",
@@ -48,6 +50,7 @@
         "@types/uuid": "^10.0.0",
         "@vitejs/plugin-react": "^6.0.5",
         "autoprefixer": "^10.5.4",
+        "axe-playwright": "^2.2.2",
         "eslint": "^9",
         "eslint-config-next": "16.3.0",
         "jsdom": "^29.1.1",

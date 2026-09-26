@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { computeAuditHash } from '@/lib/auditChain';
+import { trackError } from '@/lib/errorTracker';
 
 /**
  * Appends an event to the audit ledger. Every event is chained to its
@@ -71,6 +72,9 @@ export async function logAuditEvent(params: {
     // C7 FIX: Log to stderr AND re-throw so callers are aware of audit persistence failures.
     // In production, wire this to an external logging service (e.g. CloudWatch, Datadog).
     console.error('CRITICAL: Failed to write to audit log', error);
+    // §9: audit-persistence failures are security-relevant — surface them in
+    // the error tracker as well as rethrowing to the caller.
+    trackError('auditLogger.persistenceFailed', error, { action: params.action });
     throw new Error(`Audit log persistence failed for action "${params.action}": ${String(error)}`);
   }
 }
