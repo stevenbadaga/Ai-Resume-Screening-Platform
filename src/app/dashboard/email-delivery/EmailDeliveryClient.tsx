@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface DeliveryRow {
   id: string;
@@ -34,8 +35,36 @@ export default function EmailDeliveryClient({
   deliveries: DeliveryRow[];
   total: number;
 }) {
+  const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [templateFilter, setTemplateFilter] = useState<string>('ALL');
+  const [retryingId, setRetryingId] = useState<string | null>(null);
+  const [retryMessage, setRetryMessage] = useState<string | null>(null);
+
+  // §6.9: failed notifications must be retried safely where appropriate.
+  // The retry records its own Communication row with the real outcome.
+  const handleRetry = async (communicationId: string) => {
+    setRetryingId(communicationId);
+    setRetryMessage(null);
+    try {
+      const res = await fetch('/api/notifications/retry-delivery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ communicationId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setRetryMessage('Retry succeeded — the email was delivered.');
+        router.refresh();
+      } else {
+        setRetryMessage(`Retry failed: ${data.detail || data.error || 'unknown error'}`);
+      }
+    } catch {
+      setRetryMessage('Network error — the retry was not attempted.');
+    } finally {
+      setRetryingId(null);
+    }
+  };
 
   const templates = Array.from(new Set(deliveries.map((d) => d.template))).sort();
   const filtered =
@@ -66,6 +95,12 @@ export default function EmailDeliveryClient({
           &larr; Back to dashboard
         </Link>
       </div>
+
+      {retryMessage && (
+        <div className="rounded-lg px-3 py-2 text-xs dark:bg-teal-950/40 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/60 border-teal-200">
+          {retryMessage}
+        </div>
+      )}
 
       {deliveries.length === 0 ? (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-8 text-center space-y-2">
@@ -114,6 +149,8 @@ export default function EmailDeliveryClient({
                     row={row}
                     expanded={expandedId === row.id}
                     onToggle={() => setExpandedId(expandedId === row.id ? null : row.id)}
+                    onRetry={() => handleRetry(row.id)}
+                    retrying={retryingId === row.id}
                   />
                 ))}
               </tbody>
@@ -129,10 +166,14 @@ function RowFragment({
   row,
   expanded,
   onToggle,
+  onRetry,
+  retrying,
 }: {
   row: DeliveryRow;
   expanded: boolean;
   onToggle: () => void;
+  onRetry: () => void;
+  retrying: boolean;
 }) {
   return (
     <>
@@ -160,6 +201,16 @@ function RowFragment({
             <div className="p-3 rounded-lg bg-rose-950/30 border border-rose-900/50 font-mono text-[10px] text-rose-200/90 break-all whitespace-pre-wrap">
               {row.failureInfo || 'No provider error detail was recorded for this delivery.'}
             </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRetry();
+              }}
+              disabled={retrying}
+              className="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {retrying ? 'Retrying…' : '↻ Retry delivery'}
+            </button>
           </td>
         </tr>
       )}
