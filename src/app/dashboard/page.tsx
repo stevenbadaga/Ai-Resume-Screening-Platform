@@ -84,7 +84,10 @@ export default async function DashboardPage() {
     prisma.auditEvent.count({
       where: {
         organizationId,
-        action: { in: ['SCORE_OVERRIDDEN', 'CRITERION_OVERRIDDEN'] }
+        // §6.10 quality indicator: recommendation overrides. Action names must
+        // match what src/app/api/decisions/override/route.ts actually writes
+        // (HUMAN_SCORE_OVERRIDE / CRITERION_OVERRIDE).
+        action: { in: ['HUMAN_SCORE_OVERRIDE', 'CRITERION_OVERRIDE'] }
       }
     }),
     prisma.interview.count({

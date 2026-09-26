@@ -77,6 +77,10 @@ export async function GET(req: NextRequest) {
         job: { select: { id: true, title: true, department: true, ownerId: true } },
         screeningRuns: { where: { status: 'COMPLETED' }, orderBy: { createdAt: 'asc' }, take: 1 },
         assignedRecruiter: { select: { id: true, name: true, email: true } },
+        // §6.10 exact time-in-stage: the latest RecruitmentDecision marks the
+        // moment the application entered its current stage — updatedAt moves
+        // on ANY edit (notes, tags), so it overstates stage aging.
+        decisions: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true, newStage: true } },
       },
     });
 
@@ -92,11 +96,18 @@ export async function GET(req: NextRequest) {
     const screenedCount = screeningDurations.length;
 
     // ── Time in stage: hours since entering the current stage ──
+    // Entered-at = the latest decision that produced the current stage;
+    // falls back to application creation for applications never decided.
     const now = Date.now();
     const stageBuckets = new Map<string, number[]>();
     for (const app of applications) {
       const stageKey = app.stage || 'NEW';
-      const elapsedHours = (now - app.updatedAt.getTime()) / MS_PER_HOUR;
+      const latestDecision = app.decisions[0];
+      const enteredAt =
+        latestDecision && latestDecision.newStage === stageKey
+          ? latestDecision.createdAt
+          : app.createdAt;
+      const elapsedHours = (now - enteredAt.getTime()) / MS_PER_HOUR;
       const bucket = stageBuckets.get(stageKey) ?? [];
       bucket.push(Math.max(0, elapsedHours));
       stageBuckets.set(stageKey, bucket);
@@ -149,6 +160,48 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    // ── §6.10 screening-quality indicators ──
+    // Overrides and manual corrections are counted from the audit ledger —
+    // the same records the decision/override routes actually write.
+    const scopeAudit = {
+      organizationId: auth.user.organizationId,
+      ...(validFrom || validTo
+        ? { timestamp: { ...(validFrom ? { gte: validFrom } : {}), ...(validTo ? { lte: validTo } : {}) } }
+        : {}),
+    };
+    const [overrideCount, correctionCount] = await Promise.all([
+      prisma.auditEvent.count({
+        where: { ...scopeAudit, action: { in: ['HUMAN_SCORE_OVERRIDE', 'CRITERION_OVERRIDE'] } },
+      }),
+      prisma.auditEvent.count({
+        where: { ...scopeAudit, action: 'CANDIDATE_PROFILE_CORRECTED' },
+      }),
+    ]);
+
+    // AI-vs-human disagreement: the latest completed screening run's score
+    // differs materially from the effective (human-recalibrated) score.
+    const DISAGREEMENT_THRESHOLD = 10; // percentage points
+    const applicationsWithRuns = await prisma.application.findMany({
+      where: { ...applicationWhere, screeningRuns: { some: {} } },
+      select: {
+        id: true,
+        screeningRuns: {
+          where: { status: 'COMPLETED' },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { totalResult: true, effectiveResult: true },
+        },
+      },
+    });
+    const disagreementCount = applicationsWithRuns.filter((a) => {
+      const run = a.screeningRuns[0];
+      if (!run) return false;
+      const ai = run.totalResult;
+      const human = run.effectiveResult;
+      if (ai == null || human == null) return false;
+      return Math.abs(human - ai) >= DISAGREEMENT_THRESHOLD;
+    }).length;
+
     // ── Recruiter workload: open (not rejected/withdrawn) applications each ──
     const openApps = applications.filter((a) => !['REJECTED', 'WITHDRAWN', 'HIRED'].includes(a.status));
     const workloadMap = new Map<string, { name: string; email: string; count: number }>();
@@ -190,10 +243,15 @@ export async function GET(req: NextRequest) {
       },
       metricDefinitions: {
         timeToScreenHours: 'Median hours from application creation to first completed screening run.',
-        timeInStage: 'Median hours applications have spent in their current stage.',
+        timeInStage: 'Median hours since the application entered its current stage (per decision history; falls back to application creation).',
         stageConversion: 'Share of filtered applications currently in each stage.',
         interviewerCompletionPct: 'Submitted scorecards as a share of assigned interview participants.',
         recruiterWorkload: 'Open (not rejected/withdrawn/hired) applications per assigned recruiter.',
+        recommendationOverrides: 'Human score/criterion overrides recorded in the audit ledger for the filtered period (§6.10).',
+        manualCorrections: 'Parsed-profile corrections recorded in the audit ledger for the filtered period (§6.10).',
+        aiHumanDisagreementCount: `Completed screening runs where the effective (human-recalibrated) score differs from the original AI score by ≥ ${DISAGREEMENT_THRESHOLD} points (§6.10).`,
+        failedProcessingCount: 'Resume documents whose processing failed (§6.10).',
+        lowConfidenceCount: 'Resume documents flagged NEEDS_REVIEW by low-confidence extraction (§6.10).',
       },
       summary: {
         totalApplications,
@@ -204,6 +262,9 @@ export async function GET(req: NextRequest) {
         submittedParticipants,
         failedProcessingCount,
         needsReviewCount,
+        recommendationOverrides: overrideCount,
+        manualCorrections: correctionCount,
+        aiHumanDisagreementCount: disagreementCount,
         departmentAccessRestricted: !departmentAllowed,
       },
       timeInStage,
