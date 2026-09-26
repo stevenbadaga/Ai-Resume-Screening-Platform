@@ -22,11 +22,19 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 // The matrix is the single permission source of truth (mirrors signup).
 import { permissionsForRoleName } from '../src/lib/roleAccess';
 
-const prisma = new PrismaClient();
+// Prisma 7 requires a driver adapter (matches scripts/dbPing.ts and src/lib/prisma.ts).
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 20_000,
+  max: 2,
+});
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const DEMO_ORG_NAME = 'RecruitAI Demo Workspace';
 const DEMO_DOMAIN = 'demo.local';

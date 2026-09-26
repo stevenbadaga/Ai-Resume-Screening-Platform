@@ -5,6 +5,12 @@ import prisma from './prisma';
 import { scoreCandidateProfile } from './scoringEngine';
 import { scanDocumentForMalware } from './malwareScan';
 import { readForProcessing } from './storage';
+import { sweepStaleScreeningRuns } from './screeningRecovery';
+import { initErrorTracker, trackError } from './errorTracker';
+
+// Initialize error tracking (no-op without SENTRY_DSN) so worker-side
+// failures — queue outages, scoring crashes — surface in the tracker.
+initErrorTracker();
 
 let connection: any = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -63,9 +69,34 @@ const worker = new Worker('ResumeProcessingQueue', async job => {
 worker.on('failed', (job, err) => {
   if (job) {
     console.error(`Job ${job.id} failed with error ${err.message}`);
+    trackError('worker.jobFailed', err, {
+      jobId: job.id,
+      applicationId: String(job.data?.applicationId ?? ''),
+      attempts: job.attemptsMade,
+    });
   } else {
     console.error(`Job failed with error ${err.message}`);
+    trackError('worker.jobFailed', err, {});
   }
 });
 
 console.log('BullMQ Resume Processing Worker started...');
+
+// §9 reliability: recover runs abandoned by a previous crash while this
+// worker is live. The sweep re-queues stuck resumes so no application hangs.
+const SWEEP_INTERVAL_MS = 10 * 60_000;
+const runRecoverySweep = async () => {
+  try {
+    const result = await sweepStaleScreeningRuns({ apply: true });
+    if (result.stuckRuns > 0) {
+      console.log(
+        `Recovery sweep: marked ${result.stuckRuns} stale run(s) FAILED, re-queued ${result.requeued}.`
+      );
+    }
+  } catch (err) {
+    console.error('Recovery sweep failed:', err);
+  }
+};
+void runRecoverySweep();
+const sweepTimer = setInterval(runRecoverySweep, SWEEP_INTERVAL_MS);
+sweepTimer.unref?.();
