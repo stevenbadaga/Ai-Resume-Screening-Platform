@@ -4,13 +4,14 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Link from 'next/link';
 import AuditClient from './AuditClient';
+import { parsePagination, toPageInfo } from '@/lib/pagination';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AuditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ actor?: string; action?: string; from?: string; to?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect('/auth/signin');
@@ -53,7 +54,16 @@ export default async function AuditPage({
 
   // Spec §6.12: the audit log must support search by user, action type, and date
   // range — and it must never show one organization's events to another (§6.1).
-  const { actor, action, from, to } = await searchParams;
+  const sp = await searchParams;
+  const { actor, action, from, to } = {
+    actor: typeof sp.actor === 'string' ? sp.actor : undefined,
+    action: typeof sp.action === 'string' ? sp.action : undefined,
+    from: typeof sp.from === 'string' ? sp.from : undefined,
+    to: typeof sp.to === 'string' ? sp.to : undefined,
+  };
+  // §9 performance: the ledger grows without bound, so results page in the
+  // database (50/page) with the filter set preserved in the URL.
+  const { page, pageSize, skip, take } = parsePagination(sp);
 
   const where: Record<string, unknown> = { organizationId };
   if (actor && actor.trim()) {
@@ -74,25 +84,30 @@ export default async function AuditPage({
     where.timestamp = { ...(where.timestamp as object | undefined), lte: toEnd };
   }
 
-  const events = await prisma.auditEvent.findMany({
-    where,
-    include: {
-      actor: {
-        select: {
-          name: true,
-          email: true,
-          roles: { select: { name: true } }
+  const [events, total] = await Promise.all([
+    prisma.auditEvent.findMany({
+      where,
+      include: {
+        actor: {
+          select: {
+            name: true,
+            email: true,
+            roles: { select: { name: true } }
+          }
         }
-      }
-    },
-    orderBy: { timestamp: 'desc' },
-    take: 50
-  });
+      },
+      orderBy: { timestamp: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.auditEvent.count({ where }),
+  ]);
 
   return (
     <AuditClient
       events={JSON.parse(JSON.stringify(events))}
       filters={{ actor: actor ?? '', action: action ?? '', from: from ?? '', to: to ?? '' }}
+      pagination={toPageInfo(page, pageSize, total)}
     />
   );
 }

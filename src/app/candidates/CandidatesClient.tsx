@@ -6,12 +6,33 @@ import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { roleCapabilities } from '@/lib/roleAccess';
 
+interface FilterFacets {
+  jobs: Array<{ id: string; title: string }>;
+  recruiters: Array<{ id: string; name: string | null; email: string }>;
+  tags: string[];
+  current: Record<string, string>;
+}
+
+interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 interface CandidatesClientProps {
   applications: any[];
   userRole?: string;
+  pagination?: PaginationInfo;
+  filters?: FilterFacets;
 }
 
-export default function CandidatesClient({ applications, userRole = 'Recruiter' }: CandidatesClientProps) {
+export default function CandidatesClient({
+  applications,
+  userRole = 'Recruiter',
+  pagination,
+  filters,
+}: CandidatesClientProps) {
   const [activeTab, setActiveTab] = useState<'kanban' | 'table'>('kanban');
   const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
@@ -100,12 +121,15 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
 
   const departments = ['ALL', ...Array.from(new Set(applications.map((c) => c.job?.department).filter(Boolean)))];
 
+  // With server-side filtering (§6.7), the page receives the already-filtered
+  // page of results. Client-side text narrowing stays as an instant refine on
+  // top of the current page only — the authoritative filter set lives in the
+  // URL and is applied by the server.
   const filteredCandidates = applications.filter((c) => {
+    if (!search) return true;
     const fullName = `${c.candidate?.firstName} ${c.candidate?.lastName}`.toLowerCase();
     const skills = (c.parsedProfile?.skills || []).join(' ').toLowerCase();
-    const matchesSearch = fullName.includes(search.toLowerCase()) || skills.includes(search.toLowerCase()) || c.job?.title?.toLowerCase().includes(search.toLowerCase());
-    const matchesDept = selectedDept === 'ALL' || c.job?.department === selectedDept;
-    return matchesSearch && matchesDept;
+    return fullName.includes(search.toLowerCase()) || skills.includes(search.toLowerCase());
   });
 
   const reviewCount = applications.filter((app) => app.resumeDocument?.processingStatus === 'NEEDS_REVIEW').length;
@@ -121,7 +145,7 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
               {t('pipeline_title')}
             </h1>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/50 border-teal-200">
-              {filteredCandidates.length} APPLICANTS
+              {pagination ? `${pagination.total} APPLICANTS` : `${filteredCandidates.length} APPLICANTS`}
             </span>
           </div>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
@@ -154,6 +178,9 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
               </option>
             ))}
           </select>
+
+          {/* Advanced Filters button (server-side §6.7 filter set) */}
+          {filters && <FilterBar filters={filters} />}
 
           {/* View Switcher (Kanban / Table) */}
           <div className="flex p-0.5 rounded-lg dark:bg-[#0F171D] bg-slate-100 border dark:border-[#30424A] border-slate-200 text-xs">
@@ -367,6 +394,9 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
       )}
 
       {/* Bulk decision confirmation modal (§6.12) */}
+      {/* Server-side pagination (§9 performance) */}
+      {pagination && <PaginationControls pagination={pagination} />}
+
       {bulkModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -414,5 +444,199 @@ export default function CandidatesClient({ applications, userRole = 'Recruiter' 
         </div>
       )}
     </div>
+  );
+}
+/**
+ * Server-driven filter bar (spec §6.7): job, stage, recruiter, score range,
+ * required-criterion status, processing status, tags, and application date
+ * range. Filters live in the URL (searchParams) so views are shareable and
+ * the pipeline agrees with exports and dashboards on totals.
+ */
+function FilterBar({ filters }: { filters: FilterFacets }) {
+  const router = useRouter();
+  const current = filters.current;
+
+  const setParam = (key: string, value: string) => {
+    const params = new URLSearchParams(current);
+    if (!value || value === 'ALL') params.delete(key);
+    else params.set(key, value);
+    params.delete('page'); // filters reset pagination
+    router.push(`/candidates?${params.toString()}`);
+  };
+
+  const stageOptions = [
+    'NEW', 'SCREENING', 'NEEDS_REVIEW', 'SHORTLISTED', 'ON_HOLD',
+    'INTERVIEW_SCHEDULED', 'OFFERED', 'HIRED', 'REJECTED', 'WITHDRAWN',
+  ];
+  const processingOptions = ['QUEUED', 'PROCESSING', 'COMPLETED', 'NEEDS_REVIEW', 'FAILED'];
+
+  const inputClass =
+    'dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium';
+  const activeCount = [
+    'job', 'stage', 'recruiter', 'minScore', 'maxScore', 'requiredStatus', 'processing', 'tags', 'from', 'to',
+  ].filter((k) => current[k]).length;
+
+  return (
+    <details className="relative">
+      <summary
+        className={`cursor-pointer list-none px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
+          activeCount > 0
+            ? 'dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 dark:border-teal-800/60 border-teal-200'
+            : 'dark:bg-[#0F171D] bg-white dark:border-[#30424A] border-slate-200 dark:text-slate-200 text-slate-800'
+        }`}
+      >
+        Filters{activeCount > 0 ? ` (${activeCount})` : ''}
+      </summary>
+      <div className="absolute right-0 mt-2 z-40 w-[min(92vw,640px)] p-4 rounded-xl border dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-slate-200 shadow-2xl grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <label className="col-span-2 sm:col-span-1 text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Job
+          <select value={current.job ?? 'ALL'} onChange={(e) => setParam('job', e.target.value)} className={inputClass + ' w-full'}>
+            <option value="ALL">All jobs</option>
+            {filters.jobs.map((j) => (
+              <option key={j.id} value={j.id}>{j.title}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Stage
+          <select value={current.stage ?? 'ALL'} onChange={(e) => setParam('stage', e.target.value)} className={inputClass + ' w-full'}>
+            <option value="ALL">All stages</option>
+            {stageOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Recruiter
+          <select value={current.recruiter ?? 'ALL'} onChange={(e) => setParam('recruiter', e.target.value)} className={inputClass + ' w-full'}>
+            <option value="ALL">All recruiters</option>
+            {filters.recruiters.map((r) => (
+              <option key={r.id} value={r.id}>{r.name ?? r.email}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Min score (%)
+          <input
+            type="number" min={0} max={100} defaultValue={current.minScore ?? ''}
+            onBlur={(e) => setParam('minScore', e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && setParam('minScore', (e.target as HTMLInputElement).value)}
+            placeholder="e.g. 60" className={inputClass + ' w-full'}
+          />
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Max score (%)
+          <input
+            type="number" min={0} max={100} defaultValue={current.maxScore ?? ''}
+            onBlur={(e) => setParam('maxScore', e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && setParam('maxScore', (e.target as HTMLInputElement).value)}
+            placeholder="e.g. 100" className={inputClass + ' w-full'}
+          />
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Required criteria
+          <select value={current.requiredStatus ?? 'ALL'} onChange={(e) => setParam('requiredStatus', e.target.value)} className={inputClass + ' w-full'}>
+            <option value="ALL">Any status</option>
+            <option value="missing">Missing required</option>
+            <option value="uncertain">Uncertain evidence</option>
+          </select>
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Processing
+          <select value={current.processing ?? 'ALL'} onChange={(e) => setParam('processing', e.target.value)} className={inputClass + ' w-full'}>
+            <option value="ALL">Any status</option>
+            {processingOptions.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Tag
+          <select value={current.tags ?? 'ALL'} onChange={(e) => setParam('tags', e.target.value)} className={inputClass + ' w-full'}>
+            <option value="ALL">Any tag</option>
+            {filters.tags.map((tg) => (
+              <option key={tg} value={tg}>{tg}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Applied from
+          <input
+            type="date" defaultValue={current.from ?? ''}
+            onChange={(e) => setParam('from', e.target.value)}
+            className={inputClass + ' w-full'}
+          />
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
+          Applied to
+          <input
+            type="date" defaultValue={current.to ?? ''}
+            onChange={(e) => setParam('to', e.target.value)}
+            className={inputClass + ' w-full'}
+          />
+        </label>
+
+        {activeCount > 0 && (
+          <button
+            onClick={() => router.push('/candidates')}
+            className="col-span-2 sm:col-span-3 justify-self-start px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-slate-800 bg-slate-100 dark:text-slate-200 text-slate-700 hover:opacity-90"
+          >
+            Clear all filters
+          </button>
+        )}
+      </div>
+    </details>
+  );
+}
+
+/**
+ * Pagination controls — server-side paging over the filtered set (§9
+ * performance: pages respond within the target under review load).
+ */
+function PaginationControls({ pagination }: { pagination: PaginationInfo }) {
+  const router = useRouter();
+  if (pagination.totalPages <= 1) return null;
+
+  const go = (page: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', String(page));
+    router.push(`/candidates?${params.toString()}`);
+  };
+
+  return (
+    <nav className="flex items-center justify-between gap-2 pt-2" aria-label="Pipeline pagination">
+      <span className="text-[11px] dark:text-slate-500 text-slate-500">
+        {((pagination.page - 1) * pagination.pageSize) + 1}–
+        {Math.min(pagination.page * pagination.pageSize, pagination.total)} of {pagination.total}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => go(pagination.page - 1)}
+          disabled={pagination.page <= 1}
+          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+        >
+          ← Prev
+        </button>
+        <span className="text-[11px] font-mono dark:text-slate-400 text-slate-500">
+          {pagination.page} / {pagination.totalPages}
+        </span>
+        <button
+          onClick={() => go(pagination.page + 1)}
+          disabled={pagination.page >= pagination.totalPages}
+          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+        >
+          Next →
+        </button>
+      </div>
+    </nav>
   );
 }

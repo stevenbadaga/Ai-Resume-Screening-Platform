@@ -3,12 +3,20 @@
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
+interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 interface AuditClientProps {
   events: any[];
   filters?: { actor: string; action: string; from: string; to: string };
+  pagination?: PaginationInfo;
 }
 
-export default function AuditClient({ events, filters = { actor: '', action: '', from: '', to: '' } }: AuditClientProps) {
+export default function AuditClient({ events, filters = { actor: '', action: '', from: '', to: '' }, pagination }: AuditClientProps) {
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -21,6 +29,15 @@ export default function AuditClient({ events, filters = { actor: '', action: '',
       const value = String(form.get(key) ?? '').trim();
       if (value) params.set(key, value);
     }
+    router.push(`/audit${params.toString() ? `?${params.toString()}` : ''}`);
+  };
+
+  // §6.12/§9: pager over the filtered ledger; filters are preserved so a
+  // paginated search stays on the same result set.
+  const goPage = (page: number) => {
+    const params = new URLSearchParams(window.location.search);
+    if (page <= 1) params.delete('page');
+    else params.set('page', String(page));
     router.push(`/audit${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
@@ -179,6 +196,37 @@ export default function AuditClient({ events, filters = { actor: '', action: '',
           </tbody>
         </table>
       </div>
+
+      {/* Server-side pagination over the filtered ledger (§9 performance) */}
+      {pagination && (
+        <nav className="flex items-center justify-between gap-2 pt-2" aria-label="Audit log pagination">
+          <span className="text-[11px] dark:text-slate-500 text-slate-500">
+            Showing {((pagination.page - 1) * pagination.pageSize) + 1}–
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of {pagination.total} events
+          </span>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => goPage(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+                className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+              >
+                ← Prev
+              </button>
+              <span className="text-[11px] font-mono dark:text-slate-400 text-slate-500">
+                {pagination.page} / {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => goPage(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages}
+                className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </nav>
+      )}
     </div>
   );
 }

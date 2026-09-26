@@ -36,6 +36,12 @@ export const signupSchema = z.object({
 export const createJobSchema = z.object({
   title: z.string().min(1, 'Title is required').max(300),
   department: z.string().min(1, 'Department is required').max(200),
+  // §6.2: requisitions carry location, employment type, responsibilities
+  // (free text inside the description), and the application window.
+  location: z.string().max(200).optional(),
+  employmentType: z.string().max(100).optional(),
+  opensAt: z.coerce.date().optional(),
+  closesAt: z.coerce.date().optional(),
   description: z.string().max(10000).optional(),
   criteria: z.array(z.object({
     category: z.string().max(200).optional(),
@@ -141,6 +147,9 @@ export const stageChangeSchema = z.object({
   applicationId: uuidSchema,
   newStage: z.string().min(1).max(100),
   newStatus: z.string().max(100).optional(),
+  // §6.3/§6.7: stage changes are recruitment decisions — a human-readable
+  // reason is required so the decision trail is explainable and auditable.
+  reason: z.string().min(1, 'A reason is required for stage changes').max(5000),
 });
 
 export const profileUpdateSchema = z.object({
