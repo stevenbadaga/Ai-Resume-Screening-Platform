@@ -12,6 +12,9 @@ model Organization {
   retentionPolicy       String? // JSON configuration
   branding              String? // JSON configuration
   securitySettings      String? // JSON configuration
+  // §6.12: workspace-level recruitment workflow configuration — decision
+  // reason catalog, recruitment stages, and job categories (JSON).
+  workflowConfig        String?
   users                 User[]
   jobs                  JobRequisition[]
   auditEvents           AuditEvent[]
@@ -66,6 +69,9 @@ model JobRequisition {
   location       String?
   employmentType String?
   description    String
+  // §6.2: application window for the requisition (nullable = open-ended).
+  opensAt        DateTime?
+  closesAt       DateTime?
   status         String          @default("DRAFT") // DRAFT, OPEN, CLOSED
   ownerId        String
   owner          User            @relation("JobOwner", fields: [ownerId], references: [id])
@@ -289,6 +295,10 @@ model Communication {
   /// added in migrations/20260911000000_add_email_failure_info
   failureInfo    String?
   lastError      String?
+  /// §6.9: JSON snapshot of the template payload at send time, so a safe
+  /// retry can faithfully re-render the same content (e.g. the interview
+  /// schedule in an invitation) instead of a generic body.
+  payloadSnapshot String?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
