@@ -88,13 +88,48 @@ secret values.
 | Notification failures | authenticated `GET /api/health` → `checks.communications.failed` | daily review |
 | Storage writable | authenticated `GET /api/health` → `checks.storage.writable` | with uptime probe |
 
-### 2.3 Log hygiene (§9 Monitoring and Logging)
+### 2.3 Error tracking (Sentry, optional)
+
+Warn- and error-level log events are mirrored to **Sentry** when `SENTRY_DSN` is set — so
+swallowed `console.error` noise (queue outages, scoring crashes, audit-persistence failures,
+worker job failures, client render errors) becomes grouped, alertable records instead of
+disappearing into stderr.
+
+Setup:
+
+1. Create a project at [sentry.io](https://sentry.io) (free tier is sufficient) and copy the
+   **DSN** (Client Keys → DSN).
+2. Set `SENTRY_DSN` in `.env` (optionally `SENTRY_ENVIRONMENT=staging`). Without the DSN the
+   tracker is a documented no-op — one `errorTracker.disabled` line at boot, nothing shipped.
+3. Restart the app and worker. Nothing else is required — capture points are already wired:
+
+| Signal | Source |
+|---|---|
+| `logEvent('error', …)` / `logEvent('warn', …)` | every route/lib that logs via `src/lib/observability.ts` |
+| `withRequestContext` 500s | route handler wrapper (real stack + request id attached) |
+| Audit-persistence failures | `logAuditEvent` re-throw path (`auditLogger.persistenceFailed`) |
+| Worker job failures | BullMQ `worker.on('failed')` (job id + application id + attempts) |
+| Client render errors | React error boundary → `POST /api/telemetry/client-error` → tracker |
+| Unhandled rejections/exceptions | process-level handlers registered at init |
+
+Privacy controls (§6.11/§9): `tracesSampleRate: 0` (explicit capture only), a breadcrumb
+deny-list (password/token/secret/authorization/apiKey/resumeText/extractedText/consentChoices/
+failureInfo never enter the trail), structured extras only — no request bodies, and the
+browser never runs the SDK (client errors forward through the server-side telemetry endpoint
+with a strict bounded-string payload).
+
+To correlate a Sentry event with server logs and the audit ledger: every event carries the
+`requestId` tag — grep the structured log line with that id, then query
+`AuditEvent.requestContext` for the same id.
+
+### 2.4 Log hygiene (§9 Monitoring and Logging)
 
 Operational logs record processing failures, security events (e.g. `MALWARE_SCAN_REJECTED`
 audit events), and service health — and must never contain passwords, secrets, or full resume
 text. Verify after any change that:
 
-- `console.error` call sites print error **messages**, not credential objects or resume bodies;
+- log call sites print error **messages**, not credential objects or resume bodies;
+- anything logged through `logEvent` is auto-redacted (`redactFields` deny-list);
 - request context stored in audit events (`requestContext`) contains route + actor ids only;
 - extracted resume text lives in the database (`ResumeDocument.extractedText`), never in stdout.
 
@@ -109,6 +144,7 @@ text. Verify after any change that:
 | OpenAI (`gpt-4o-…`) | structured profile extraction + criterion scoring | **PII-redacted** resume text only (emails/phones redacted pre-send) | OpenAI API (US) | `OPENAI_API_KEY` in env; never logged | processing marks the resume FAILED with a visible error; BullMQ retries |
 | Brevo / Resend | transactional email (confirmations, invitations, resets) | recipient address, template content (names, job title, schedule) | provider API | `BREVO_API_KEY` / `RESEND_API_KEY` + `EMAIL_FROM` in env | send failure recorded honestly on the `Communication` row (`FAILED` + `failureInfo`) |
 | ClamAV daemon (optional, `docker-compose` service) | full antivirus scanning of uploads | raw upload bytes (in-memory stream, nothing retained) | self-hosted container | none (network-local) | signature-only scanning continues; with ClamAV configured the scan fails CLOSED |
+| Sentry (optional) | error tracking / alerting | error messages, stack traces, structured redacted context (request ids, counts) — never resume content, credentials, or request bodies | Sentry cloud (region per project) | `SENTRY_DSN` in env only | tracking is a no-op without `SENTRY_DSN`; structured JSON logs remain the source of truth |
 
 No candidate data is used for model training by any integration; prompts are one-shot requests
 with no retention arrangement beyond the provider's API processing.

@@ -186,12 +186,33 @@ npm run build && npm run start
 
 Open [http://localhost:3000](http://localhost:3000). Create the first account via `/auth/signin` → signup; the first signup bootstraps the default organization. The BullMQ worker (`src/lib/worker.ts`) must be running for resume screening to process — run it in a separate terminal with `npx tsx src/lib/worker.ts`.
 
+### Sample demo accounts (spec §15)
+
+To evaluate the platform without signing up, seed a self-contained demonstration workspace with one approved sample account per role, two approved rubric-driven jobs, and five synthetic resumes covering different match levels and edge cases (strong match, transferable skills, missing required criterion, ambiguous/overlapping dates, and embedded resume instructions for the prompt-safety case):
+
+```bash
+npx tsx scripts/seedDemoData.ts
+```
+
+All demo accounts share the README-documented password `Demo-Passw0rd!` (synthetic data — never use in production):
+
+| Role | Email |
+| :--- | :--- |
+| Administrator | `admin@demo.local` |
+| Recruitment Manager / Recruiter | `manager@demo.local`, `recruiter@demo.local` |
+| Hiring Manager | `hiring@demo.local` |
+| Interviewer | `interviewer@demo.local` |
+| Compliance Auditor | `auditor@demo.local` |
+| Candidate | `candidate@demo.local` |
+
+Re-running the seed detects the existing demo workspace and exits without duplicating anything. Screening is intentionally not pre-run — trigger it from the UI to walk the full processing → evidence → decision workflow.
+
 ---
 
 ## Testing
 
 ```bash
-npm run test        # Vitest suite (122 tests across 15 files)
+npm run test        # Vitest suite (165 tests across 22 files)
 npm run typecheck   # tsc --noEmit
 npm run lint        # ESLint
 ```
@@ -206,7 +227,7 @@ The suite covers the deterministic scoring engine (including the unassessed-crit
 TEST_DATABASE_URL="postgresql://..." TEST_INTEGRATION=1 npm test
 ```
 
-Without `TEST_DATABASE_URL` the integration file self-skips, so plain `npm test` (122 unit tests) never needs a database. With it, 12 additional tests cover: org/role/user isolation, job + rubric DRAFT→APPROVED state machine, consent-compliant application intake, explainable screening-run persistence with evidence (§6.5), human decisions with stage history (§6.7), interview scheduling + conflict detection (§6.8), independent scorecards + interviewer scoping (§5/§6.8), cross-organization tenant isolation (§6.1), transactional §6.11 erasure across linked records, §6.10 analytics aggregation, approved-rubric versioning on edit (§6.2), and audit-ledger tamper detection (§6.1).
+Without `TEST_DATABASE_URL` the integration file self-skips, so plain `npm test` never needs a database. With it, 12 additional tests cover: org/role/user isolation, job + rubric DRAFT→APPROVED state machine, consent-compliant application intake, explainable screening-run persistence with evidence (§6.5), human decisions with stage history (§6.7), interview scheduling + conflict detection (§6.8), independent scorecards + interviewer scoping (§5/§6.8), cross-organization tenant isolation (§6.1), transactional §6.11 erasure across linked records, §6.10 analytics aggregation, approved-rubric versioning on edit (§6.2), and audit-ledger tamper detection (§6.1).
 
 CI (`.github/workflows/main.yml`) runs typecheck, tests, and a production build on every push/PR to `main`; failures block the build.
 
@@ -231,7 +252,7 @@ An independent review against the spec (2026-09-06) lives in [`docs/independent-
 - **Partial spec areas**: compound/multi-role permissions are not consistently enforced end-to-end. Email verification **is** implemented (§6.1) — see the note below. Password reset is implemented too: hashed single-use 30-minute tokens, anti-enumeration endpoints, audit-logged completion — see `src/app/api/auth/forgot-password` and `src/app/api/auth/reset-password`.
 - **No fake-success fallbacks**: emails require `RESEND_API_KEY` — when it is missing or delivery fails, the outcome is recorded as `FAILED` on the Communication row (with the error) and surfaced in the API response, never logged as "sent". AI features require `OPENAI_API_KEY` — a missing key is a loud config error, not a silent degradation.
 - **Infrastructure-dependent claims**: multi-instance rate limiting needs production infrastructure and end-to-end evidence before being called "done". Rubric versioning **is** implemented (§6.2): editing an approved rubric creates a new DRAFT version with a mandatory change reason, and the approved version keeps scoring until the replacement is approved. Email delivery-state tracking is real (`src/lib/emailService.ts` persists SENT/FAILED + failure info per spec §6.9) but still needs production end-to-end evidence. To gather that evidence: configure `RESEND_API_KEY` (see below), deploy to staging, then trigger each template (application confirmation, interview invite, rejection, offer, team invite, password reset) and verify the `Communication` rows show `SENT` with correct timestamps.
-- **Test coverage**: 122 unit tests plus a 12-test database-backed integration suite (`__tests__/workflow.integration.test.ts`, spec §14) covering the full job→rubric→application→screening→decision→interview→scorecard→erasure workflow with tenant-isolation, rubric-versioning, and audit-tamper-detection checks.
+- **Test coverage**: 165 unit tests plus a 12-test database-backed integration suite (`__tests__/workflow.integration.test.ts`, spec §14) covering the full job→rubric→application→screening→decision→interview→scorecard→erasure workflow with tenant-isolation, rubric-versioning, and audit-tamper-detection checks.
 - **Manager analytics (spec §6.10)**: `GET /api/analytics` provides time-to-screen, time-in-stage, stage conversion, interviewer completion %, processing-failure and low-confidence counts, and recruiter workload — filterable by date range, job, department, recruiter, and stage, with documented metric definitions. Hiring managers are scoped to their own jobs; department restrictions always apply.
 - **Retention configuration & enforcement (spec §6.11/§6.12)**: Admins configure per-status retention periods via `PUT /api/org/retention` (audited with old/new values); `npx tsx scripts/applyRetention.ts` applies the policy on a schedule (dry-run by default, `--apply` to execute).
 - **Consent records (spec §6.11)**: applications record the privacy-notice version accepted (`consentNoticeVersion`), acceptance timestamp, and consent choices — not just a boolean. Bump `PRIVACY_NOTICE_VERSION` in `src/lib/validation.ts` when the candidate-facing notice changes materially.
@@ -260,6 +281,7 @@ An independent review against the spec (2026-09-06) lives in [`docs/independent-
 | :--- | :--- |
 | [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md) | Architecture, user manual, and operational guide |
 | [`docs/independent-requirements-compliance-report.md`](docs/independent-requirements-compliance-report.md) | Independent spec review (2026-09-06) with per-requirement status and qualifications |
+| [`docs/spec-compliance-verification-2026-09-25.md`](docs/spec-compliance-verification-2026-09-25.md) | Latest full-spec verification (2026-09-25): gaps found, fixes applied, per-section evidence |
 | [`docs/specification-compliance-report.md`](docs/specification-compliance-report.md) | Author-prepared spec traceability report |
 | [`docs/final-mvp-requirements-report.md`](docs/final-mvp-requirements-report.md) | MVP scope vs delivered features |
 | [`docs/requirements-gap-analysis.md`](docs/requirements-gap-analysis.md) | Gap analysis against the spec |
