@@ -11,6 +11,9 @@ const updateJobSchema = z.object({
   department: z.string().min(1).max(200).optional(),
   location: z.string().max(200).optional(),
   employmentType: z.string().max(100).optional(),
+  // §6.2: application window is editable alongside the requisition details.
+  opensAt: z.coerce.date().nullable().optional(),
+  closesAt: z.coerce.date().nullable().optional(),
   description: z.string().max(10000).optional(),
   status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'ARCHIVED']).optional(),
 });
@@ -83,6 +86,8 @@ export async function PATCH(
         department: data.department ?? existingJob.department,
         location: data.location ?? existingJob.location,
         employmentType: data.employmentType ?? existingJob.employmentType,
+        opensAt: data.opensAt === undefined ? existingJob.opensAt : data.opensAt,
+        closesAt: data.closesAt === undefined ? existingJob.closesAt : data.closesAt,
         description: data.description ?? existingJob.description,
         status: data.status ?? existingJob.status,
       },

@@ -5,13 +5,32 @@ import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { roleCapabilities } from '@/lib/roleAccess';
+import { buildPageUrl } from '@/lib/pagination';
+
+interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+interface JobFilters {
+  q: string;
+  status: string;
+  department: string;
+  departments: string[];
+}
 
 interface Props {
   initialJobs: any[];
   userRole?: string;
+  pagination?: PaginationInfo;
+  filters?: JobFilters;
 }
 
-export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Props) {
+const STATUS_OPTIONS = ['DRAFT', 'REVIEW', 'OPEN', 'CLOSED', 'ARCHIVED'];
+
+export default function JobsClient({ initialJobs, userRole = 'Candidate', pagination, filters }: Props) {
   const [jobs, setJobs] = useState<any[]>(initialJobs);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
@@ -21,6 +40,10 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('Engineering');
   const [description, setDescription] = useState('');
+  // §6.2: requisitions carry location, employment type, and an application window.
+  const [location, setLocation] = useState('');
+  const [employmentType, setEmploymentType] = useState('Full-time');
+  const [closesAt, setClosesAt] = useState('');
   const [criteria, setCriteria] = useState<{ category: string; description: string; isRequired: boolean; weight: number }[]>([
     { category: 'Technical Architecture', description: 'Full-Stack TypeScript & React Architecture', isRequired: true, weight: 4 },
     { category: 'Data & Backend', description: 'Database Optimization & Prisma PostgreSQL', isRequired: false, weight: 3 },
@@ -62,6 +85,9 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
           title,
           department,
           description,
+          location: location.trim() || undefined,
+          employmentType: employmentType || undefined,
+          closesAt: closesAt ? new Date(closesAt).toISOString() : undefined,
           criteria: criteria
             .filter((c) => c.description.trim().length > 0)
             .map((c) => ({
@@ -270,7 +296,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
               {t('jobs_title')}
             </h1>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/60 bg-teal-50 dark:text-teal-300 text-teal-800 border dark:border-teal-800/50 border-teal-200">
-              {jobs.length} {t('active_requisitions_badge')}
+              {pagination ? pagination.total : jobs.length} {t('active_requisitions_badge')}
             </span>
           </div>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
@@ -288,6 +314,60 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
           </button>
         )}
       </div>
+
+      {/* Server-side filter bar (§6.2/§9 performance) */}
+      {filters && (
+        <form
+          action="/jobs"
+          method="get"
+          className="flex flex-wrap items-center gap-2"
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={filters.q}
+            placeholder="Search title, description, department…"
+            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-3 py-1.5 text-xs dark:text-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 w-56"
+            aria-label="Search requisitions"
+          />
+          <select
+            name="status"
+            defaultValue={filters.status}
+            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium"
+            aria-label="Filter by status"
+          >
+            <option value="ALL">All statuses</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <select
+            name="department"
+            defaultValue={filters.department}
+            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium"
+            aria-label="Filter by department"
+          >
+            <option value="ALL">All departments</option>
+            {filters.departments.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90"
+          >
+            Apply
+          </button>
+          {(filters.q || filters.status !== 'ALL' || filters.department !== 'ALL') && (
+            <Link
+              href="/jobs"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-slate-800 bg-slate-100 dark:text-slate-200 text-slate-700 hover:opacity-90"
+            >
+              Clear
+            </Link>
+          )}
+        </form>
+      )}
 
       {/* Requisitions Grid */}
       {jobs.length === 0 ? (
@@ -591,6 +671,11 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
         </div>
       )}
 
+      {/* Server-side pagination (§9 performance) */}
+      {pagination && pagination.totalPages > 1 && (
+        <PaginationControls pagination={pagination} />
+      )}
+
       {/* CREATE JOB MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -626,6 +711,42 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
                   <option value="Sales">Sales & Marketing</option>
                   <option value="Operations">Operations & HR</option>
                 </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. Kigali / Remote"
+                    className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Employment type</label>
+                  <select
+                    value={employmentType}
+                    onChange={(e) => setEmploymentType(e.target.value)}
+                    className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                  >
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Internship">Internship</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Applications close (optional)</label>
+                <input
+                  type="date"
+                  value={closesAt}
+                  onChange={(e) => setClosesAt(e.target.value)}
+                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                />
               </div>
 
               <div>
@@ -724,5 +845,48 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate' }: Prop
         </div>
       )}
     </div>
+  );
+}
+/**
+ * Pagination controls for the jobs board — server-side paging over the
+ * filtered requisition set (§9 performance), preserving filter params.
+ */
+function PaginationControls({ pagination }: { pagination: PaginationInfo }) {
+  const current = Object.fromEntries(
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).entries()
+      : []
+  );
+  const go = (page: number) => {
+    if (typeof window === 'undefined') return;
+    window.location.href = buildPageUrl('/jobs', current, { page });
+  };
+
+  return (
+    <nav className="flex items-center justify-between gap-2 pt-2" aria-label="Jobs pagination">
+      <span className="text-[11px] dark:text-slate-500 text-slate-500">
+        {((pagination.page - 1) * pagination.pageSize) + 1}–
+        {Math.min(pagination.page * pagination.pageSize, pagination.total)} of {pagination.total}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => go(pagination.page - 1)}
+          disabled={pagination.page <= 1}
+          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+        >
+          ← Prev
+        </button>
+        <span className="text-[11px] font-mono dark:text-slate-400 text-slate-500">
+          {pagination.page} / {pagination.totalPages}
+        </span>
+        <button
+          onClick={() => go(pagination.page + 1)}
+          disabled={pagination.page >= pagination.totalPages}
+          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+        >
+          Next →
+        </button>
+      </div>
+    </nav>
   );
 }

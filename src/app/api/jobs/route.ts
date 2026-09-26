@@ -70,13 +70,15 @@ export async function POST(req: Request) {
     const { data, error } = validateBody(createJobSchema, body);
     if (error) return error;
 
-    const { title, department, description, criteria } = data;
+    const { title, department, description, location, employmentType, opensAt, closesAt, criteria } = data;
 
     const job = await prisma.jobRequisition.create({
       data: {
         title,
         department,
         description: description || 'No description provided.',
+        location,
+        employmentType,
         status: 'DRAFT',
         ownerId: auth.user.id,
         organizationId: auth.user.organizationId,
