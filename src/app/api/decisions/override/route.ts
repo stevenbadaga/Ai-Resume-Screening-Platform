@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
       await logAuditEvent({
         action: 'HUMAN_SCORE_OVERRIDE',
         actorId: auth.user.id,
+        organizationId: auth.user.organizationId,
         affectedRecordId: applicationId,
         newValues: { score: newScore, reason: reason || rationale }
       });
@@ -113,6 +114,7 @@ export async function POST(req: NextRequest) {
     await logAuditEvent({
       action: 'CRITERION_OVERRIDE',
       actorId: auth.user.id,
+      organizationId: auth.user.organizationId,
       affectedRecordId: assessmentId,
       previousValues: { result: assessment.result },
       newValues: { reviewerCorrection: correctionString }

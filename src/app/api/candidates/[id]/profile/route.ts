@@ -47,6 +47,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await logAuditEvent({
       action: 'CANDIDATE_PROFILE_CORRECTED',
       actorId: auth.user.id,
+      organizationId: auth.user.organizationId,
       affectedRecordId: updatedProfile.id,
       previousValues,
       newValues: { skills, experience }
