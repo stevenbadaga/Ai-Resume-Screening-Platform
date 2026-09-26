@@ -12,6 +12,8 @@ import prisma from '@/lib/prisma';
 export type EmailTemplateType =
   | 'APPLICATION_CONFIRMATION'
   | 'INTERVIEW_INVITATION'
+  | 'INTERVIEW_RESCHEDULED'
+  | 'INTERVIEW_CANCELLED'
   | 'OFFER_LETTER'
   | 'REJECTION_FEEDBACK'
   | 'TEAM_INVITATION'
@@ -41,6 +43,8 @@ export interface EmailPayload {
 const SUBJECT_MAP: Record<EmailTemplateType, (data: EmailPayload['data']) => string> = {
   APPLICATION_CONFIRMATION: (d) => `Application Received: ${d.jobTitle ?? ''} — RecruitAI`,
   INTERVIEW_INVITATION: (d) => `Interview Invitation: ${d.jobTitle ?? ''} — RecruitAI`,
+  INTERVIEW_RESCHEDULED: (d) => `Interview Rescheduled: ${d.jobTitle ?? ''} — RecruitAI`,
+  INTERVIEW_CANCELLED: (d) => `Interview Cancelled: ${d.jobTitle ?? ''} — RecruitAI`,
   OFFER_LETTER: (d) => `Official Job Offer: ${d.jobTitle ?? ''} — RecruitAI 🎉`,
   REJECTION_FEEDBACK: (d) => `Update regarding your application for ${d.jobTitle ?? ''} — RecruitAI`,
   TEAM_INVITATION: () => `You have been invited to join a team on RecruitAI`,
@@ -72,6 +76,15 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
       body += `<p>You are invited to an interview for <strong>${jobTitle}</strong>.</p>
         ${data.schedule ? `<p><strong>Schedule:</strong> ${safe(data.schedule)} (${safe(data.timezone) || 'CAT'})</p>` : ''}
         ${data.meetingLink ? `<p><strong>Meeting Link:</strong> <a href="${safe(data.meetingLink)}">${safe(data.meetingLink)}</a></p>` : ''}`;
+      break;
+    case 'INTERVIEW_RESCHEDULED':
+      body += `<p>The interview for <strong>${jobTitle}</strong> has been rescheduled.</p>
+        ${data.schedule ? `<p><strong>New schedule:</strong> ${safe(data.schedule)} (${safe(data.timezone) || 'CAT'})</p>` : ''}
+        ${data.meetingLink ? `<p><strong>Meeting Link:</strong> <a href="${safe(data.meetingLink)}">${safe(data.meetingLink)}</a></p>` : ''}`;
+      break;
+    case 'INTERVIEW_CANCELLED':
+      body += `<p>The interview for <strong>${jobTitle}</strong> has been cancelled.</p>
+        <p>The hiring team will contact you about next steps. We apologize for any inconvenience.</p>`;
       break;
     case 'OFFER_LETTER':
       body += `<p>We are pleased to offer you the position of <strong>${jobTitle}</strong>.</p>
@@ -288,7 +301,10 @@ export async function sendRecordedEmail(
       recipient: input.to,
       template: input.template,
       contentVersion: 'v1.0',
-      deliveryState: 'PENDING'
+      deliveryState: 'PENDING',
+      // §6.9: snapshot the exact template payload so a later safe retry can
+      // re-render faithful content (schedule, meeting link, offer details…).
+      payloadSnapshot: JSON.stringify(input.data ?? {})
     }
   });
 
