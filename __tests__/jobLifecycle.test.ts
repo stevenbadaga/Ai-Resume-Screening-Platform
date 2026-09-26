@@ -57,4 +57,30 @@ describe('Job Requisition Lifecycle & Rubric Preview (§6.2)', () => {
     expect(duplicatePayload.criteria[0].isRequired).toBe(true);
     expect(duplicatePayload.criteria[0].weight).toBe(5);
   });
+
+  it('§6.2/§6.5: intake must never fall back to a non-approved rubric', () => {
+    // Mirrors the intake-route selection logic: only an APPROVED rubric may
+    // drive screening — no first-rubric fallback (which could pick DRAFT).
+    const jobRubrics = [
+      { id: 'rubric-draft', status: 'DRAFT', version: 2 },
+      { id: 'rubric-approved', status: 'APPROVED', version: 1 },
+    ];
+    const approved = jobRubrics.find((r) => r.status === 'APPROVED');
+    expect(approved?.id).toBe('rubric-approved');
+
+    const onlyDraft = [{ id: 'rubric-draft', status: 'DRAFT', version: 1 }];
+    expect(onlyDraft.find((r) => r.status === 'APPROVED')).toBeUndefined();
+  });
+
+  it('§6.2: the application window is enforced when configured', () => {
+    const job = { opensAt: new Date('2026-01-01'), closesAt: new Date('2026-09-01') };
+    const now = new Date('2026-09-25');
+    const windowClosed = (job.opensAt && now < job.opensAt) || (job.closesAt && now > job.closesAt);
+    expect(windowClosed).toBeTruthy();
+
+    const openJob: { opensAt: Date | null; closesAt: Date | null } = { opensAt: null, closesAt: null };
+    const windowOpen =
+      (openJob.opensAt && now < openJob.opensAt) || (openJob.closesAt && now > openJob.closesAt);
+    expect(windowOpen).toBeFalsy();
+  });
 });

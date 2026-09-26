@@ -37,14 +37,29 @@ export async function POST(
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Update application stage to OFFERED
-    await prisma.application.update({
-      where: { id: applicationId },
-      data: {
-        stage: 'OFFERED',
-        status: 'OFFER_EXTENDED'
-      }
-    });
+    // Update stage to OFFERED and record the human decision in one
+    // transaction — offers are progression decisions (§6.7/§8) and must be
+    // traceable to their authorized actor with the previous stage preserved.
+    await prisma.$transaction([
+      prisma.recruitmentDecision.create({
+        data: {
+          applicationId,
+          actorId: auth.user.id,
+          humanAction: 'OFFER_EXTENDED_DECISION',
+          decisionType: 'OFFER',
+          reason: `Offer extended: salary ${salary}, start ${startDate}`, // auditable summary; details in audit log
+          previousStage: application.stage,
+          newStage: 'OFFERED',
+        },
+      }),
+      prisma.application.update({
+        where: { id: applicationId },
+        data: {
+          stage: 'OFFERED',
+          status: 'OFFER',
+        },
+      }),
+    ]);
 
     // Send offer letter email, recording the real delivery outcome (spec §6.9).
     // Delivery failure does not roll back the offer — it is surfaced in the response
@@ -66,10 +81,11 @@ export async function POST(
       senderId: auth.user.id
     });
 
-    // Log to immutable audit trail
+    // Log to immutable audit trail (org-scoped, §6.1/§6.12)
     await logAuditEvent({
       action: 'OFFER_EXTENDED',
       actorId: auth.user.id,
+      organizationId: auth.user.organizationId,
       affectedRecordId: applicationId,
       newValues: { salary, startDate, equity, signingBonus, notes }
     });

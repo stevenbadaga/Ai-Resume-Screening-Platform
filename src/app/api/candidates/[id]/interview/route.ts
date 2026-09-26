@@ -6,6 +6,8 @@ import { interviewScheduleSchema, validateBody, safeErrorResponse } from '@/lib/
 import { logAuditEvent } from '@/lib/auditLogger';
 import { sendRecordedEmail } from '@/lib/emailService';
 import { z } from 'zod/v4';
+import { findSchedulingConflict } from '@/lib/interviewConflicts';
+import { statusForStage } from '@/lib/applicationStages';
 
 const rescheduleSchema = z.object({
   interviewId: z.string().uuid(),
@@ -94,63 +96,51 @@ export async function POST(
     });
     if (!application) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
-    // C5 FIX: Correct conflict detection — compare new slot against each existing interview's own duration
-    const newStart = data.scheduledAt;
-    const newEnd = new Date(newStart.getTime() + data.durationMinutes * 60_000);
-
-    const existingInterviews = await prisma.interview.findMany({
-      where: {
-        status: { not: 'CANCELLED' },
-        participants: { some: { userId: auth.user.id } },
-        schedule: { not: null },
-      },
-    });
-
-    for (const existing of existingInterviews) {
-      if (!existing.schedule) continue;
-      let existingDuration = 60; // default fallback minutes
-      try {
-        const details = existing.meetingDetails ? JSON.parse(existing.meetingDetails) : {};
-        if (details.durationMinutes) existingDuration = details.durationMinutes;
-      } catch { /* ignore parse errors */ }
-      const existingEnd = new Date(existing.schedule.getTime() + existingDuration * 60_000);
-      if (newStart < existingEnd && newEnd > existing.schedule) {
-        return NextResponse.json({ error: 'The interviewer has a scheduling conflict' }, { status: 409 });
-      }
+    // §6.8: conflict detection against EVERY participant's calendar — the
+    // scheduler's, each assigned interviewer's, and the candidate's — with
+    // per-interview duration math. Previously only the scheduler's calendar
+    // was checked, so assigned interviewers could be double-booked.
+    // Assigned interviewers must be active staff in this organization.
+    const assignedInterviewerIds = Array.from(new Set(data.interviewerIds)).filter(
+      (assignedId) => assignedId !== auth.user.id
+    );
+    const staff = assignedInterviewerIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: assignedInterviewerIds }, organizationId: auth.user.organizationId, accessStatus: 'ACTIVE' },
+          select: { id: true, name: true, email: true },
+        })
+      : [];
+    if (staff.length !== assignedInterviewerIds.length) {
+      return NextResponse.json(
+        { error: 'One or more assigned interviewers are not active staff in this organization' },
+        { status: 400 }
+      );
     }
 
-    // Spec §6.8: Candidate conflict detection across all their applications
-    const candidateInterviews = await prisma.interview.findMany({
-      where: {
-        status: { not: 'CANCELLED' },
-        application: { candidateId: application.candidateId },
-        schedule: { not: null },
-      },
+    const participantIds = [auth.user.id, ...staff.map((s) => s.id)];
+    const conflict = await findSchedulingConflict({
+      userIds: participantIds,
+      candidateId: application.candidateId,
+      proposedStart: data.scheduledAt,
+      durationMinutes: data.durationMinutes,
     });
-
-    for (const existing of candidateInterviews) {
-      if (!existing.schedule) continue;
-      let existingDuration = 60;
-      try {
-        const details = existing.meetingDetails ? JSON.parse(existing.meetingDetails) : {};
-        if (details.durationMinutes) existingDuration = details.durationMinutes;
-      } catch { /* ignore parse errors */ }
-      const existingEnd = new Date(existing.schedule.getTime() + existingDuration * 60_000);
-      if (newStart < existingEnd && newEnd > existing.schedule) {
+    if (conflict.conflict) {
+      if (conflict.kind === 'candidate') {
         return NextResponse.json(
           { error: 'The candidate has an existing scheduled interview at this time' },
           { status: 409 }
         );
       }
+      const busy = staff.find((s) => s.id === conflict.userId);
+      const label = busy ? `${busy.name ?? busy.email}` : 'an interviewer';
+      return NextResponse.json(
+        { error: `Scheduling conflict: ${label} already has an interview at this time` },
+        { status: 409 }
+      );
     }
 
     // C13 FIX: Accept timezone from the validated request body (defaults to UTC)
     const timezone = data.timezone || 'UTC';
-
-    // Spec §6.8: assigned interviewers must be active staff in this organization.
-    const assignedInterviewerIds = Array.from(new Set(data.interviewerIds)).filter(
-      (assignedId) => assignedId !== auth.user.id
-    );
 
     const interview = await prisma.interview.create({
       data: {
@@ -257,6 +247,39 @@ export async function PATCH(
     }
 
     const previousSchedule = interview.schedule;
+
+    // §6.8: rescheduling must also verify the new slot is free for everyone.
+    const rescheduleDetails = (() => {
+      try {
+        return JSON.parse(interview.meetingDetails || '{}');
+      } catch {
+        return {};
+      }
+    })();
+    const appForConflict = await prisma.application.findUnique({
+      where: { id: applicationId },
+      select: { candidateId: true },
+    });
+    const conflict = await findSchedulingConflict({
+      userIds: (await prisma.interview.findUnique({ where: { id: data.interviewId }, include: { participants: true } }))
+        ?.participants.map((p) => p.userId) ?? [],
+      candidateId: appForConflict?.candidateId,
+      proposedStart: data.scheduledAt,
+      durationMinutes: data.durationMinutes,
+      excludeInterviewId: data.interviewId,
+    });
+    if (conflict.conflict) {
+      return NextResponse.json(
+        {
+          error:
+            conflict.kind === 'candidate'
+              ? 'The candidate has another interview at this time'
+              : 'A participant already has another interview at this time',
+        },
+        { status: 409 }
+      );
+    }
+
     const updated = await prisma.interview.update({
       where: { id: data.interviewId },
       data: {
@@ -264,7 +287,7 @@ export async function PATCH(
         timezone: data.timezone,
         status: 'SCHEDULED',
         meetingDetails: JSON.stringify({
-          ...JSON.parse(interview.meetingDetails || '{}'),
+          ...rescheduleDetails,
           durationMinutes: data.durationMinutes,
         }),
       },
@@ -280,18 +303,38 @@ export async function PATCH(
     });
 
     // Spec §6.8: candidates and interviewers must receive rescheduling updates.
+    // Email is primary (candidates may lack a portal account); the in-app
+    // notification is supplementary. Delivery outcome is recorded (§6.9).
     const rescheduleApp = await prisma.interview.findUnique({
       where: { id: data.interviewId },
       include: {
+        participants: true,
         application: {
           include: {
             candidate: { select: { email: true, firstName: true, lastName: true } },
-            job: { select: { title: true } },
+            job: { select: { id: true, title: true } },
           },
         },
       },
     });
+    let rescheduleDelivered: boolean | undefined;
     if (rescheduleApp) {
+      const candidateName = `${rescheduleApp.application.candidate.firstName} ${rescheduleApp.application.candidate.lastName}`.trim();
+      const rescheduleEmail = await sendRecordedEmail({
+        to: rescheduleApp.application.candidate.email,
+        template: 'INTERVIEW_RESCHEDULED',
+        data: {
+          candidateName,
+          jobTitle: rescheduleApp.application.job.title,
+          schedule: data.scheduledAt.toISOString(),
+          timezone: data.timezone,
+        },
+        applicationId: applicationId,
+        jobId: rescheduleApp.application.job.id,
+        senderId: auth.user.id,
+      });
+      rescheduleDelivered = rescheduleEmail.delivered;
+
       const candidateU = await prisma.user.findUnique({
         where: { email: rescheduleApp.application.candidate.email },
       });
@@ -307,20 +350,17 @@ export async function PATCH(
         });
       }
       await notifyInterviewers(
-        (await prisma.interview.findUnique({
-          where: { id: data.interviewId },
-          include: { participants: true },
-        }))?.participants.map((p) => p.userId).filter((uid) => uid !== auth.user.id) ?? [],
+        rescheduleApp.participants.map((p) => p.userId).filter((uid) => uid !== auth.user.id),
         auth.user.organizationId,
         {
           title: `Interview Rescheduled: ${rescheduleApp.application.job.title}`,
-          message: `The interview for ${rescheduleApp.application.candidate.firstName} ${rescheduleApp.application.candidate.lastName} has been moved to ${data.scheduledAt.toISOString()} (${data.timezone}).`,
+          message: `The interview for ${candidateName} has been moved to ${data.scheduledAt.toISOString()} (${data.timezone}).`,
           link: `/candidates/${applicationId}/interview`,
         }
       );
     }
 
-    return NextResponse.json({ success: true, interview: updated });
+    return NextResponse.json({ success: true, interview: updated, rescheduleDelivered });
   } catch (error) {
     console.error('Interview reschedule error:', error);
     return safeErrorResponse('Failed to reschedule interview');
@@ -368,6 +408,7 @@ export async function DELETE(
     });
 
     // Spec §6.8: candidates and interviewers must receive cancellation updates.
+    let cancelEmail = { delivered: false as boolean };
     const cancelledInterview = await prisma.interview.findUnique({
       where: { id: interviewId },
       include: {
@@ -375,12 +416,28 @@ export async function DELETE(
         application: {
           include: {
             candidate: { select: { email: true, firstName: true, lastName: true } },
-            job: { select: { title: true } },
+            job: { select: { id: true, title: true } },
           },
         },
       },
     });
     if (cancelledInterview) {
+      const cancelledCandidateName = `${cancelledInterview.application.candidate.firstName} ${cancelledInterview.application.candidate.lastName}`.trim();
+
+      // §6.8: candidates must receive a cancellation update — email is
+      // primary (candidates may lack a portal account). Recorded (§6.9).
+      cancelEmail = await sendRecordedEmail({
+        to: cancelledInterview.application.candidate.email,
+        template: 'INTERVIEW_CANCELLED',
+        data: {
+          candidateName: cancelledCandidateName,
+          jobTitle: cancelledInterview.application.job.title,
+        },
+        applicationId: applicationId,
+        jobId: cancelledInterview.application.job.id,
+        senderId: auth.user.id,
+      });
+
       const candidateU = await prisma.user.findUnique({
         where: { email: cancelledInterview.application.candidate.email },
       });
@@ -400,13 +457,13 @@ export async function DELETE(
         auth.user.organizationId,
         {
           title: `Interview Cancelled: ${cancelledInterview.application.job.title}`,
-          message: `The interview for ${cancelledInterview.application.candidate.firstName} ${cancelledInterview.application.candidate.lastName} has been cancelled.`,
+          message: `The interview for ${cancelledCandidateName} has been cancelled.`,
           link: `/candidates/${applicationId}/interview`,
         }
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, cancellationDelivered: cancelEmail.delivered });
   } catch (error) {
     console.error('Interview cancel error:', error);
     return safeErrorResponse('Failed to cancel interview');

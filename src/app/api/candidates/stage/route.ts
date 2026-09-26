@@ -4,6 +4,7 @@ import { logAuditEvent } from '@/lib/auditLogger';
 import { canAccessDepartment, requirePermission } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { stageChangeSchema, validateBody, safeErrorResponse } from '@/lib/validation';
+import { statusForStage } from '@/lib/applicationStages';
 
 export async function PATCH(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function PATCH(req: Request) {
     const { data, error } = validateBody(stageChangeSchema, body);
     if (error) return error;
 
-    const { applicationId, newStage, newStatus } = data;
+    const { applicationId, newStage, newStatus, reason } = data;
 
     const existingApp = await prisma.application.findUnique({
       where: { id: applicationId },
@@ -37,19 +38,32 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Determine status mapping
-    let status = newStatus || existingApp.status;
-    if (newStage === 'INTERVIEW_SCHEDULED') status = 'INTERVIEW';
-    if (newStage === 'OFFERED') status = 'OFFER';
-    if (newStage === 'HIRED') status = 'HIRED';
-    if (newStage === 'REJECTED') status = 'REJECTED';
+    // Status is always derived from the canonical stage map — the caller
+    // cannot set a contradictory status (§6.7 vocabulary integrity).
+    const status = statusForStage(newStage);
 
-    const updatedApp = await prisma.application.update({
-      where: { id: applicationId },
-      data: {
-        stage: newStage,
-        status: status
-      }
+    const updatedApp = await prisma.$transaction(async (tx) => {
+      // §6.3: every stage change is recorded with actor, timestamp, previous
+      // stage, new stage, and reason — as a first-class RecruitmentDecision.
+      await tx.recruitmentDecision.create({
+        data: {
+          applicationId,
+          actorId: auth.user.id,
+          humanAction: 'STAGE_CHANGE_RECORDED',
+          decisionType: 'STAGE_CHANGE',
+          reason: reason.trim(),
+          previousStage: existingApp.stage,
+          newStage,
+        },
+      });
+
+      return tx.application.update({
+        where: { id: applicationId },
+        data: {
+          stage: newStage,
+          status: status
+        }
+      });
     });
 
     // Notify Candidate if they have an associated User account
@@ -77,13 +91,14 @@ export async function PATCH(req: Request) {
       });
     }
 
-    // Log Audit Trail
+    // Log Audit Trail (old/new values, §6.12)
     await logAuditEvent({
       action: 'CANDIDATE_STAGE_CHANGED',
       actorId: auth.user.id,
+      organizationId: auth.user.organizationId,
       affectedRecordId: applicationId,
       previousValues: { stage: existingApp.stage, status: existingApp.status },
-      newValues: { stage: newStage, status, candidateName: `${existingApp.candidate.firstName} ${existingApp.candidate.lastName}`, jobTitle: existingApp.job.title }
+      newValues: { stage: newStage, status, reason: reason.trim(), candidateName: `${existingApp.candidate.firstName} ${existingApp.candidate.lastName}`, jobTitle: existingApp.job.title }
     });
 
     return NextResponse.json({ success: true, application: updatedApp });

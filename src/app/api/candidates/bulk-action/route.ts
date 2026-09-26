@@ -4,6 +4,7 @@ import { requirePermission } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { safeErrorResponse, validateBody } from '@/lib/validation';
+import { stageForDecision, statusForStage } from '@/lib/applicationStages';
 import { z } from 'zod/v4';
 
 const bulkActionSchema = z.object({
@@ -45,36 +46,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Map action to target stage and status (consistent with individual decision routes)
-    let newStage = 'SCREENING';
-    let newStatus = 'ACTIVE';
-
-    switch (action) {
-      case 'SHORTLIST':
-        newStage = 'SHORTLISTED';
-        newStatus = 'ACTIVE';
-        break;
-      case 'ADVANCE':
-        newStage = 'INTERVIEW_SCHEDULED';
-        newStatus = 'INTERVIEW';
-        break;
-      case 'HOLD':
-        newStage = 'ON_HOLD';
-        newStatus = 'ACTIVE';
-        break;
-      case 'REJECT':
-        newStage = 'REJECTED';
-        newStatus = 'REJECTED';
-        break;
-      case 'WITHDRAW':
-        newStage = 'WITHDRAWN';
-        newStatus = 'WITHDRAWN';
-        break;
-      case 'REVIEW':
-        newStage = 'NEEDS_REVIEW';
-        newStatus = 'ACTIVE';
-        break;
-    }
+    // Single canonical decision map — identical to the individual decision
+    // route (§6.7 stage/status vocabulary cannot drift between routes).
+    const newStage = stageForDecision(action);
+    const newStatus = statusForStage(newStage);
 
     // Execute atomic bulk update and decision record creation (spec §6.3, §6.7)
     await prisma.$transaction(async (tx) => {

@@ -4,6 +4,7 @@ import { requirePermission } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { scorecardSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { logAuditEvent } from '@/lib/auditLogger';
+import { isFinalStage } from '@/lib/applicationStages';
 
 export async function GET(
   _req: Request,
@@ -115,6 +116,19 @@ export async function POST(
           { status: 403 }
         );
       }
+    }
+
+    // §6.8 data integrity: feedback must be submitted BEFORE the hiring
+    // decision, not rewritten after it. Once an application reaches a final
+    // stage (OFFERED/HIRED/REJECTED/WITHDRAWN), scorecards are locked.
+    if (isFinalStage(application.stage)) {
+      return NextResponse.json(
+        {
+          error:
+            'Scorecards are locked — this application has already reached a final recruitment decision',
+        },
+        { status: 409 }
+      );
     }
 
     let interview = application.interviews[0];

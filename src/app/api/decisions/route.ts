@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { requirePermission } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { decisionSchema, validateBody, safeErrorResponse } from '@/lib/validation';
+import { stageForDecision, statusForStage } from '@/lib/applicationStages';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,41 +30,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Determine the new application stage and status based on the decision
-    let stage = existingApplication.stage;
-    let status = existingApplication.status;
-
-    switch (decision) {
-      case 'SHORTLIST':
-        stage = 'SHORTLISTED';
-        status = 'ACTIVE';
-        break;
-      case 'ADVANCE':
-      case 'ADVANCED':
-        stage = 'INTERVIEW_SCHEDULED';
-        status = 'INTERVIEW';
-        break;
-      case 'HOLD':
-        stage = 'ON_HOLD';
-        status = 'ACTIVE';
-        break;
-      case 'REJECT':
-      case 'REJECTED':
-        stage = 'REJECTED';
-        status = 'REJECTED';
-        break;
-      case 'WITHDRAW':
-        stage = 'WITHDRAWN';
-        status = 'WITHDRAWN';
-        break;
-      case 'REVIEW':
-        stage = 'NEEDS_REVIEW';
-        status = 'ACTIVE';
-        break;
-      default:
-        stage = 'SCREENING';
-        status = 'ACTIVE';
-    }
+    // Determine the new stage from the single canonical decision map; status
+    // is always derived from stage (§6.7 vocabulary cannot drift).
+    const stage = stageForDecision(decision);
+    const status = statusForStage(stage);
 
     const fullReason = reasonCode ? `[${reasonCode}] ${rationale}` : rationale;
 
