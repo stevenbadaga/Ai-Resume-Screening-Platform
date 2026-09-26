@@ -88,3 +88,19 @@ html.light ::-webkit-scrollbar-thumb {
 html.light ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
+/* a11y (spec section 9 Accessibility): a visible keyboard focus ring for
+   every interactive element. Component styles use focus:outline-none with a
+   border-color change only, which fails WCAG 2.4.7 for keyboard users; this
+   global focus-visible rule restores a high-contrast ring without affecting
+   pointer users. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

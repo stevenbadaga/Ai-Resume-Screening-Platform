@@ -32,6 +32,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jakarta.variable} dark`}>
       <body className="min-h-screen dark:bg-[#070A11] bg-[#F8FAFC] dark:text-slate-100 text-slate-900 antialiased selection:bg-indigo-500/20 selection:text-indigo-300 font-sans text-xs">
+        {/* §9 Accessibility: keyboard users can jump past the navigation */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-teal-600 focus:px-3 focus:py-2 focus:text-white focus:text-xs focus:font-bold"
+        >
+          Skip to main content
+        </a>
         <Providers>
           <ThemeProvider>
             <LanguageProvider>
@@ -60,7 +67,10 @@ export default function RootLayout({
                     </header>
 
                     {/* Scrollable Page Body */}
-                    <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-7 [contain:content]">
+                    <main
+                      id="main-content"
+                      className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-7 [contain:content]"
+                    >
                       {children}
                     </main>
                   </div>
