@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import {
-  generateVerificationToken,
-  EMAIL_VERIFICATION_TOKEN_TTL_MINUTES,
-} from '@/lib/emailVerification';
+import { issueVerificationCode } from '@/lib/verificationCode';
 import { sendRecordedEmail } from '@/lib/emailService';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import { safeErrorResponse } from '@/lib/validation';
@@ -11,9 +8,10 @@ import { safeErrorResponse } from '@/lib/validation';
 /**
  * POST /api/auth/resend-verification  { email }
  *
- * Re-sends the verification link (spec §6.1). Anti-enumeration: always
+ * Re-sends the signup activation code (spec §6.1). Anti-enumeration: always
  * returns success whether or not the account exists, is already verified,
- * or email delivery is configured. Rate limited per email address.
+ * or email delivery is configured. Rate limited per email address; the
+ * issueVerificationCode cooldown adds a second layer against email bombing.
  */
 export async function POST(req: Request) {
   try {
@@ -33,31 +31,41 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (user && user.passwordHash && !user.emailVerifiedAt) {
-      const { token, tokenHash } = generateVerificationToken();
-      const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MINUTES * 60_000);
-      await prisma.emailVerificationToken.create({
-        data: { userId: user.id, tokenHash, expiresAt },
-      });
-
-      const origin = process.env.NEXTAUTH_URL || new URL(req.url).origin;
-      const verifyUrl = `${origin}/auth/verify-email?token=${token}`;
-      // Recorded send (spec §6.9): even this anti-enumeration path records an
-      // honest SENT/FAILED row — observability never leaks enumeration signals
-      // because the API response stays generic regardless of outcome.
-      await sendRecordedEmail({
-        to: email,
-        template: 'EMAIL_VERIFICATION',
-        data: { joinLink: verifyUrl },
-        senderId: user.id,
+      const issued = await issueVerificationCode(user.id, 'EMAIL_VERIFICATION');
+      if (issued.ok) {
+        // Recorded send (spec §6.9): even this anti-enumeration path records an
+        // honest SENT/FAILED row — observability never leaks enumeration signals
+        // because the API response stays generic regardless of outcome.
+        const recorded = await sendRecordedEmail({
+          to: email,
+          template: 'EMAIL_VERIFICATION_CODE',
+          data: { verificationCode: issued.code },
+          senderId: user.id,
+        });
+        // The UI may render the honest outcome: a swallowed cooldown or a
+        // failed send must never be reported as "code sent".
+        return NextResponse.json({
+          success: true,
+          message: 'If that email address has an unverified account, a new verification code has been sent.',
+          delivered: recorded.delivered,
+        });
+      }
+      // Cooldown active: tell the client so it can show a real wait prompt
+      // instead of a false "sent". The generic message text is unchanged for
+      // anti-enumeration; only the machine-readable field differs.
+      return NextResponse.json({
+        success: true,
+        message: 'If that email address has an unverified account, a new verification code has been sent.',
+        cooldownSeconds: issued.retryAfterSeconds,
       });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'If that email address has an unverified account, a new verification link has been sent.',
+      message: 'If that email address has an unverified account, a new verification code has been sent.',
     });
   } catch (error) {
     console.error('Resend verification error:', error);
-    return safeErrorResponse('Failed to resend verification email');
+    return safeErrorResponse('Failed to resend verification code');
   }
 }

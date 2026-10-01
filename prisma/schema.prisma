@@ -51,6 +51,7 @@ model User {
   auditEvents             AuditEvent[]             @relation("Actor")
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  verificationCodes       VerificationCode[]
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 }
@@ -364,6 +365,29 @@ model EmailVerificationToken {
   createdAt DateTime  @default(now())
 
   @@index([userId])
+}
+
+// Two-step login (2FA) and signup email-activation codes (spec §6.1).
+// The emailed code never reaches the database: only its SHA-256 hash is
+// stored, so a database leak exposes no usable codes. `purpose` separates the
+// two flows; `usedAt` makes a code single-use; expiresAt is a 10-minute TTL.
+// maxAttempts counts wrong entries — a wrong guess consumes one of 5, so
+// online guessing stays ~0.005% per code while it lives.
+model VerificationCode {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose     String // LOGIN_MFA (two-step sign-in) | EMAIL_VERIFICATION (signup activation)
+  codeHash    String // SHA-256 of the emailed 6-digit code — the plain code is never stored
+  expiresAt   DateTime
+  usedAt      DateTime?
+  verifiedAt  DateTime? // set ONLY when the correct code was entered — proves solve, not invalidation
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
 }
 
 model Notification {

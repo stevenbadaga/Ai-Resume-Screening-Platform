@@ -25,6 +25,11 @@ async function signIn(page: import('@playwright/test').Page, email: string, pass
   await page.fill('#signin-email', email);
   await page.fill('#signin-password', password);
   await page.getByRole('button', { name: /sign in/i }).click();
+  // Two-step sign-in: enter the emailed verification code (pre-staged solved
+  // LOGIN_MFA code for the seeded recruiter — see e2e/global-setup.ts).
+  await page.waitForSelector('#signin-code', { timeout: 20_000 });
+  await page.fill('#signin-code', E2E.loginCode);
+  await page.getByRole('button', { name: /verify & sign in/i }).click();
   await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
 }
 

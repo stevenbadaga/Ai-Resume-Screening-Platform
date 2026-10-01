@@ -6,10 +6,9 @@ import { signupSchema, validateBody, safeErrorResponse } from '@/lib/validation'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import { resolveMx, resolve4, resolve6 } from 'node:dns/promises';
 import {
-  generateVerificationToken,
   isDisposableEmailDomain,
-  EMAIL_VERIFICATION_TOKEN_TTL_MINUTES,
 } from '@/lib/emailVerification';
+import { issueVerificationCode } from '@/lib/verificationCode';
 import { sendRecordedEmail } from '@/lib/emailService';
 import { resolveSignupRole } from '@/lib/signupRoles';
 import { permissionsForRoleName } from '@/lib/roleAccess';
@@ -245,24 +244,27 @@ export async function POST(req: Request) {
     });
 
     // Email verification (spec §6.1): prove the mailbox is real and owned by
-    // the registrant. The account cannot sign in until the emailed link is
-    // clicked. Send AFTER the user row exists; a delivery failure does NOT
-    // roll back the account — the user can request a fresh link from the
-    // sign-in page (resend-verification endpoint).
-    const { token, tokenHash } = generateVerificationToken();
-    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MINUTES * 60_000);
-    await prisma.emailVerificationToken.create({
-      data: { userId: user.id, tokenHash, expiresAt },
-    });
+    // the registrant. The account cannot sign in until the emailed 6-digit
+    // code is typed into the verification screen. Send AFTER the user row
+    // exists; a delivery failure does NOT roll back the account — the user
+    // can request a fresh code from the sign-in page (resend-verification).
+    const issued = await issueVerificationCode(user.id, 'EMAIL_VERIFICATION');
 
-    const origin = process.env.NEXTAUTH_URL || new URL(req.url).origin;
-    const verifyUrl = `${origin}/auth/verify-email?token=${token}`;
+    // Cooldown conflict on a brand-new account cannot really happen (the row
+    // set is empty), but fail honest rather than silently skipping the email.
+    if (!issued.ok) {
+      return NextResponse.json(
+        { error: 'Too many verification emails requested. Please wait a minute and try again.' },
+        { status: 429 }
+      );
+    }
+
     // Recorded send (spec §6.9): the attempt lands in the Communication table
     // with an honest SENT/FAILED state so admins can see and retry delivery.
     const recorded = await sendRecordedEmail({
       to: normalizedEmail,
-      template: 'EMAIL_VERIFICATION',
-      data: { joinLink: verifyUrl },
+      template: 'EMAIL_VERIFICATION_CODE',
+      data: { verificationCode: issued.code },
       senderId: user.id,
     });
     const verificationEmailQueued = recorded.delivered;

@@ -19,6 +19,15 @@ vi.mock('@/lib/prisma', () => ({
     criterionAssessment: { create: vi.fn() },
     communication: { create: vi.fn() },
     notification: { create: vi.fn() },
+    verificationCode: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+      deleteMany: vi.fn(),
+      count: vi.fn(),
+    },
     $transaction: vi.fn(cb => (typeof cb === 'function' ? cb({}) : Promise.resolve(cb))),
   },
 }));

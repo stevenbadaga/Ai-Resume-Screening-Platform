@@ -18,13 +18,16 @@ export type EmailTemplateType =
   | 'REJECTION_FEEDBACK'
   | 'TEAM_INVITATION'
   | 'PASSWORD_RESET'
-  | 'EMAIL_VERIFICATION';
+  | 'EMAIL_VERIFICATION'
+  | 'EMAIL_VERIFICATION_CODE';
 
 export interface EmailPayload {
   to: string;
   template: EmailTemplateType;
   data: {
     candidateName?: string;
+    /** 6-digit verification code for EMAIL_VERIFICATION_CODE emails. */
+    verificationCode?: string;
     jobTitle?: string;
     schedule?: string;
     timezone?: string;
@@ -50,6 +53,7 @@ const SUBJECT_MAP: Record<EmailTemplateType, (data: EmailPayload['data']) => str
   TEAM_INVITATION: () => `You have been invited to join a team on RecruitAI`,
   PASSWORD_RESET: () => `Reset your RecruitAI password`,
   EMAIL_VERIFICATION: () => `Verify your email address — RecruitAI`,
+  EMAIL_VERIFICATION_CODE: (d) => `Your verification code: ${d.verificationCode ?? ''} — RecruitAI`,
 };
 
 function escapeHtml(value: string): string {
@@ -102,6 +106,13 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
     case 'EMAIL_VERIFICATION':
       body += `<p>Please confirm your email address to activate your account.</p>
         ${data.joinLink ? `<p><a href="${safe(data.joinLink)}">Verify my email address</a></p>` : ''}`;
+      break;
+    case 'EMAIL_VERIFICATION_CODE':
+      body += `<p>Your verification code is:</p>
+        <p style="font-size: 32px; letter-spacing: 8px; font-weight: 700; font-family: monospace; color: #0f766e;">${safe(data.verificationCode)}</p>
+        <p>This code expires in 10 minutes and can be used once. Enter it on the
+        verification screen to continue. If you did not request it, you can
+        safely ignore this email.</p>`;
       break;
   }
 
@@ -187,10 +198,74 @@ function providerFailureHint(provider: 'Brevo' | 'Resend', status: number, data:
  *              Brevo dashboard (Senders & IP -> single-sender verification via
  *              confirmation email — no domain/DNS needed, 300 emails/day free).
  */
+// One-time warning: a gmail.com/googlemail.com sender cannot be
+// authenticated (SPF/DKIM belong to Google), and since Google's Feb-2024
+// sender rules, third-party providers sending "from" such addresses are
+// treated as spoofing — mail lands in spam or is silently dropped. Warn at
+// send time so the fix (own domain + Brevo DKIM/SPF, or the Gmail SMTP path
+// below) is discoverable.
+let gmailSenderWarned = false;
+
+/**
+ * Gmail SMTP path (GMAIL_USER + GMAIL_APP_PASSWORD).
+ *
+ * The ONLY way to send authenticated mail from a @gmail.com address: instead
+ * of a third-party provider spoofing "from: someone@gmail.com", the app logs
+ * in to Google's own SMTP servers (smtp.gmail.com:465) with a Gmail App
+ * Password. Google signs the message with proper SPF/DKIM — inbox delivery,
+ * no domain needed. Limits: 500 emails/day (Google's app-password cap).
+ *
+ * Setup: Google Account → Security → 2-Step Verification ON, then
+ * myaccount.google.com/apppasswords → create → paste the 16-char password
+ * into GMAIL_APP_PASSWORD.
+ */
+async function sendViaGmailSmtp(
+  subject: string,
+  html: string,
+  to: string
+): Promise<{ success: true; id: string }> {
+  const { createTransport } = await import('nodemailer');
+  const transporter = createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: (process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, ''),
+    },
+  });
+  try {
+    const info = await transporter.sendMail({
+      from: `RecruitAI <${process.env.GMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    return { success: true, id: String(info.messageId ?? 'unknown') };
+  } finally {
+    transporter.close();
+  }
+}
+
+function gmailSmtpConfigured(): boolean {
+  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+}
+
 export async function sendTransactionalEmail(
   payload: EmailPayload,
   customHtmlBody?: string
 ): Promise<{ success: true; id: string }> {
+  const fromEnv = (process.env.EMAIL_FROM || '').toLowerCase();
+  if (!gmailSenderWarned && !gmailSmtpConfigured() && /@(gmail|googlemail)\.com["']?$/.test(fromEnv)) {
+    gmailSenderWarned = true;
+    console.warn(
+      '[email] WARNING: EMAIL_FROM is a Gmail address sent through a third-party provider. ' +
+        'Google treats this as spoofing — messages may land in spam or be silently rejected. ' +
+        'Fix: set GMAIL_USER + GMAIL_APP_PASSWORD (authenticated Gmail SMTP, no domain needed) ' +
+        'OR use a sender on a domain you own with Brevo DKIM/SPF authentication.'
+    );
+  }
+
   const subject = SUBJECT_MAP[payload.template](payload.data);
   const html = customHtmlBody
     ? `<div style="font-family: sans-serif; padding: 24px; color: #1e293b; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
@@ -199,6 +274,13 @@ export async function sendTransactionalEmail(
     <p style="margin-top: 24px; font-size: 12px; color: #64748b;">Powered by RecruitAI.</p>
   </div>`
     : renderEmailHtml(payload.template, payload.data);
+
+  // Provider priority: authenticated Gmail SMTP beats Brevo/Resend when
+  // configured — it is the only provider that produces properly signed mail
+  // from a @gmail.com address (the common small-team setup).
+  if (gmailSmtpConfigured()) {
+    return sendViaGmailSmtp(subject, html, payload.to);
+  }
 
   const brevoApiKey = process.env.BREVO_API_KEY;
   if (brevoApiKey) {
@@ -236,8 +318,8 @@ export async function sendTransactionalEmail(
   const resendApiKey = process.env.RESEND_API_KEY;
   if (!resendApiKey) {
     throw new Error(
-      'No email provider configured — set BREVO_API_KEY or RESEND_API_KEY. ' +
-        'Email delivery is unavailable.'
+      'No email provider configured — set GMAIL_USER + GMAIL_APP_PASSWORD, BREVO_API_KEY, ' +
+        'or RESEND_API_KEY. Email delivery is unavailable.'
     );
   }
 
@@ -293,6 +375,14 @@ export async function sendRecordedEmail(
   input: RecordedEmailInput,
   customHtmlBody?: string
 ): Promise<RecordedEmailResult> {
+  // The verification code exists ONLY inside the emailed message and as a
+  // SHA-256 hash in the database — snapshotting it in plaintext here would
+  // hand anyone with DB read access a live 2FA/activation code. Codes are
+  // single-use and expire in 10 minutes, so a retry never re-sends one;
+  // everything else in the payload stays snapshotted for faithful retries.
+  const snapshotData: Record<string, unknown> = { ...(input.data as Record<string, unknown>) };
+  if ('verificationCode' in snapshotData) snapshotData.verificationCode = '[REDACTED — single-use code]';
+
   const comm = await prisma.communication.create({
     data: {
       applicationId: input.applicationId,
@@ -304,7 +394,7 @@ export async function sendRecordedEmail(
       deliveryState: 'PENDING',
       // §6.9: snapshot the exact template payload so a later safe retry can
       // re-render faithful content (schedule, meeting link, offer details…).
-      payloadSnapshot: JSON.stringify(input.data ?? {})
+      payloadSnapshot: JSON.stringify(snapshotData)
     }
   });
 

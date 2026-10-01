@@ -47,6 +47,9 @@ export const E2E = {
     password: 'E2e-Recruiter-Passw0rd!',
     name: 'Rosa Recruiter (E2E)',
   },
+  // Two-step sign-in (2FA): global-setup pre-stages a solved LOGIN_MFA code
+  // with this value; the browser tests type it at the code step.
+  loginCode: '424242',
   job: {
     title: `E2E Backend Engineer ${RUN_ID}`,
     department: 'Engineering',

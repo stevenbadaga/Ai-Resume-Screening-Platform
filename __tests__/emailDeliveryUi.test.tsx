@@ -91,17 +91,17 @@ describe('sign-in page — post-signup banners', () => {
     render(<SignInPage />);
 
     expect(screen.getByText(/verification email could not be sent/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /resend verification email/i })).toBeInTheDocument();
-    expect(screen.queryByText(/check your inbox/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /resend verification code/i })).toBeInTheDocument();
+    expect(screen.queryByText(/click the verification link/i)).not.toBeInTheDocument();
   });
 
-  it('shows the normal check-your-inbox notice for a delivered verification email', () => {
+  it('tells the user the emailed code will be requested at sign-in when delivery succeeded', () => {
     h.searchParams.set('registered', '1');
 
     render(<SignInPage />);
 
     expect(
-      screen.getByText(/check your inbox and click the verification link/i)
+      screen.getByText(/asked for the verification code we emailed you/i)
     ).toBeInTheDocument();
     expect(screen.queryByText(/could not be sent/i)).not.toBeInTheDocument();
   });

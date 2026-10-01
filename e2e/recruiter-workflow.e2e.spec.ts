@@ -15,18 +15,33 @@
 import { test, expect } from '@playwright/test';
 import { E2E } from './constants';
 
+/**
+ * Two-step sign-in (2FA): credentials step, then the emailed 6-digit code
+ * (pre-staged by global-setup as a solved LOGIN_MFA code for the seeded
+ * recruiter — no real email delivery in the browser suite).
+ */
+async function signIn(page: import('@playwright/test').Page) {
+  await page.goto('/auth/signin');
+  await page.fill('#signin-email', E2E.recruiter.email);
+  await page.fill('#signin-password', E2E.recruiter.password);
+  await page.getByRole('button', { name: /sign in/i }).click();
+  // Step 2: the verification-code screen.
+  await page.waitForSelector('#signin-code', { timeout: 20_000 });
+  await page.fill('#signin-code', E2E.loginCode);
+  await page.getByRole('button', { name: /verify & sign in/i }).click();
+}
+
+
 const skip = !process.env.TEST_DATABASE_URL;
 
 test.describe('recruiter workflow E2E (spec §14)', () => {
   test.skip(skip, 'TEST_DATABASE_URL not set — E2E requires the scoped seeded dataset');
 
-  test('signs in as the seeded recruiter', async ({ page }) => {
+  test('signs in as the seeded recruiter (two-step, password + emailed code)', async ({ page }) => {
     await page.goto('/auth/signin');
     await expect(page.getByRole('heading', { name: /sign in to recruitai/i })).toBeVisible();
 
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
 
     // Successful sign-in lands on the dashboard; the UserNav button's
     // accessible name contains "<firstName> <role>" (e.g. "Rosa Admin").
@@ -37,10 +52,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('creates a job requisition from the UI', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/jobs');
@@ -59,10 +71,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('shows the seeded job with rubric preview', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/jobs');
@@ -76,10 +85,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('finds the seeded candidate in the pipeline and opens the profile', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/candidates');
@@ -96,10 +102,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('toggles blind screening and hides candidate PII', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/candidates');
@@ -122,10 +125,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('recalibrates the AI score with a mandatory reason (§6.5 override)', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/candidates');
@@ -147,10 +147,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('records a human decision with reason and updates the stage (§6.7)', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/candidates');
@@ -169,10 +166,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('schedules an interview from the profile (§6.8)', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/candidates');
@@ -197,10 +191,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('submits a structured scorecard and shows the completed evaluation (§6.8)', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/candidates');
@@ -223,10 +214,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('shows the audit trail to authorized staff (§6.12)', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/audit');
@@ -236,10 +224,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('renders the manager analytics page with §6.10 metrics', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     await page.goto('/dashboard/analytics');
@@ -250,10 +235,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('exports the recruitment CSV with the seeded application (§6.10/§6.11)', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     const response = await page.request.get('/api/export');
@@ -264,10 +246,7 @@ test.describe('recruiter workflow E2E (spec §14)', () => {
   });
 
   test('signs out and blocks unauthenticated access to the pipeline', async ({ page }) => {
-    await page.goto('/auth/signin');
-    await page.fill('#signin-email', E2E.recruiter.email);
-    await page.fill('#signin-password', E2E.recruiter.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await signIn(page);
     await page.waitForURL(/\/dashboard/);
 
     // Sign out via the user menu (UserNav button name contains "<firstName>")

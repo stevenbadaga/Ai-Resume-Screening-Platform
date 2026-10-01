@@ -3,7 +3,8 @@
  * Prisma client against TEST_DATABASE_URL (never the unit-suite mock):
  *
  *   organization + recruiter role + ACTIVE recruiter user (verified email,
- *   known password) + OPEN job with APPROVED rubric (2 weighted criteria) +
+ *   known password) + a prepared LOGIN_MFA verification code (two-step
+ *   sign-in step 2) + OPEN job with APPROVED rubric (2 weighted criteria) +
  *   consented candidate + application + completed resume document +
  *   completed screening run with per-criterion evidence assessments.
  *
@@ -75,6 +76,25 @@ async function seedDatabase() {
       accessStatus: 'ACTIVE',
       emailVerifiedAt: new Date(),
       roles: { connect: { id: role.id } },
+    },
+  });
+
+  // Two-step sign-in (2FA): pre-stage a solved LOGIN_MFA code so the browser
+  // workflow can pass the second factor without receiving email. A solved
+  // code (usedAt + verifiedAt stamped, unexpired) satisfies the authorize()
+  // proof-of-solve check for the full code TTL.
+  const { createHash } = await import('crypto');
+  const e2eLoginCode = (process.env.E2E_LOGIN_CODE || '424242').padStart(6, '0').slice(0, 6);
+  await prisma.verificationCode.create({
+    data: {
+      userId: E2E.recruiter.id,
+      purpose: 'LOGIN_MFA',
+      codeHash: createHash('sha256').update(e2eLoginCode, 'utf8').digest('hex'),
+      expiresAt: new Date(Date.now() + 60 * 60_000), // 1 hour — covers the whole suite
+      usedAt: new Date(),
+      verifiedAt: new Date(),
+      attempts: 0,
+      maxAttempts: 5,
     },
   });
 

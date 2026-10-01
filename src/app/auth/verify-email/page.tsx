@@ -126,7 +126,8 @@ function VerifyEmailPanel() {
             <p className="text-sm font-bold text-rose-600 dark:text-rose-400">{copy.failedTitle}</p>
             <p className="text-xs dark:text-slate-400 text-slate-500">{message}</p>
             <p className="text-[11px] dark:text-slate-500 text-slate-400">
-              Request a new link from the sign-in page (&ldquo;Resend verification email&rdquo;).
+              Request a new code from the sign-in page (&ldquo;Resend verification code&rdquo;),
+              or sign in with your email and password and paste the code we emailed you.
             </p>
           </div>
         )}
