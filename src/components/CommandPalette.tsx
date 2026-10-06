@@ -28,15 +28,15 @@ export default function CommandPalette() {
   if (!isOpen) return null;
 
   const actions = [
-    { name: t('nav_dashboard'), path: '/dashboard', icon: '📊', category: 'Navigation' },
-    { name: t('nav_candidates'), path: '/candidates', icon: '👥', category: 'Navigation' },
-    { name: t('nav_compare'), path: '/candidates/compare', icon: '⚖️', category: 'Analytics' },
-    { name: t('nav_duplicates'), path: '/candidates/duplicates', icon: '🔍', category: 'Analytics' },
-    { name: t('nav_jobs'), path: '/jobs', icon: '💼', category: 'Requisitions' },
-    { name: t('nav_audit'), path: '/audit', icon: '🛡️', category: 'Compliance' },
-    { name: t('nav_privacy'), path: '/privacy', icon: '🔒', category: 'Compliance' },
-    { name: t('nav_team'), path: '/dashboard/team', icon: '🏢', category: 'Administration' },
-    { name: t('nav_analytics'), path: '/dashboard/analytics', icon: '📈', category: 'Analytics' },
+    { name: t('nav_dashboard'), path: '/dashboard', icon: '📊', category: t('cmd_cat_navigation') },
+    { name: t('nav_candidates'), path: '/candidates', icon: '👥', category: t('cmd_cat_navigation') },
+    { name: t('nav_compare'), path: '/candidates/compare', icon: '⚖️', category: t('cmd_cat_analytics') },
+    { name: t('nav_duplicates'), path: '/candidates/duplicates', icon: '🔍', category: t('cmd_cat_analytics') },
+    { name: t('nav_jobs'), path: '/jobs', icon: '💼', category: t('cmd_cat_requisitions') },
+    { name: t('nav_audit'), path: '/audit', icon: '🛡️', category: t('cmd_cat_compliance') },
+    { name: t('nav_privacy'), path: '/privacy', icon: '🔒', category: t('cmd_cat_compliance') },
+    { name: t('nav_team'), path: '/dashboard/team', icon: '🏢', category: t('cmd_cat_administration') },
+    { name: t('nav_analytics'), path: '/dashboard/analytics', icon: '📈', category: t('cmd_cat_analytics') },
   ];
 
   const filtered = actions.filter((a) =>

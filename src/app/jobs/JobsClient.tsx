@@ -21,17 +21,30 @@ interface JobFilters {
   departments: string[];
 }
 
+export interface MyApplicationInfo {
+  applicationId: string;
+  status: string;
+  stage: string;
+  score: number | null;
+  appliedAt: string;
+}
+
 interface Props {
   initialJobs: any[];
   userRole?: string;
   pagination?: PaginationInfo;
   filters?: JobFilters;
+  myApplications?: Record<string, MyApplicationInfo>;
+  hasSavedResume?: boolean;
 }
 
 const STATUS_OPTIONS = ['DRAFT', 'REVIEW', 'OPEN', 'CLOSED', 'ARCHIVED'];
 
-export default function JobsClient({ initialJobs, userRole = 'Candidate', pagination, filters }: Props) {
+export default function JobsClient({ initialJobs, userRole = 'Candidate', pagination, filters, myApplications: initialMyApplications, hasSavedResume: initialHasSavedResume }: Props) {
   const [jobs, setJobs] = useState<any[]>(initialJobs);
+  const [myApplications, setMyApplications] = useState<Record<string, MyApplicationInfo>>(initialMyApplications ?? {});
+  const [hasSavedResume, setHasSavedResume] = useState<boolean>(initialHasSavedResume ?? false);
+  const [applyingJobId, setApplyingJobId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewJob, setPreviewJob] = useState<any>(null);
@@ -55,6 +68,39 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
 
   const isStaff = roleCapabilities.canManageJobs(userRole);
 
+  // One-click apply (candidates with a saved CV on their profile): the
+  // application re-enters the standard intake pipeline with the stored
+  // document — no form filling, no re-upload.
+  const handleOneClickApply = async (job: any) => {
+    if (applyingJobId) return;
+    setApplyingJobId(job.id);
+    try {
+      const fd = new FormData();
+      fd.append('jobId', job.id);
+      fd.append('useProfileResume', 'true');
+      fd.append('consentGiven', 'true');
+      fd.append('consentToDataProcessing', 'true');
+      const res = await fetch('/api/jobs/apply', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to submit application');
+      setMyApplications((prev) => ({
+        ...prev,
+        [job.id]: {
+          applicationId: data.applicationId,
+          status: 'NEW',
+          stage: 'NEW',
+          score: null,
+          appliedAt: new Date().toISOString(),
+        },
+      }));
+      showToast(t('toast_applied_saved_cv').replace('{title}', job.title), 'success', t('toast_one_click_title'));
+    } catch (err: any) {
+      showToast(err.message || t('toast_one_click_failed'), 'error');
+    } finally {
+      setApplyingJobId(null);
+    }
+  };
+
   const handleAddCriteria = () => {
     setCriteria([...criteria, { category: 'Core Skill', description: '', isRequired: false, weight: 3 }]);
   };
@@ -72,7 +118,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description) {
-      showToast('Title and description are required', 'error');
+      showToast(t('toast_title_desc_required'), 'error');
       return;
     }
 
@@ -103,20 +149,20 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
       if (res.ok) {
         const result = await res.json();
         if (!result.job) {
-          showToast('The server returned an incomplete requisition response', 'error');
+          showToast(t('toast_incomplete_response'), 'error');
           return;
         }
         setJobs((currentJobs) => [result.job, ...currentJobs]);
         setIsModalOpen(false);
         setTitle('');
         setDescription('');
-        showToast(`Job Requisition "${title}" published live`, 'success', 'Requisition Created');
+        showToast(t('toast_requisition_published').replace('{title}', title), 'success', t('toast_requisition_created_title'));
       } else {
         const result = await res.json().catch(() => null);
-        showToast(result?.error || 'Failed to create job requisition', 'error');
+        showToast(result?.error || t('toast_create_failed'), 'error');
       }
     } catch (err) {
-      showToast('Network error while creating requisition', 'error');
+      showToast(t('toast_network_create'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -137,7 +183,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
   const openRubricEdit = (job: any) => {
     const rubric = job.rubrics?.[0];
     if (!rubric) {
-      showToast('This requisition has no rubric to edit', 'error');
+      showToast(t('toast_no_rubric'), 'error');
       return;
     }
     setEditingJob(job);
@@ -165,11 +211,11 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
     const cleanedCriteria = editCriteria.filter((c) => c.description.trim().length > 0);
 
     if (cleanedCriteria.length === 0) {
-      showToast('A rubric needs at least one criterion', 'error');
+      showToast(t('toast_rubric_min_one'), 'error');
       return;
     }
     if (isApproved && !editChangeReason.trim()) {
-      showToast('A change reason is required when editing an approved rubric', 'error');
+      showToast(t('toast_reason_required'), 'error');
       return;
     }
 
@@ -186,7 +232,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        showToast(data?.error || 'Failed to update the rubric', 'error');
+        showToast(data?.error || t('toast_rubric_update_failed'), 'error');
         return;
       }
       setJobs((current) =>
@@ -199,13 +245,13 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
       setEditModalOpen(false);
       showToast(
         data.supersededRubricId
-          ? 'New rubric version created as DRAFT — approve it to use it for screening'
-          : 'Rubric criteria updated',
+          ? t('toast_rubric_new_draft')
+          : t('toast_rubric_updated'),
         'success',
-        'Rubric Saved'
+        t('toast_rubric_saved_title')
       );
     } catch {
-      showToast('Network error while updating the rubric', 'error');
+      showToast(t('toast_rubric_network'), 'error');
     } finally {
       setEditSubmitting(false);
     }
@@ -218,7 +264,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
     if (publishingId) return;
     const rubricId = job.rubrics?.[0]?.id;
     if (!rubricId) {
-      showToast('This requisition has no rubric to approve', 'error');
+      showToast(t('toast_no_rubric_approve'), 'error');
       return;
     }
     setPublishingId(job.id);
@@ -232,14 +278,14 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
         });
         if (!res.ok) {
           const result = await res.json().catch(() => null);
-          showToast(result?.error || `Failed to publish requisition (${newStatus})`, 'error');
+          showToast(result?.error || t('toast_publish_failed').replace('{status}', newStatus), 'error');
           return;
         }
       }
       setJobs((current) => current.map((j) => (j.id === job.id ? { ...j, status: 'OPEN' } : j)));
-      showToast(`"${job.title}" is now visible to applicants`, 'success', 'Requisition Published');
+      showToast(t('toast_requisition_visible').replace('{title}', job.title), 'success', t('toast_requisition_published_title'));
     } catch (err) {
-      showToast('Network error while publishing requisition', 'error');
+      showToast(t('toast_network_publish'), 'error');
     } finally {
       setPublishingId(null);
     }
@@ -255,13 +301,13 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
       if (res.ok) {
         const data = await res.json();
         setJobs((current) => [data.job, ...current]);
-        showToast(`Requisition duplicated as "${data.job.title}"`, 'success', 'Requisition Cloned');
+        showToast(t('toast_requisition_duplicated').replace('{title}', data.job.title), 'success', t('toast_requisition_cloned_title'));
       } else {
         const err = await res.json().catch(() => null);
-        showToast(err?.error || 'Failed to duplicate requisition', 'error');
+        showToast(err?.error || t('toast_duplicate_failed'), 'error');
       }
     } catch {
-      showToast('Network error while duplicating requisition', 'error');
+      showToast(t('toast_network_duplicate'), 'error');
     } finally {
       setDuplicatingId(null);
     }
@@ -276,30 +322,28 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
       });
       if (res.ok) {
         setJobs((current) => current.map((j) => (j.id === job.id ? { ...j, status: 'CLOSED' } : j)));
-        showToast(`Job requisition "${job.title}" is now closed`, 'success', 'Requisition Closed');
+        showToast(t('toast_requisition_closed').replace('{title}', job.title), 'success', t('toast_requisition_closed_title'));
       } else {
         const err = await res.json().catch(() => null);
-        showToast(err?.error || 'Failed to close requisition', 'error');
+        showToast(err?.error || t('toast_close_failed'), 'error');
       }
     } catch {
-      showToast('Network error while closing requisition', 'error');
+      showToast(t('toast_network_close'), 'error');
     }
   };
 
   return (
     <div className="space-y-5 max-w-[1440px] mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b dark:border-slate-800/80 border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
-              {t('jobs_title')}
-            </h1>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/60 bg-teal-50 dark:text-teal-300 text-teal-800 border dark:border-teal-800/50 border-teal-200">
+            <h1 className="h-page">{t('jobs_title')}</h1>
+            <span className="chip chip-accent">
               {pagination ? pagination.total : jobs.length} {t('active_requisitions_badge')}
             </span>
           </div>
-          <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
+          <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)] mt-0.5">
             {t('jobs_subtitle')}
           </p>
         </div>
@@ -307,9 +351,9 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
         {isStaff && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto dark:bg-teal-600 dark:hover:bg-teal-500"
+            className="btn btn-primary self-start sm:self-auto"
           >
-            <span>+</span>
+            <span aria-hidden="true">+</span>
             <span>{t('btn_create_job')}</span>
           </button>
         )}
@@ -326,17 +370,17 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
             type="search"
             name="q"
             defaultValue={filters.q}
-            placeholder="Search title, description, department…"
-            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-3 py-1.5 text-xs dark:text-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 w-56"
-            aria-label="Search requisitions"
+            placeholder={t('jobs_search_placeholder')}
+            className="field !w-64"
+            aria-label={t('aria_search_requisitions')}
           />
           <select
             name="status"
             defaultValue={filters.status}
-            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium"
-            aria-label="Filter by status"
+            className="field !w-auto font-medium"
+            aria-label={t('aria_filter_status')}
           >
-            <option value="ALL">All statuses</option>
+            <option value="ALL">{t('filter_all_statuses')}</option>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -344,26 +388,26 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
           <select
             name="department"
             defaultValue={filters.department}
-            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium"
-            aria-label="Filter by department"
+            className="field !w-auto font-medium"
+            aria-label={t('aria_filter_department')}
           >
-            <option value="ALL">All departments</option>
+            <option value="ALL">{t('all_departments')}</option>
             {filters.departments.map((d) => (
               <option key={d} value={d}>{d}</option>
             ))}
           </select>
           <button
             type="submit"
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90"
+            className="btn btn-primary"
           >
-            Apply
+            {t('btn_apply_filters')}
           </button>
           {(filters.q || filters.status !== 'ALL' || filters.department !== 'ALL') && (
             <Link
               href="/jobs"
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-slate-800 bg-slate-100 dark:text-slate-200 text-slate-700 hover:opacity-90"
+              className="btn btn-secondary"
             >
-              Clear
+              {t('btn_clear')}
             </Link>
           )}
         </form>
@@ -371,8 +415,9 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
 
       {/* Requisitions Grid */}
       {jobs.length === 0 ? (
-        <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-8 text-center space-y-2">
-          <p className="text-xs dark:text-slate-400 text-slate-500">{t('no_jobs_found')}</p>
+        <div className="panel p-10 text-center space-y-2">
+          <span className="text-3xl block" aria-hidden="true">🗂️</span>
+          <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)]">{t('no_jobs_found')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -381,79 +426,74 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
             const totalWeight = criteriaList.reduce((sum: number, c: any) => sum + (c.weight || 1), 0);
 
             return (
-              <div
+              <article
                 key={job.id}
-                className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 flex flex-col justify-between space-y-3 hover:border-teal-500/50 transition shadow-xs"
+                className="panel panel-hover p-4 flex flex-col justify-between space-y-3"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {job.organization?.name && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
-                          🏢 {job.organization.name}
+                        <span className="chip chip-accent">
+                          {job.organization.name}
                         </span>
                       )}
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium dark:bg-slate-900 bg-slate-100 dark:text-slate-300 text-slate-700 border dark:border-slate-800 border-slate-200">
-                        {job.department}
-                      </span>
+                      <span className="chip">{job.department}</span>
                     </div>
                     <span
-                      className={`text-[10px] font-mono font-bold shrink-0 ${
+                      className={`chip shrink-0 ${
                         job.status === 'OPEN'
-                          ? 'text-emerald-500'
+                          ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
                           : job.status === 'DRAFT'
-                          ? 'text-amber-500'
+                          ? 'text-amber-600 dark:text-amber-400 border-amber-500/40'
                           : job.status === 'CLOSED'
-                          ? 'text-rose-500'
-                          : 'text-slate-400'
+                          ? 'text-[var(--coral)] border-[color-mix(in_srgb,var(--coral)_40%,transparent)]'
+                          : ''
                       }`}
                     >
-                      ● {job.status === 'OPEN' ? 'OPEN' : (job.status || 'DRAFT').toUpperCase()}
+                      ● {(job.status || 'DRAFT').toUpperCase()}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-sm dark:text-white text-slate-900 tracking-tight">
+                    <h3 className="font-bold text-sm text-[var(--foreground)] tracking-tight">
                       {job.title}
                     </h3>
-                    <p className="text-xs dark:text-slate-400 text-slate-600 line-clamp-2 mt-1 leading-relaxed">
+                    <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_65%,transparent)] line-clamp-2 mt-1 leading-relaxed">
                       {job.description}
                     </p>
                   </div>
 
                   {criteriaList.length > 0 && (
-                    <div className="pt-2 border-t dark:border-slate-800/60 border-slate-100 space-y-1.5">
-                      <div className="flex items-center justify-between text-[10px] font-mono font-semibold dark:text-slate-400 text-slate-500">
+                    <div className="pt-2 border-t border-[var(--border)] space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] font-mono font-semibold text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">
                         <span>{t('scored_criteria')} ({criteriaList.length})</span>
                         <span className="flex items-center gap-2">
                           {isStaff && (
                             <button
                               onClick={() => openRubricEdit(job)}
-                              className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
+                              className="text-[var(--accent)] hover:underline flex items-center gap-0.5"
                             >
-                              ✏️ Edit Rubric
+                              {t('edit_rubric')}
                             </button>
                           )}
                           <button
                             onClick={() => openRubricPreview(job)}
-                            className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-0.5"
+                            className="text-[var(--accent)] hover:underline flex items-center gap-0.5"
                           >
-                            🔍 Preview Rubric
+                            {t('rubric_preview')}
                           </button>
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {criteriaList.slice(0, 3).map((crit: any) => (
-                          <span
-                            key={crit.id}
-                            className="px-1.5 py-0.5 rounded text-[9px] font-mono dark:bg-slate-900 bg-slate-100 dark:text-slate-300 text-slate-700 border dark:border-slate-800 border-slate-200"
-                          >
+                          <span key={crit.id} className="chip">
                             {crit.description || crit.name} (w:{crit.weight})
                           </span>
                         ))}
                         {criteriaList.length > 3 && (
-                          <span className="text-[9px] font-mono text-slate-400 self-center">
-                            +{criteriaList.length - 3} more
+                          <span className="text-[9px] font-mono text-[color-mix(in_srgb,var(--foreground)_45%,transparent)] self-center">
+                            {t('criteria_more').replace('{count}', String(criteriaList.length - 3))}
                           </span>
                         )}
                       </div>
@@ -461,53 +501,71 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                   )}
                 </div>
 
-                <div className="pt-2 border-t dark:border-slate-800/60 border-slate-100 flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[10px] dark:text-slate-400 text-slate-500 font-mono">
-                    {job._count?.applications || job.applications?.length || 0} applicants
+                <div className="pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[10px] font-mono text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">
+                    {job._count?.applications || job.applications?.length || 0} {t('applicants')}
                   </span>
                   <div className="flex items-center gap-1.5">
                     {isStaff && (
                       <button
                         onClick={() => handleDuplicateJob(job)}
                         disabled={duplicatingId === job.id}
-                        title="Duplicate this requisition"
-                        className="px-2 py-1 rounded text-[11px] font-medium border dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                        title={t('aria_duplicate_requisition')}
+                        className="btn btn-secondary !px-2 !py-1 !text-[11px]"
                       >
-                        {duplicatingId === job.id ? 'Cloning…' : '📋 Copy'}
+                        {duplicatingId === job.id ? t('btn_cloning') : t('btn_copy')}
                       </button>
                     )}
                     {isStaff && job.status === 'OPEN' && (
                       <button
                         onClick={() => handleCloseJob(job)}
-                        title="Close this requisition"
-                        className="px-2 py-1 rounded text-[11px] font-medium border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition"
+                        title={t('aria_close_requisition')}
+                        className="btn btn-danger !px-2 !py-1 !text-[11px]"
                       >
-                        Close
+                        {t('btn_close')}
                       </button>
                     )}
                     {isStaff && (job.status === 'DRAFT' || job.status === 'REVIEW') ? (
                       <button
                         onClick={() => handlePublishJob(job)}
                         disabled={publishingId === job.id}
-                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition"
+                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
                       >
-                        {publishingId === job.id ? 'Publishing…' : '🚀 Publish'}
+                        {publishingId === job.id ? t('btn_publishing') : t('btn_publish')}
+                      </button>
+                    ) : !isStaff && myApplications[job.id] ? (
+                      <span className="flex items-center gap-1.5">
+                        <span className="chip text-emerald-600 dark:text-emerald-400 border-emerald-500/40" title={`Applied ${new Date(myApplications[job.id].appliedAt).toLocaleDateString()}`}>
+                          {t('chip_applied')}
+                        </span>
+                        {myApplications[job.id].score !== null && (
+                          <span className="chip chip-accent" title={t('aria_latest_score')}>
+                            {t('chip_match_pct').replace('{score}', String(Math.round(myApplications[job.id].score!)))}
+                          </span>
+                        )}
+                      </span>
+                    ) : !isStaff && job.status === 'OPEN' && hasSavedResume ? (
+                      <button
+                        onClick={() => handleOneClickApply(job)}
+                        disabled={applyingJobId === job.id}
+                        title={t('aria_apply_instant')}
+                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
+                      >
+                        {applyingJobId === job.id ? t('btn_applying') : t('btn_one_click_apply')}
                       </button>
                     ) : job.status === 'OPEN' ? (
                       <Link
                         href={`/jobs/${job.id}/apply`}
-                        className="px-3 py-1 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition"
+                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
                       >
                         {t('apply_role')} &rarr;
                       </Link>
                     ) : (
-                      <span className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded text-xs font-semibold">
-                        Closed
-                      </span>
+                      <span className="chip" aria-disabled="true">{t('status_closed')}</span>
                     )}
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
@@ -515,32 +573,30 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
 
       {/* RUBRIC EDIT MODAL (§6.2: approved rubrics version on change) */}
       {editModalOpen && editingJob && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto text-xs">
-            <div className="flex items-center justify-between pb-2 border-b dark:border-slate-800 border-slate-100">
-              <h3 className="text-sm font-bold dark:text-white text-slate-900">
-                Edit Rubric — {editingJob.title}
+        <div className="fixed inset-0 bg-[color-mix(in_srgb,var(--background)_55%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="panel p-5 max-w-lg w-full space-y-3.5 max-h-[90vh] overflow-y-auto text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+              <h3 className="text-sm font-bold text-[var(--foreground)]">
+                {t('edit_rubric_title').replace('{title}', editingJob.title)}
               </h3>
-              <button onClick={() => setEditModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setEditModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)]" aria-label={t('aria_close_dialog')}>✕</button>
             </div>
 
             {editingJob.rubrics?.[0]?.status === 'APPROVED' && (
-              <p className="rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300 px-3 py-2 leading-relaxed">
-                This rubric is approved. Saving will create a <strong>new DRAFT version</strong> — the
-                current version keeps scoring applications until the new one is approved, and historical
-                results are never altered.
+              <p className="rounded-md border border-[color-mix(in_srgb,var(--amber)_35%,transparent)] bg-[color-mix(in_srgb,var(--amber)_10%,transparent)] text-[var(--amber)] px-3 py-2 leading-relaxed">
+                {t('rubric_approved_warning')}
               </p>
             )}
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-semibold dark:text-slate-300 text-slate-700">Criteria ({editCriteria.length})</span>
+                <span className="font-semibold text-[var(--foreground)]">{t('criteria_count').replace('{count}', String(editCriteria.length))}</span>
                 <button
                   type="button"
                   onClick={() => setEditCriteria([...editCriteria, { description: '', isRequired: false, weight: 1 }])}
-                  className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold"
+                  className="text-[10px] text-[var(--accent)] hover:underline font-semibold"
                 >
-                  + Add criterion
+                  {t('add_criterion')}
                 </button>
               </div>
               {editCriteria.map((crit, idx) => (
@@ -549,21 +605,21 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                     type="text"
                     value={crit.description}
                     onChange={(e) => handleEditCriteriaChange(idx, 'description', e.target.value)}
-                    placeholder="Criterion description"
-                    className="flex-1 dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2.5 py-1"
+                    placeholder={t('criterion_description')}
+                    className="flex-1 field !py-1 !px-2.5 !text-[11px]"
                   />
                   <select
                     value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
                     onChange={(e) => handleEditCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
-                    className="dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-1.5 py-1 text-[10px] font-mono text-teal-600 dark:text-teal-400"
+                    className="field !w-auto !py-1 !px-1.5 !text-[10px] font-mono text-[var(--accent)]"
                   >
-                    <option value="REQUIRED">Required</option>
-                    <option value="PREFERRED">Preferred</option>
+                    <option value="REQUIRED">{t('criterion_required')}</option>
+                    <option value="PREFERRED">{t('criterion_preferred')}</option>
                   </select>
                   <select
                     value={crit.weight}
                     onChange={(e) => handleEditCriteriaChange(idx, 'weight', Number(e.target.value))}
-                    className="dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2 py-1 font-mono"
+                    className="field !w-auto !py-1 !px-2 font-mono"
                   >
                     {[1, 2, 3, 4, 5].map((w) => (
                       <option key={w} value={w}>w:{w}</option>
@@ -572,7 +628,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                   <button
                     type="button"
                     onClick={() => setEditCriteria(editCriteria.filter((_, i) => i !== idx))}
-                    className="text-rose-400 hover:text-rose-300 p-1"
+                    className="text-[var(--coral)] hover:opacity-75 p-1" aria-label={t('aria_remove_criterion')}
                   >
                     ✕
                   </button>
@@ -581,24 +637,24 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
             </div>
 
             <div>
-              <label htmlFor="edit-change-reason" className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
-                Change reason {editingJob.rubrics?.[0]?.status === 'APPROVED' ? '*' : '(optional)'}
+              <label htmlFor="edit-change-reason" className="block field-label">
+                {editingJob.rubrics?.[0]?.status === 'APPROVED' ? `${t('change_reason_label')} *` : t('change_reason_optional')}
               </label>
               <textarea
                 id="edit-change-reason"
                 rows={2}
                 value={editChangeReason}
                 onChange={(e) => setEditChangeReason(e.target.value)}
-                placeholder="Why is the rubric changing? (recorded in the audit trail)"
-                className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg p-2.5 leading-relaxed focus:outline-none focus:border-teal-500"
+                placeholder={t('change_reason_placeholder')}
+                className="w-full field leading-relaxed"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-slate-800 border-slate-100">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
               <button
                 type="button"
                 onClick={() => setEditModalOpen(false)}
-                className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium"
+                className="btn btn-secondary"
               >
                 {t('cancel')}
               </button>
@@ -606,9 +662,9 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                 type="button"
                 onClick={submitRubricEdit}
                 disabled={editSubmitting}
-                className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs disabled:opacity-60"
+                className="btn btn-primary disabled:opacity-60"
               >
-                {editSubmitting ? t('loading') : 'Save Rubric'}
+                {editSubmitting ? t('loading') : t('save_rubric')}
               </button>
             </div>
           </div>
@@ -617,20 +673,20 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
 
       {/* RUBRIC PREVIEW MODAL */}
       {previewModalOpen && previewJob && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto text-xs">
-            <div className="flex items-center justify-between pb-2 border-b dark:border-slate-800 border-slate-100">
+        <div className="fixed inset-0 bg-[color-mix(in_srgb,var(--background)_55%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="panel p-5 max-w-lg w-full space-y-4 max-h-[85vh] overflow-y-auto text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
               <div>
-                <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('rubric_preview_title')}</h3>
-                <p className="text-[10px] dark:text-slate-400 text-slate-500">{previewJob.title} &bull; {previewJob.department}</p>
+                <h3 className="text-sm font-bold text-[var(--foreground)]">{t('rubric_preview_title')}</h3>
+                <p className="text-[10px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">{previewJob.title} &bull; {previewJob.department}</p>
               </div>
-              <button onClick={() => setPreviewModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setPreviewModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)]" aria-label="Close dialog">✕</button>
             </div>
 
             <div className="space-y-3">
-              <div className="p-3 dark:bg-[#0F171D] bg-slate-50 rounded-xl border dark:border-[#30424A]/40 border-slate-200">
-                <p className="text-[11px] font-semibold dark:text-slate-300 text-slate-700">{t('rubric_scoring_formula')}</p>
-                <p className="text-[10px] dark:text-slate-400 text-slate-500 mt-0.5">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] p-3">
+                <p className="text-[11px] font-semibold text-[var(--foreground)]">{t('rubric_scoring_formula')}</p>
+                <p className="text-[10px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] mt-0.5">
                   {t('rubric_preview_subtitle')}
                 </p>
               </div>
@@ -639,18 +695,18 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                 {(previewJob.rubrics?.[0]?.criteria || []).map((crit: any, idx: number) => (
                   <div
                     key={crit.id || idx}
-                    className="p-3 dark:bg-[#0F171D] bg-slate-50 rounded-xl border dark:border-[#30424A]/40 border-slate-200 flex items-start justify-between gap-2"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] p-3 flex items-start justify-between gap-2"
                   >
                     <div>
-                      <span className="text-[9px] font-mono uppercase font-bold text-teal-600 dark:text-teal-400">
+                      <span className="text-[9px] font-mono uppercase font-bold text-[var(--accent)]">
                         {crit.category || 'General Criterion'}
                       </span>
-                      <p className="text-xs font-semibold dark:text-slate-200 text-slate-800 mt-0.5">
+                      <p className="text-xs font-semibold text-[var(--foreground)] mt-0.5">
                         {crit.description || crit.name}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold dark:bg-teal-950 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800 border-teal-200">
+                      <span className="chip chip-accent">
                         {t('create_job_weight_label')}: {crit.weight || 3}
                       </span>
                     </div>
@@ -659,10 +715,10 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t dark:border-slate-800 border-slate-100">
+            <div className="flex justify-end pt-2 border-t border-[var(--border)]">
               <button
                 onClick={() => setPreviewModalOpen(false)}
-                className="px-3.5 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium text-xs dark:text-slate-200 text-slate-700"
+                className="btn btn-secondary !text-xs"
               >
                 {t('cancel')}
               </button>
@@ -678,99 +734,98 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
 
       {/* CREATE JOB MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto text-xs">
-            <div className="flex items-center justify-between pb-2 border-b dark:border-slate-800 border-slate-100">
-              <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('create_job_modal_title')}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+        <div className="fixed inset-0 bg-[color-mix(in_srgb,var(--background)_55%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="panel p-5 max-w-lg w-full space-y-3.5 max-h-[90vh] overflow-y-auto text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+              <h3 className="text-sm font-bold text-[var(--foreground)]">{t('create_job_modal_title')}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)]" aria-label={t('aria_close_dialog')}>✕</button>
             </div>
 
             <form onSubmit={handleCreateJob} className="space-y-3">
               <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{t('create_job_title_label')} *</label>
+                <label className="block field-label">{t('create_job_title_label')} *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Senior Frontend Architect"
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                  placeholder={t('title_placeholder')}
+                  className="w-full field"
                 />
               </div>
 
               <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{t('create_job_dept_label')} *</label>
+                <label className="block field-label">{t('create_job_dept_label')} *</label>
                 <select
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-teal-500"
+                  className="w-full field"
                 >
-                  <option value="Engineering">Engineering</option>
-                  <option value="Product">Product & Design</option>
-                  <option value="Data & AI">Data & AI</option>
-                  <option value="Sales">Sales & Marketing</option>
-                  <option value="Operations">Operations & HR</option>
+                  <option value="Engineering">{t('dept_engineering')}</option>
+                  <option value="Product">{t('dept_product')}</option>
+                  <option value="Data & AI">{t('dept_data_ai')}</option>
+                  <option value="Sales">{t('dept_sales')}</option>
+                  <option value="Operations">{t('dept_operations')}</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Location</label>
+                  <label className="block field-label">{t('location_label')}</label>
                   <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g. Kigali / Remote"
-                    className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                    placeholder={t('location_placeholder')}
+                    className="w-full field"
                   />
                 </div>
                 <div>
-                  <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Employment type</label>
+                  <label className="block field-label">{t('employment_type_label')}</label>
                   <select
                     value={employmentType}
                     onChange={(e) => setEmploymentType(e.target.value)}
-                    className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                    className="w-full field"
                   >
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Internship">Internship</option>
+                    <option value="Full-time">{t('employment_full_time')}</option>
+                    <option value="Part-time">{t('employment_part_time')}</option>
+                    <option value="Contract">{t('employment_contract')}</option>
+                    <option value="Internship">{t('employment_internship')}</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Applications close (optional)</label>
+              <div>                  <label className="block field-label">{t('closes_at_label')}</label>
                 <input
                   type="date"
                   value={closesAt}
                   onChange={(e) => setClosesAt(e.target.value)}
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                  className="w-full field"
                 />
               </div>
 
               <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{t('create_job_desc_label')} *</label>
+                <label className="block field-label">{t('create_job_desc_label')} *</label>
                 <textarea
                   rows={3}
                   required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Responsibilities, stack requirements, and qualifications..."
-                  className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg p-2.5 leading-relaxed focus:outline-none focus:border-teal-500"
+                  placeholder={t('desc_placeholder')}
+                  className="w-full field leading-relaxed"
                 ></textarea>
               </div>
 
               {/* Rubric Criteria Builder */}
-              <div className="space-y-2 pt-2 border-t dark:border-slate-800 border-slate-100">
+              <div className="space-y-2 pt-2 border-t border-[var(--border)]">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold dark:text-slate-300 text-slate-700">
+                  <span className="font-semibold text-[var(--foreground)]">
                     {t('create_job_criteria_heading')} ({criteria.length})
                   </span>
                   <button
                     type="button"
                     onClick={handleAddCriteria}
-                    className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold"
+                    className="text-[10px] text-[var(--accent)] hover:underline font-semibold"
                   >
                     {t('create_job_add_criteria')}
                   </button>
@@ -784,27 +839,27 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                         value={crit.category}
                         onChange={(e) => handleCriteriaChange(idx, 'category', e.target.value)}
                         placeholder={t('create_job_category_label')}
-                        className="w-24 dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2 py-1 text-[11px] font-mono"
+                        className="w-24 field !py-1 !px-2 !text-[11px] font-mono"
                       />
                       <input
                         type="text"
                         value={crit.description}
                         onChange={(e) => handleCriteriaChange(idx, 'description', e.target.value)}
-                        placeholder="e.g. Distributed Systems (Go/Rust)"
-                        className="flex-1 dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2.5 py-1 text-xs"
+                        placeholder={t('criterion_example')}
+                        className="flex-1 field !py-1 !px-2.5 !text-[11px] text-xs"
                       />
                       <select
                         value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
                         onChange={(e) => handleCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
-                        className="dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-1.5 py-1 text-[10px] font-mono text-teal-600 dark:text-teal-400"
+                        className="field !w-auto !py-1 !px-1.5 !text-[10px] font-mono text-[var(--accent)]"
                       >
-                        <option value="REQUIRED">Required</option>
-                        <option value="PREFERRED">Preferred</option>
+                        <option value="REQUIRED">{t('criterion_required')}</option>
+                        <option value="PREFERRED">{t('criterion_preferred')}</option>
                       </select>
                       <select
                         value={crit.weight}
                         onChange={(e) => handleCriteriaChange(idx, 'weight', Number(e.target.value))}
-                        className="dark:bg-slate-950 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-md px-2 py-1 text-xs font-mono"
+                        className="field !w-auto !py-1 !px-2 font-mono !text-xs"
                       >
                         <option value={1}>w:1</option>
                         <option value={2}>w:2</option>
@@ -815,7 +870,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                       <button
                         type="button"
                         onClick={() => handleRemoveCriteria(idx)}
-                        className="text-rose-400 hover:text-rose-300 p-1 text-xs"
+                        className="text-[var(--coral)] hover:opacity-75 p-1 text-xs" aria-label={t('aria_remove_criterion')}
                       >
                         ✕
                       </button>
@@ -824,18 +879,18 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-slate-800 border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium text-xs"
+                  className="btn btn-secondary text-xs"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs text-xs"
+                  className="btn btn-primary"
                 >
                   {submitting ? t('loading') : t('create_job_submit_btn')}
                 </button>
@@ -864,7 +919,7 @@ function PaginationControls({ pagination }: { pagination: PaginationInfo }) {
 
   return (
     <nav className="flex items-center justify-between gap-2 pt-2" aria-label="Jobs pagination">
-      <span className="text-[11px] dark:text-slate-500 text-slate-500">
+      <span className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">
         {((pagination.page - 1) * pagination.pageSize) + 1}–
         {Math.min(pagination.page * pagination.pageSize, pagination.total)} of {pagination.total}
       </span>
@@ -872,17 +927,17 @@ function PaginationControls({ pagination }: { pagination: PaginationInfo }) {
         <button
           onClick={() => go(pagination.page - 1)}
           disabled={pagination.page <= 1}
-          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+          className="btn btn-secondary !px-2.5 !py-1 disabled:opacity-40"
         >
           ← Prev
         </button>
-        <span className="text-[11px] font-mono dark:text-slate-400 text-slate-500">
+        <span className="text-[11px] font-mono text-[color-mix(in_srgb,var(--foreground)_60%,transparent)]">
           {pagination.page} / {pagination.totalPages}
         </span>
         <button
           onClick={() => go(pagination.page + 1)}
           disabled={pagination.page >= pagination.totalPages}
-          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
+          className="btn btn-secondary !px-2.5 !py-1 disabled:opacity-40"
         >
           Next →
         </button>
