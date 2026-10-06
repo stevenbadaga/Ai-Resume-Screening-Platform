@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 /**
  * §6.11 candidate rights form: correction, access, withdrawal, and deletion
@@ -9,30 +10,10 @@ import { useEffect, useState } from 'react';
  */
 
 const REQUEST_TYPES = [
-  {
-    value: 'CORRECTION',
-    label: 'Correct my data',
-    hint: 'Tell us what is inaccurate and what it should say (e.g. wrong phone number, misspelled name).',
-    needsChange: true,
-  },
-  {
-    value: 'ACCESS',
-    label: 'Get a copy of my data',
-    hint: 'We will prepare and send you the personal data we hold about you.',
-    needsChange: false,
-  },
-  {
-    value: 'WITHDRAWAL',
-    label: 'Withdraw my consent',
-    hint: 'Ask us to stop processing your application. Ongoing recruitment will stop.',
-    needsChange: false,
-  },
-  {
-    value: 'DELETION',
-    label: 'Request deletion review',
-    hint: 'For full immediate erasure, use the Right to be Forgotten control above — this asks the privacy team to review deletion of specific records.',
-    needsChange: false,
-  },
+  { value: 'CORRECTION', labelKey: 'privacy_request_correction', hintKey: 'privacy_request_correction_hint', needsChange: true },
+  { value: 'ACCESS', labelKey: 'privacy_request_access', hintKey: 'privacy_request_access_hint', needsChange: false },
+  { value: 'WITHDRAWAL', labelKey: 'privacy_request_withdrawal', hintKey: 'privacy_request_withdrawal_hint', needsChange: false },
+  { value: 'DELETION', labelKey: 'privacy_request_deletion', hintKey: 'privacy_request_deletion_hint', needsChange: false },
 ] as const;
 
 interface RequestRow {
@@ -47,6 +28,7 @@ const inputClass =
   'w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-teal-500';
 
 export default function PrivacyRequestForm() {
+  const { t } = useLanguage();
   const [requestType, setRequestType] = useState<string>('CORRECTION');
   const [details, setDetails] = useState('');
   const [requestedChange, setRequestedChange] = useState('');
@@ -88,15 +70,15 @@ export default function PrivacyRequestForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setMessage(data.message || 'Your request has been recorded.');
+        setMessage(data.message || t('privacy_request_recorded'));
         setDetails('');
         setRequestedChange('');
         void loadRequests();
       } else {
-        setMessage(data.error || 'Failed to submit request.');
+        setMessage(data.error || t('privacy_submit_failed'));
       }
     } catch {
-      setMessage('Network error — the request was not submitted.');
+      setMessage(t('privacy_network_error'));
     } finally {
       setSubmitting(false);
     }
@@ -106,11 +88,10 @@ export default function PrivacyRequestForm() {
     <section className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 space-y-4">
       <div>
         <h2 className="font-bold dark:text-white text-slate-900 text-sm">
-          Data requests (correction, access, withdrawal)
+          {t('privacy_requests_title')}
         </h2>
         <p className="text-xs dark:text-slate-400 text-slate-600 mt-1 leading-relaxed">
-          Submit a formal data request. It is recorded, tracked, and routed to our privacy team for
-          review — you will be contacted with the outcome.
+          {t('privacy_requests_desc')}
         </p>
       </div>
 
@@ -133,12 +114,12 @@ export default function PrivacyRequestForm() {
                 onChange={() => setRequestType(r.value)}
                 className="sr-only"
               />
-              {r.label}
+              {t(r.labelKey)}
             </label>
           ))}
         </div>
 
-        <p className="text-[11px] dark:text-slate-500 text-slate-500">{selected.hint}</p>
+        <p className="text-[11px] dark:text-slate-500 text-slate-500">{t(selected.hintKey)}</p>
 
         {selected.needsChange && (
           <textarea
@@ -146,7 +127,7 @@ export default function PrivacyRequestForm() {
             required
             value={requestedChange}
             onChange={(e) => setRequestedChange(e.target.value)}
-            placeholder="What should your data say instead?"
+            placeholder={t('privacy_change_placeholder')}
             className={inputClass}
           />
         )}
@@ -155,7 +136,7 @@ export default function PrivacyRequestForm() {
           rows={2}
           value={details}
           onChange={(e) => setDetails(e.target.value)}
-          placeholder="Additional context (optional)"
+          placeholder={t('privacy_context_placeholder')}
           className={inputClass}
         />
 
@@ -164,7 +145,7 @@ export default function PrivacyRequestForm() {
           disabled={submitting}
           className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? 'Submitting…' : 'Submit request'}
+          {submitting ? t('privacy_submitting') : t('privacy_submit_request')}
         </button>
 
         {message && (
@@ -177,7 +158,7 @@ export default function PrivacyRequestForm() {
       {requests.length > 0 && (
         <div className="pt-2 border-t dark:border-slate-800 border-slate-100">
           <h3 className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 mb-2">
-            Your past requests
+            {t('privacy_past_requests')}
           </h3>
           <ul className="space-y-1.5">
             {requests.map((r) => (

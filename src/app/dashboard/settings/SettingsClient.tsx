@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 /**
  * Admin workspace settings (spec §6.12): retention policy (§6.11), decision
@@ -42,6 +43,7 @@ export default function SettingsClient({
   initialBranding: Branding;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [tab, setTab] = useState<'workflow' | 'retention' | 'branding'>('workflow');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export default function SettingsClient({
           },
         }),
       });
-      flash(res.ok ? 'Workflow configuration saved.' : 'Failed to save workflow configuration.');
+      flash(res.ok ? t('settings_saved_workflow') : t('settings_failed_workflow'));
       if (res.ok) router.refresh();
     } finally {
       setSaving(false);
@@ -114,7 +116,7 @@ export default function SettingsClient({
           branding: { displayName, logoUrl, primaryColor },
         }),
       });
-      flash(res.ok ? 'Branding saved.' : 'Failed to save branding.');
+      flash(res.ok ? t('settings_saved_branding') : t('settings_failed_branding'));
       if (res.ok) router.refresh();
     } finally {
       setSaving(false);
@@ -134,7 +136,7 @@ export default function SettingsClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ statusPeriodDays, anonymize }),
       });
-      flash(res.ok ? 'Retention policy saved.' : 'Failed to save retention policy.');
+      flash(res.ok ? t('settings_saved_retention') : t('settings_failed_retention'));
       if (res.ok) router.refresh();
     } finally {
       setSaving(false);
@@ -159,27 +161,26 @@ export default function SettingsClient({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b dark:border-slate-800/80 border-slate-200">
         <div>
           <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
-            Workspace Settings
+            {t('settings_title')}
           </h1>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
-            Configure the recruitment workflow, retention policy, and branding (spec §6.11/§6.12).
-            Every change is recorded in the audit trail.
+            {t('settings_subtitle')}
           </p>
         </div>
         <a
           href="/dashboard"
           className="self-start px-3 py-1.5 dark:bg-slate-900 bg-white dark:hover:bg-slate-800 hover:bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg text-xs font-semibold dark:text-slate-200 text-slate-700 transition"
         >
-          &larr; Back to dashboard
+          {t('email_back')}
         </a>
       </div>
 
       <div className="flex gap-2">
         {(
           [
-            ['workflow', 'Workflow & Reasons'],
-            ['retention', 'Retention Policy'],
-            ['branding', 'Branding'],
+            ['workflow', t('settings_tab_workflow')],
+            ['retention', t('settings_tab_retention')],
+            ['branding', t('settings_tab_branding')],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -206,11 +207,10 @@ export default function SettingsClient({
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-4">
           <section className="space-y-2">
             <h2 className="text-xs font-bold uppercase tracking-wider dark:text-slate-300 text-slate-700">
-              Decision reason catalog (§6.7)
+              {t('settings_reasons_title')}
             </h2>
             <p className="text-[11px] dark:text-slate-500 text-slate-500">
-              Configurable decision reasons offered to recruiters when recording a screening
-              decision. Irrelevant or discriminatory categories must not be added.
+              {t('settings_reasons_desc')}
             </p>
             <ul className="space-y-1">
               {reasons.map((r, i) => (
@@ -222,41 +222,41 @@ export default function SettingsClient({
                   <button
                     onClick={() => setReasons((prev) => prev.filter((_, idx) => idx !== i))}
                     className="ml-auto text-rose-400 hover:text-rose-500"
-                    aria-label={`Remove reason ${r.code}`}
+                    aria-label={t('settings_remove_reason').replace('{code}', r.code)}
                   >
                     ✕
                   </button>
                 </li>
               ))}
               {reasons.length === 0 && (
-                <li className="text-xs dark:text-slate-500 text-slate-400">No custom reasons yet.</li>
+                <li className="text-xs dark:text-slate-500 text-slate-400">{t('settings_no_reasons')}</li>
               )}
             </ul>
             <div className="flex flex-wrap gap-2">
               <input
                 value={newReasonCode}
                 onChange={(e) => setNewReasonCode(e.target.value)}
-                placeholder="CODE (e.g. LACKS_EXPERIENCE)"
+                placeholder={t('settings_reason_code_placeholder')}
                 className={inputClass + ' flex-1 min-w-[140px] font-mono'}
               />
               <input
                 value={newReasonLabel}
                 onChange={(e) => setNewReasonLabel(e.target.value)}
-                placeholder="Displayed label"
+                placeholder={t('settings_reason_label_placeholder')}
                 className={inputClass + ' flex-1 min-w-[140px]'}
               />
               <button
                 onClick={addReason}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90"
               >
-                Add reason
+                {t('settings_add_reason')}
               </button>
             </div>
           </section>
 
           <section className="space-y-2 pt-2 border-t dark:border-slate-800 border-slate-100">
             <h2 className="text-xs font-bold uppercase tracking-wider dark:text-slate-300 text-slate-700">
-              Job categories (§6.12)
+              {t('settings_categories_title')}
             </h2>
             <div className="flex flex-wrap gap-1.5">
               {categories.map((c, i) => (
@@ -268,7 +268,7 @@ export default function SettingsClient({
                   <button
                     onClick={() => setCategories((prev) => prev.filter((_, idx) => idx !== i))}
                     className="ml-1.5 text-rose-400 hover:text-rose-500"
-                    aria-label={`Remove category ${c}`}
+                    aria-label={t('settings_remove_category').replace('{category}', c)}
                   >
                     ✕
                   </button>
@@ -276,7 +276,7 @@ export default function SettingsClient({
               ))}
               {categories.length === 0 && (
                 <span className="text-xs dark:text-slate-500 text-slate-400">
-                  No custom categories yet.
+                  {t('settings_no_categories')}
                 </span>
               )}
             </div>
@@ -284,26 +284,26 @@ export default function SettingsClient({
               <input
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="New category (e.g. Engineering)"
+                placeholder={t('settings_category_placeholder')}
                 className={inputClass + ' flex-1'}
               />
               <button
                 onClick={addCategory}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90"
               >
-                Add
+                {t('profile_add')}
               </button>
             </div>
           </section>
 
           <section className="space-y-2 pt-2 border-t dark:border-slate-800 border-slate-100">
             <h2 className="text-xs font-bold uppercase tracking-wider dark:text-slate-300 text-slate-700">
-              Scoring boundaries (§6.12)
+              {t('settings_boundaries_title')}
             </h2>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-[11px] dark:text-slate-400 text-slate-600 mb-1">
-                  Strong match ≥ (%)
+                  {t('settings_strong_match')}
                 </label>
                 <input
                   type="number"
@@ -316,7 +316,7 @@ export default function SettingsClient({
               </div>
               <div>
                 <label className="block text-[11px] dark:text-slate-400 text-slate-600 mb-1">
-                  Manual review ≤ (%)
+                  {t('settings_manual_review')}
                 </label>
                 <input
                   type="number"
@@ -335,7 +335,7 @@ export default function SettingsClient({
             disabled={saving}
             className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save workflow configuration'}
+            {saving ? t('settings_saving') : t('settings_save_workflow')}
           </button>
         </div>
       )}
@@ -343,15 +343,14 @@ export default function SettingsClient({
       {tab === 'retention' && (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-4">
           <p className="text-[11px] dark:text-slate-500 text-slate-500">
-            Retention periods per application status in days (spec §6.11). Empty = keep until
-            manual action. Enforcement runs via <code>npx tsx scripts/applyRetention.ts</code> on a
-            schedule (dry-run by default; add <code>--apply</code> to execute).
+            {t('settings_retention_desc')}{' '}
+            <code>npx tsx scripts/applyRetention.ts</code>
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {statusKeys.map((key) => (
               <div key={key}>
                 <label className="block text-[11px] dark:text-slate-400 text-slate-600 mb-1">
-                  {key} (days)
+                  {key} {t('settings_days_suffix')}
                 </label>
                 <input
                   type="number"
@@ -372,14 +371,14 @@ export default function SettingsClient({
               checked={anonymize}
               onChange={(e) => setAnonymize(e.target.checked)}
             />
-            Anonymize instead of hard-deleting expired applications
+            {t('settings_anonymize')}
           </label>
           <button
             onClick={saveRetention}
             disabled={saving}
             className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save retention policy'}
+            {saving ? t('settings_saving') : t('settings_save_retention')}
           </button>
         </div>
       )}
@@ -388,7 +387,7 @@ export default function SettingsClient({
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
           <div>
             <label className="block text-[11px] dark:text-slate-400 text-slate-600 mb-1">
-              Workspace display name
+              {t('settings_display_name')}
             </label>
             <input
               value={displayName}
@@ -398,7 +397,7 @@ export default function SettingsClient({
           </div>
           <div>
             <label className="block text-[11px] dark:text-slate-400 text-slate-600 mb-1">
-              Logo URL (optional)
+              {t('settings_logo_url')}
             </label>
             <input
               value={logoUrl}
@@ -409,7 +408,7 @@ export default function SettingsClient({
           </div>
           <div>
             <label className="block text-[11px] dark:text-slate-400 text-slate-600 mb-1">
-              Primary color
+              {t('settings_primary_color')}
             </label>
             <input
               type="color"
@@ -423,7 +422,7 @@ export default function SettingsClient({
             disabled={saving}
             className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save branding'}
+            {saving ? t('settings_saving') : t('settings_save_branding')}
           </button>
         </div>
       )}

@@ -38,12 +38,12 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
       const data = await res.json();
       if (res.ok && data.success) {
         setClaimRecord({ host: data.host, txt: data.txtRecord });
-        setClaimMessage(data.alreadyVerified ? 'This domain is already verified.' : data.instructions);
+        setClaimMessage(data.alreadyVerified ? t('team_domain_already') : data.instructions);
       } else {
-        setClaimMessage(data.error || 'Failed to start the domain claim.');
+        setClaimMessage(data.error || t('team_domain_claim_failed'));
       }
     } catch {
-      setClaimMessage('Network error while starting the domain claim.');
+      setClaimMessage(t('team_domain_network'));
     } finally {
       setClaimBusy(false);
     }
@@ -61,10 +61,10 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         setClaimMessage(data.message);
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        setClaimMessage(data.message || data.error || 'Verification failed.');
+        setClaimMessage(data.message || data.error || t('team_verify_failed'));
       }
     } catch {
-      setClaimMessage('Network error while verifying.');
+      setClaimMessage(t('team_verify_network'));
     } finally {
       setClaimBusy(false);
     }
@@ -126,15 +126,15 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         );
         setEditingUser(null);
         showToast(
-          `Updated role for ${editingUser.name || editingUser.email} to ${selectedRole}`,
+          t('toast_role_updated').replace('{name}', editingUser.name || editingUser.email).replace('{role}', selectedRole),
           'success',
-          'Role Updated'
+          t('toast_role_updated_title')
         );
       } else {
-        showToast(data.error || 'Failed to update role', 'error');
+        showToast(data.error || t('toast_role_failed'), 'error');
       }
     } catch {
-      showToast('Network error while updating role', 'error');
+      showToast(t('toast_role_network'), 'error');
     } finally {
       setSavingRole(false);
     }
@@ -170,12 +170,12 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         setShowInviteModal(false);
         setInviteName('');
         setInviteEmail('');
-        showToast(`Invitation sent to ${inviteEmail}`, 'success', 'Staff Member Invited');
+        showToast(t('toast_invited').replace('{email}', inviteEmail), 'success', t('toast_invited_title'));
       } else {
-        showToast(data.error || 'Failed to invite member', 'error');
+        showToast(data.error || t('toast_invite_failed'), 'error');
       }
     } catch {
-      showToast('Network error while sending invite', 'error');
+      showToast(t('toast_invite_network'), 'error');
     } finally {
       setInviting(false);
     }
@@ -193,11 +193,11 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               {t('nav_team')}
             </h1>
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-teal-950/60 bg-teal-50 dark:text-teal-300 text-teal-800 border dark:border-teal-800/50 border-teal-200">
-              {users.length} TOTAL ACCOUNTS
+              {t('team_accounts_badge').replace('{count}', String(users.length))}
             </span>
           </div>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
-            Strictly segregated directory distinguishing internal workspace staff from external job seekers.
+            {t('team_subtitle') || t('team_notice_staff')}
           </p>
         </div>
 
@@ -206,7 +206,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto"
         >
           <span>+</span>
-          <span>Invite Staff Member</span>
+          <span>{t('btn_invite_member')}</span>
         </button>
       </div>
 
@@ -214,18 +214,18 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
       <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-sm font-bold dark:text-white text-slate-900">🔐 Workspace identity</h2>
+            <h2 className="text-sm font-bold dark:text-white text-slate-900">{t('team_domain_title')}</h2>
             <p className="text-[11px] dark:text-slate-400 text-slate-500 mt-0.5">
-              Staff with an email at your verified domain automatically join this workspace when they sign up.
+              {t('team_domain_desc')}
             </p>
           </div>
           {verifiedDomain ? (
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 whitespace-nowrap">
-              ✓ {verifiedDomain}
+              {t('team_domain_verified').replace('{domain}', verifiedDomain)}
             </span>
           ) : (
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 whitespace-nowrap">
-              ⚠ NOT VERIFIED
+              {t('team_domain_not_verified')}
             </span>
           )}
         </div>
@@ -236,7 +236,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               type="text"
               value={claimDomain}
               onChange={(e) => setClaimDomain(e.target.value)}
-              placeholder="yourcompany.com"
+              placeholder={t('team_domain_placeholder')}
               className="flex-1 dark:bg-slate-950 bg-white dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-500"
             />
             <button
@@ -244,7 +244,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               disabled={claimBusy || !claimDomain.trim()}
               className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition whitespace-nowrap"
             >
-              {claimBusy ? 'Working…' : 'Start verification'}
+              {claimBusy ? t('team_btn_working') : t('team_btn_start_verification')}
             </button>
           </div>
         )}
@@ -252,7 +252,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         {claimRecord && (
           <div className="p-3 rounded-lg dark:bg-slate-950/70 bg-slate-50 dark:border-slate-800 border-slate-200 border space-y-1.5">
             <p className="text-[10px] font-mono dark:text-slate-300 text-slate-700">
-              1. Add this TXT record at your DNS provider:
+              {t('team_dns_step')}
             </p>
             <p className="text-[11px] font-mono font-bold dark:text-teal-300 text-teal-700 break-all">{claimRecord.host}</p>
             <p className="text-[11px] font-mono font-bold dark:text-teal-300 text-teal-700 break-all">{claimRecord.txt}</p>
@@ -261,7 +261,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               disabled={claimBusy}
               className="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition"
             >
-              {claimBusy ? 'Checking DNS…' : 'Verify now'}
+              {claimBusy ? t('team_btn_checking_dns') : t('team_btn_verify_now')}
             </button>
           </div>
         )}
@@ -281,7 +281,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <span>🏢 Internal Staff Directory</span>
+          <span>🏢 {t('tab_internal_staff')}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-teal-950 bg-teal-50 border dark:border-teal-800/60 border-teal-200">
             {staffMembers.length}
           </span>
@@ -295,7 +295,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <span>📄 External Job Seekers (Candidates)</span>
+          <span>📄 {t('tab_external_candidates')}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-[#17242B] bg-slate-100 border dark:border-[#30424A] border-slate-200">
             {candidateAccounts.length}
           </span>
@@ -308,8 +308,8 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           <span className="text-base">{activeTab === 'staff' ? '🏢' : '📄'}</span>
           <span>
             {activeTab === 'staff'
-              ? 'Showing only authenticated company employees, recruiters, hiring managers, and system administrators.'
-              : 'Showing external job applicants with registered accounts. To evaluate their submitted resumes, open the Candidate Pipeline.'}
+              ? t('team_notice_staff')
+              : t('team_notice_candidates')}
           </span>
         </div>
         {activeTab === 'candidates' && (
@@ -327,11 +327,11 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
           <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-[#30424A] border-slate-200 border-b">
             <tr>
-              <th className="p-3">{activeTab === 'staff' ? 'Employee / Staff Member' : 'Candidate Name'}</th>
-              <th className="p-3">Classification</th>
-              <th className="p-3">{activeTab === 'staff' ? 'Assigned Role' : 'Account Status'}</th>
-              <th className="p-3">{activeTab === 'staff' ? 'RBAC Permissions' : 'Portal Access'}</th>
-              <th className="p-3 text-right">Actions</th>
+              <th className="p-3">{activeTab === 'staff' ? t('team_col_employee') : t('team_col_candidate_name')}</th>
+              <th className="p-3">{t('team_col_classification')}</th>
+              <th className="p-3">{activeTab === 'staff' ? t('team_col_assigned_role') : t('team_col_account_status')}</th>
+              <th className="p-3">{activeTab === 'staff' ? t('team_col_permissions') : t('team_col_portal_access')}</th>
+              <th className="p-3 text-right">{t('team_col_actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y dark:divide-[#30424A]/60 divide-slate-100">
@@ -339,8 +339,8 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               <tr>
                 <td colSpan={5} className="p-8 text-center text-slate-400 text-xs">
                   {activeTab === 'staff'
-                    ? 'No internal staff members found.'
-                    : 'No external candidate accounts registered yet.'}
+                    ? t('team_empty_staff')
+                    : t('team_empty_candidates')}
                 </td>
               </tr>
             ) : (
@@ -363,7 +363,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                         </div>
                         <div>
                           <p className="font-semibold dark:text-white text-slate-900">
-                            {user.name || (isStaff ? 'Staff User' : 'Applicant')}
+                            {user.name || (isStaff ? t('team_staff_user') : t('team_applicant'))}
                           </p>
                           <p className="text-[10px] dark:text-slate-500 text-slate-400 font-mono">{user.email}</p>
                         </div>
@@ -377,7 +377,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                             : 'dark:bg-emerald-950/60 bg-emerald-50 dark:text-emerald-300 text-emerald-800 border dark:border-emerald-800/60 border-emerald-200'
                         }`}
                       >
-                        {isStaff ? '🏢 INTERNAL STAFF' : '📄 EXTERNAL APPLICANT'}
+                        {isStaff ? t('team_badge_internal') : t('team_badge_external')}
                       </span>
                     </td>
                     <td className="p-3">
@@ -388,7 +388,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                     <td className="p-3 font-mono text-[10px] dark:text-slate-400 text-slate-500">
                       {isStaff
                         ? user.roles?.[0]?.permissions?.join(', ') || 'READ_WRITE'
-                        : 'Applicant Portal (Apply & Track Status)'}
+                        : t('team_applicant_portal')}
                     </td>
                     <td className="p-3 text-right">
                       {isStaff ? (
@@ -396,7 +396,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                           onClick={() => handleOpenEdit(user)}
                           className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
                         >
-                          Edit Role
+                          {t('btn_edit_role')}
                         </button>
                       ) : (
                         <div className="flex items-center justify-end gap-1.5">
@@ -404,14 +404,14 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                             href="/candidates"
                             className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
                           >
-                            View Applications &rarr;
+                            {t('team_view_applications')} &rarr;
                           </Link>
                           <button
                             onClick={() => handleOpenEdit(user)}
                             className="px-2 py-1 text-[10px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-semibold"
-                            title="Promote to Internal Staff"
+                            title={t('team_promote_title')}
                           >
-                            Promote
+                            {t('promote_btn')}
                           </button>
                         </div>
                       )}
@@ -429,31 +429,30 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
             <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
-              <h3 className="text-sm font-bold dark:text-white text-slate-900">Edit Member Role</h3>
+              <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('team_edit_role_title')}</h3>
               <button onClick={() => setEditingUser(null)} className="text-slate-400">✕</button>
             </div>
 
-            <div className="space-y-1">
-              <p className="font-semibold dark:text-white text-slate-900">{editingUser.name || 'User'}</p>
+            <div className="space-y-1">                <p className="font-semibold dark:text-white text-slate-900">{editingUser.name || t('team_user_fallback')}</p>
               <p className="text-[11px] dark:text-slate-400 text-slate-500 font-mono">{editingUser.email}</p>
             </div>
 
             <form onSubmit={handleSaveRole} className="space-y-3">
               <div>
                 <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
-                  Select Role & Permissions *
+                  {t('team_select_role')}
                 </label>
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-teal-500"
                 >
-                  <option value="Admin">Admin (Full Workspace Owner)</option>
-                  <option value="Recruiter">Recruiter (ATS & Candidate Owner)</option>
-                  <option value="HiringManager">Hiring Manager (Department Head)</option>
-                  <option value="Interviewer">Interviewer (Technical Evaluator)</option>
-                  <option value="ComplianceAuditor">Compliance Auditor (Audit Inspector)</option>
-                  <option value="Candidate">Candidate (Job Applicant Portal Only)</option>
+                  <option value="Admin">{t('team_role_admin')}</option>
+                  <option value="Recruiter">{t('team_role_recruiter')}</option>
+                  <option value="HiringManager">{t('team_role_manager')}</option>
+                  <option value="Interviewer">{t('team_role_interviewer')}</option>
+                  <option value="ComplianceAuditor">{t('team_role_auditor')}</option>
+                  <option value="Candidate">{t('team_role_candidate')}</option>
                 </select>
               </div>
 
@@ -483,36 +482,36 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
             <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
-              <h3 className="text-sm font-bold dark:text-white text-slate-900">Invite Staff Member</h3>
+              <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('team_invite_title')}</h3>
               <button onClick={() => setShowInviteModal(false)} className="text-slate-400">✕</button>
             </div>
 
             <form onSubmit={handleInvite} className="space-y-3">
               <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Full Name</label>
+                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{t('team_full_name')}</label>
                 <input
                   type="text"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
-                  placeholder="e.g. Jane Doe"
+                  placeholder={t('team_full_name_placeholder')}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Work Email *</label>
+                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{t('team_work_email')}</label>
                 <input
                   type="email"
                   required
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="jane@company.com"
+                  placeholder={t('team_work_email_placeholder')}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
                 />
               </div>
 
               <div>
-                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">Staff Role Assignment *</label>
+                <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{t('team_role_assignment')}</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
@@ -539,7 +538,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                   disabled={inviting}
                   className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs"
                 >
-                  {inviting ? t('loading') : 'Send Invite'}
+                  {inviting ? t('loading') : t('team_send_invite')}
                 </button>
               </div>
             </form>

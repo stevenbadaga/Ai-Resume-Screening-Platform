@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface DeliveryRow {
   id: string;
@@ -36,6 +37,7 @@ export default function EmailDeliveryClient({
   total: number;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [templateFilter, setTemplateFilter] = useState<string>('ALL');
   const [retryingId, setRetryingId] = useState<string | null>(null);
@@ -54,13 +56,13 @@ export default function EmailDeliveryClient({
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setRetryMessage('Retry succeeded — the email was delivered.');
+        setRetryMessage(t('email_retry_ok'));
         router.refresh();
       } else {
-        setRetryMessage(`Retry failed: ${data.detail || data.error || 'unknown error'}`);
+        setRetryMessage(t('email_retry_failed').replace('{detail}', data.detail || data.error || 'unknown error'));
       }
     } catch {
-      setRetryMessage('Network error — the retry was not attempted.');
+      setRetryMessage(t('email_retry_network'));
     } finally {
       setRetryingId(null);
     }
@@ -77,22 +79,21 @@ export default function EmailDeliveryClient({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
-              Email Delivery Health
+              {t('email_title')}
             </h1>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/60 border-teal-200">
-              OPS TELEMETRY
+              {t('email_ops_badge')}
             </span>
           </div>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
-            Failed transactional deliveries in the last 7 days (spec §6.9). Click a row to see the
-            provider error that caused the failure.
+            {t('email_subtitle')}
           </p>
         </div>
         <Link
           href="/dashboard"
           className="self-start px-3 py-1.5 dark:bg-slate-900 bg-white dark:hover:bg-slate-800 hover:bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg text-xs font-semibold dark:text-slate-200 text-slate-700 transition"
         >
-          &larr; Back to dashboard
+          {t('email_back')}
         </Link>
       </div>
 
@@ -105,16 +106,16 @@ export default function EmailDeliveryClient({
       {deliveries.length === 0 ? (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-8 text-center space-y-2">
           <span className="text-3xl block">✅</span>
-          <h2 className="text-sm font-bold dark:text-white text-slate-900">No failed deliveries</h2>
+          <h2 className="text-sm font-bold dark:text-white text-slate-900">{t('email_empty_title')}</h2>
           <p className="text-xs dark:text-slate-400 text-slate-500">
-            Every transactional email in the last 7 days was recorded as SENT (or none were sent).
+            {t('email_empty_desc')}
           </p>
         </div>
       ) : (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3 shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-xs font-bold dark:text-white text-slate-900 uppercase tracking-wider">
-              Failed Deliveries — {total} total
+              {t('email_failed_heading').replace('{total}', String(total))}
             </h2>
             {templates.length > 1 && (
               <select
@@ -122,7 +123,7 @@ export default function EmailDeliveryClient({
                 onChange={(e) => setTemplateFilter(e.target.value)}
                 className="text-xs dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 border rounded-lg px-2 py-1.5 dark:text-white text-slate-900 focus:outline-none focus:border-indigo-500"
               >
-                <option value="ALL">All templates</option>
+                <option value="ALL">{t('email_all_templates')}</option>
                 {templates.map((tpl) => (
                   <option key={tpl} value={tpl}>
                     {friendlyTemplateLabel(tpl)}
@@ -136,10 +137,10 @@ export default function EmailDeliveryClient({
             <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
               <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-slate-800 border-slate-200 border-b">
                 <tr>
-                  <th className="p-2.5">When</th>
-                  <th className="p-2.5">Recipient</th>
-                  <th className="p-2.5">Template</th>
-                  <th className="p-2.5 text-right">Status</th>
+                  <th className="p-2.5">{t('email_col_when')}</th>
+                  <th className="p-2.5">{t('email_col_recipient')}</th>
+                  <th className="p-2.5">{t('email_col_template')}</th>
+                  <th className="p-2.5 text-right">{t('email_col_status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y dark:divide-slate-800/60 divide-slate-100">
@@ -175,6 +176,7 @@ function RowFragment({
   onRetry: () => void;
   retrying: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <>
       <tr
@@ -188,10 +190,10 @@ function RowFragment({
         <td className="p-2.5 text-[11px] capitalize">{friendlyTemplateLabel(row.template)}</td>
         <td className="p-2.5 text-right whitespace-nowrap">
           <span className="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold bg-rose-950/60 text-rose-300 border border-rose-800/60">
-            FAILED
+            {t('email_status_failed')}
           </span>
           <span className="ml-1 text-[10px] text-slate-400">
-            {expanded ? '▲ hide error' : '▼ show error'}
+            {expanded ? t('email_hide_error') : t('email_show_error')}
           </span>
         </td>
       </tr>
@@ -199,7 +201,7 @@ function RowFragment({
         <tr>
           <td colSpan={4} className="px-2.5 pb-3">
             <div className="p-3 rounded-lg bg-rose-950/30 border border-rose-900/50 font-mono text-[10px] text-rose-200/90 break-all whitespace-pre-wrap">
-              {row.failureInfo || 'No provider error detail was recorded for this delivery.'}
+              {row.failureInfo || t('email_no_detail')}
             </div>
             <button
               onClick={(e) => {
@@ -209,7 +211,7 @@ function RowFragment({
               disabled={retrying}
               className="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
             >
-              {retrying ? 'Retrying…' : '↻ Retry delivery'}
+              {retrying ? t('email_retrying') : t('btn_retry_delivery')}
             </button>
           </td>
         </tr>

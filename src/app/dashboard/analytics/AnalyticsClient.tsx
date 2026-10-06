@@ -89,8 +89,8 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
       }
       setData(await res.json());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load analytics');
-      showToast('Failed to load analytics', 'error');
+      setError(err instanceof Error ? err.message : t('analytics_error'));
+      showToast(t('analytics_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -112,11 +112,11 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
               {t('nav_analytics') || 'Manager Analytics'}
             </h1>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/60 border-teal-200">
-              §6.10 METRICS
+              {t('analytics_metrics_badge')}
             </span>
           </div>
           <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
-            Time-to-screen, stage conversion, interviewer completion, and workload for permitted jobs.
+            {t('analytics_subtitle')}
           </p>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
       {/* §6.10 Filters: date range, job, department, recruiter, stage */}
       <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3.5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
-          From
+          {t('analytics_filter_from')}
           <input
             type="date"
             value={from}
@@ -133,7 +133,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           />
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
-          To
+          {t('analytics_filter_to')}
           <input
             type="date"
             value={to}
@@ -142,52 +142,52 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           />
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
-          Job
+          {t('analytics_filter_job')}
           <select
             value={jobId}
             onChange={(e) => setJobId(e.target.value)}
             className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
           >
-            <option value="ALL">All jobs</option>
+            <option value="ALL">{t('filter_all_jobs')}</option>
             {jobs.map((j) => (
               <option key={j.id} value={j.id}>{j.title}</option>
             ))}
           </select>
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
-          Department
+          {t('analytics_filter_department')}
           <select
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
           >
             {departments.map((d) => (
-              <option key={d} value={d}>{d === 'ALL' ? 'All departments' : d}</option>
+              <option key={d} value={d}>{d === 'ALL' ? t('all_departments') : d}</option>
             ))}
           </select>
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
-          Recruiter
+          {t('analytics_filter_recruiter')}
           <select
             value={recruiterId}
             onChange={(e) => setRecruiterId(e.target.value)}
             className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
           >
-            <option value="ALL">All recruiters</option>
+            <option value="ALL">{t('filter_all_recruiters')}</option>
             {recruiters.map((r) => (
               <option key={r.id} value={r.id}>{r.label}</option>
             ))}
           </select>
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
-          Stage
+          {t('analytics_filter_stage')}
           <select
             value={stage}
             onChange={(e) => setStage(e.target.value)}
             className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
           >
             {STAGE_FILTERS.map((s) => (
-              <option key={s} value={s}>{s === 'ALL' ? 'All stages' : s}</option>
+              <option key={s} value={s}>{s === 'ALL' ? t('filter_all_stages') : s}</option>
             ))}
           </select>
         </label>
@@ -195,7 +195,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
 
       {loading && !data ? (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-10 text-center text-xs dark:text-slate-400 text-slate-500">
-          Loading analytics…
+          {t('analytics_loading')}
         </div>
       ) : error && !data ? (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-10 text-center text-xs text-rose-500">
@@ -206,12 +206,12 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           {/* Core metric cards */}
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-2.5">
             {[
-              { label: 'Applications', value: summary.totalApplications, tone: 'text-slate-900 dark:text-white', hint: `${summary.screenedCount} screened` },
-              { label: 'Time to Screen', value: formatHours(summary.timeToScreenHours), tone: 'text-teal-700 dark:text-teal-300', hint: 'median, creation → screening' },
-              { label: 'Interviewer Completion', value: `${summary.interviewerCompletionPct}%`, tone: 'text-sky-700 dark:text-sky-300', hint: `${summary.submittedParticipants}/${summary.totalParticipants} scorecards` },
-              { label: 'Processing Failures', value: summary.failedProcessingCount, tone: summary.failedProcessingCount > 0 ? 'text-rose-600 dark:text-rose-300' : 'text-slate-400', hint: 'failed resume processing' },
-              { label: 'Low-Confidence', value: summary.needsReviewCount, tone: summary.needsReviewCount > 0 ? 'text-amber-600 dark:text-amber-300' : 'text-slate-400', hint: 'needs manual review' },
-              { label: 'Active Recruiters', value: data.recruiterWorkload.length, tone: 'text-indigo-600 dark:text-indigo-300', hint: 'with open workload' },
+              { label: t('analytics_metric_applications'), value: summary.totalApplications, tone: 'text-slate-900 dark:text-white', hint: t('analytics_hint_screened').replace('{count}', String(summary.screenedCount)) },
+              { label: t('analytics_metric_time_to_screen'), value: formatHours(summary.timeToScreenHours), tone: 'text-teal-700 dark:text-teal-300', hint: t('analytics_hint_median') },
+              { label: t('analytics_metric_interviewer_completion'), value: `${summary.interviewerCompletionPct}%`, tone: 'text-sky-700 dark:text-sky-300', hint: t('analytics_hint_scorecards').replace('{submitted}', String(summary.submittedParticipants)).replace('{total}', String(summary.totalParticipants)) },
+              { label: t('analytics_metric_processing_failures'), value: summary.failedProcessingCount, tone: summary.failedProcessingCount > 0 ? 'text-rose-600 dark:text-rose-300' : 'text-slate-400', hint: t('analytics_hint_failed_processing') },
+              { label: t('analytics_metric_low_confidence'), value: summary.needsReviewCount, tone: summary.needsReviewCount > 0 ? 'text-amber-600 dark:text-amber-300' : 'text-slate-400', hint: t('analytics_hint_needs_review') },
+              { label: t('analytics_metric_active_recruiters'), value: data.recruiterWorkload.length, tone: 'text-indigo-600 dark:text-indigo-300', hint: t('analytics_hint_open_workload') },
             ].map((metric) => (
               <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3.5 py-3">
                 <p className="text-[10px] uppercase tracking-wider font-semibold dark:text-slate-500 text-slate-500">{metric.label}</p>
@@ -223,16 +223,16 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
 
           {summary.departmentAccessRestricted && (
             <div className="text-[11px] text-amber-600 dark:text-amber-300 px-1">
-              Note: some requested data is outside your department permissions and has been excluded.
+              {t('analytics_restricted_note')}
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
             {/* Stage conversion */}
             <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
-              <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">Stage Distribution</h2>
+              <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">{t('analytics_stage_distribution')}</h2>
               {data.stageConversion.length === 0 ? (
-                <p className="text-xs dark:text-slate-400 text-slate-500 py-6 text-center">No applications in the selected period.</p>
+                <p className="text-xs dark:text-slate-400 text-slate-500 py-6 text-center">{t('analytics_empty_period')}</p>
               ) : (
                 <div className="space-y-2">
                   {data.stageConversion.map((row) => (
@@ -255,16 +255,16 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
 
             {/* Time in stage */}
             <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
-              <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">Time in Stage</h2>
+              <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">{t('analytics_time_in_stage')}</h2>
               {data.timeInStage.length === 0 ? (
-                <p className="text-xs dark:text-slate-400 text-slate-500 py-6 text-center">No open applications.</p>
+                <p className="text-xs dark:text-slate-400 text-slate-500 py-6 text-center">{t('analytics_empty_open')}</p>
               ) : (
                 <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
                   <thead className="font-mono uppercase text-[10px] dark:text-slate-500 text-slate-400 border-b dark:border-[#30424A] border-slate-200">
                     <tr>
-                      <th className="py-1.5">Stage</th>
-                      <th className="py-1.5 text-right">Count</th>
-                      <th className="py-1.5 text-right">Median</th>
+                      <th className="py-1.5">{t('analytics_col_stage')}</th>
+                      <th className="py-1.5 text-right">{t('analytics_col_count')}</th>
+                      <th className="py-1.5 text-right">{t('analytics_col_median')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y dark:divide-[#30424A]/60 divide-slate-100">
@@ -282,9 +282,9 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
 
             {/* Recruiter workload */}
             <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-3">
-              <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">Recruiter Workload</h2>
+              <h2 className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider">{t('analytics_recruiter_workload')}</h2>
               {data.recruiterWorkload.length === 0 ? (
-                <p className="text-xs dark:text-slate-400 text-slate-500 py-6 text-center">No assigned open applications.</p>
+                <p className="text-xs dark:text-slate-400 text-slate-500 py-6 text-center">{t('analytics_empty_assigned')}</p>
               ) : (
                 <div className="space-y-2">
                   {data.recruiterWorkload.slice(0, 8).map((r) => {
@@ -310,7 +310,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           {/* Documented metric definitions (§6.10 consistency requirement) */}
           <details className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4">
             <summary className="text-xs font-semibold dark:text-white text-slate-900 uppercase tracking-wider cursor-pointer">
-              Metric Definitions
+              {t('analytics_definitions')}
             </summary>
             <dl className="mt-3 space-y-2 text-xs dark:text-slate-300 text-slate-700">
               {Object.entries(data.metricDefinitions).map(([key, definition]) => (

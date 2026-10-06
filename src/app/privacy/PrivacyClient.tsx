@@ -26,37 +26,37 @@ export default function PrivacyClient() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        showToast(t('success') || 'Data export downloaded', 'success', 'GDPR Export');
+        showToast(t('success'), 'success', t('privacy_portability_toast_title'));
       } else {
         const errorData = await res.json().catch(() => null);
-        showToast(errorData?.error || t('error') || 'Failed to export data', 'error');
+        showToast(errorData?.error || t('privacy_export_failed'), 'error');
       }
     } catch {
-      showToast(t('error') || 'Failed to export data', 'error');
+      showToast(t('privacy_export_failed'), 'error');
     } finally {
       setDownloading(false);
     }
   };
 
   const handleRequestErasure = async () => {
-    if (!confirm(t('erasure_warning') || 'Are you sure? This action is permanent and irreversible. All your applications, resume files, and account access will be destroyed.')) {
+    if (!confirm(t('erasure_warning'))) {
       return;
     }
     setErasing(true);
     try {
       const res = await fetch('/api/privacy/erasure', { method: 'POST' });
       if (res.ok) {
-        showToast('Your account and personal data have been completely erased', 'success', 'Right to be Forgotten');
+        showToast(t('privacy_erasure_success'), 'success', t('privacy_erasure_toast_title'));
         setTimeout(() => {
           signOut({ callbackUrl: '/auth/signin' });
         }, 1200);
       } else {
         const errorData = await res.json().catch(() => null);
-        showToast(errorData?.error || t('error') || 'Failed to submit erasure request', 'error');
+        showToast(errorData?.error || t('privacy_erasure_failed'), 'error');
         setErasing(false);
       }
     } catch {
-      showToast(t('error') || 'Failed to submit erasure request', 'error');
+      showToast(t('privacy_erasure_failed'), 'error');
       setErasing(false);
     }
   };
@@ -80,9 +80,9 @@ export default function PrivacyClient() {
               📥
             </div>
             <div>
-              <h3 className="font-bold dark:text-white text-slate-900 text-sm">Data Portability (Art. 20)</h3>
+              <h3 className="font-bold dark:text-white text-slate-900 text-sm">{t('privacy_portability_title')}</h3>
               <p className="text-xs dark:text-slate-400 text-slate-600 mt-1 leading-relaxed">
-                Download a complete JSON archive of your personal profile, submitted resumes, screening runs, assessments, and evaluation metrics.
+                {t('privacy_portability_desc')}
               </p>
             </div>
           </div>
@@ -92,7 +92,7 @@ export default function PrivacyClient() {
             className="w-full py-2.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs flex items-center justify-center gap-1.5"
           >
             <span>📥</span>
-            <span>{downloading ? (t('loading') || 'Exporting...') : (t('btn_export_data') || 'Export My Profile Data (JSON)')}</span>
+            <span>{downloading ? (t('loading')) : (t('btn_export_data'))}</span>
           </button>
         </div>
 
@@ -103,9 +103,9 @@ export default function PrivacyClient() {
               🗑️
             </div>
             <div>
-              <h3 className="font-bold dark:text-white text-slate-900 text-sm">Right to be Forgotten (Art. 17)</h3>
+              <h3 className="font-bold dark:text-white text-slate-900 text-sm">{t('privacy_erasure_title')}</h3>
               <p className="text-xs dark:text-slate-400 text-slate-600 mt-1 leading-relaxed">
-                Permanently erase your candidate profile, uploaded documents, OCR text indices, and submitted scorecards across all databases.
+                {t('privacy_erasure_desc')}
               </p>
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function PrivacyClient() {
             className="w-full py-2.5 dark:bg-rose-950/80 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 dark:text-rose-300 border dark:border-rose-800 border-rose-200 disabled:opacity-50 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5"
           >
             <span>⚠️</span>
-            <span>{erasing ? (t('loading') || 'Erasing Account...') : (t('btn_request_erasure') || 'Execute Right to be Forgotten (Erase Account)')}</span>
+            <span>{erasing ? (t('loading')) : (t('btn_request_erasure'))}</span>
           </button>
         </div>
       </div>
