@@ -27,6 +27,34 @@ interface CandidatesClientProps {
   filters?: FilterFacets;
 }
 
+// Localized labels for pipeline stage codes (filter options, row chips).
+function buildStageLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    INGESTED: t('stage_ingested'),
+    NEW: t('stage_new'),
+    SCREENING: t('stage_screening'),
+    NEEDS_REVIEW: t('stage_needs_review'),
+    SHORTLISTED: t('stage_shortlisted'),
+    ON_HOLD: t('stage_on_hold'),
+    INTERVIEW_SCHEDULED: t('stage_interview_scheduled'),
+    INTERVIEWING: t('stage_interviewing'),
+    OFFERED: t('stage_offered'),
+    HIRED: t('stage_hired'),
+    REJECTED: t('stage_rejected'),
+    WITHDRAWN: t('stage_withdrawn'),
+  };
+}
+
+function buildProcessingLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    QUEUED: t('processing_queued'),
+    PROCESSING: t('processing_in_progress'),
+    COMPLETED: t('processing_completed'),
+    NEEDS_REVIEW: t('stage_needs_review'),
+    FAILED: t('processing_failed'),
+  };
+}
+
 export default function CandidatesClient({
   applications,
   userRole = 'Recruiter',
@@ -38,6 +66,7 @@ export default function CandidatesClient({
   const [selectedDept, setSelectedDept] = useState('ALL');
   const { t } = useLanguage();
   const router = useRouter();
+  const stageLabels = buildStageLabels(t);
 
   // ── Bulk actions (§6.3 / §6.12: confirmation + mandatory reason) ──
   const canMakeDecisions = roleCapabilities.canMakeDecisions(userRole);
@@ -74,7 +103,7 @@ export default function CandidatesClient({
 
   const submitBulkAction = async () => {
     if (!bulkReason.trim()) {
-      setBulkError('A mandatory reason is required for bulk decisions.');
+      setBulkError(t('bulk_error_required'));
       return;
     }
     setBulkSubmitting(true);
@@ -92,14 +121,14 @@ export default function CandidatesClient({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setBulkError(data.error || 'Bulk action failed.');
+        setBulkError(data.error || t('bulk_error_failed'));
         return;
       }
       setBulkModalOpen(false);
       setSelectedIds(new Set());
       router.refresh();
     } catch {
-      setBulkError('Network error — the bulk action was not applied.');
+      setBulkError(t('bulk_error_network'));
     } finally {
       setBulkSubmitting(false);
     }
@@ -109,14 +138,14 @@ export default function CandidatesClient({
   // new, processing/review-required, screened, shortlisted, rejected, interview,
   // offer — so no application can silently disappear from the board.
   const stages = [
-    { key: 'NEW', label: t('stage_ingested'), color: 'border-slate-500/40 text-slate-400 bg-slate-500/5' },
-    { key: 'SCREENING', label: t('stage_screening'), color: 'border-amber-500/40 text-amber-400 bg-amber-500/5' },
-    { key: 'NEEDS_REVIEW', label: 'Needs Review', color: 'border-indigo-500/40 text-indigo-400 bg-indigo-500/5' },
-    { key: 'ON_HOLD', label: 'On Hold', color: 'border-violet-500/40 text-violet-400 bg-violet-500/5' },
-    { key: 'SHORTLISTED', label: t('stage_shortlisted'), color: 'border-teal-500/40 text-teal-500 bg-teal-500/5' },
-    { key: 'INTERVIEW_SCHEDULED', label: t('stage_interviewing'), color: 'border-sky-500/40 text-sky-500 bg-sky-500/5' },
-    { key: 'OFFERED', label: t('stage_offered'), color: 'border-emerald-500/40 text-emerald-500 bg-emerald-500/5' },
-    { key: 'REJECTED', label: 'Rejected', color: 'border-rose-500/40 text-rose-400 bg-rose-500/5' }
+    { key: 'NEW', label: t('stage_ingested'), tone: 'var(--info)' },
+    { key: 'SCREENING', label: t('stage_screening'), tone: 'var(--warning)' },
+    { key: 'NEEDS_REVIEW', label: t('stage_needs_review'), tone: 'var(--accent)' },
+    { key: 'ON_HOLD', label: t('stage_on_hold'), tone: 'var(--muted)' },
+    { key: 'SHORTLISTED', label: t('stage_shortlisted'), tone: 'var(--success)' },
+    { key: 'INTERVIEW_SCHEDULED', label: t('stage_interviewing'), tone: 'var(--info)' },
+    { key: 'OFFERED', label: t('stage_offered'), tone: 'var(--success)' },
+    { key: 'REJECTED', label: t('metric_rejected'), tone: 'var(--danger)' },
   ];
 
   const departments = ['ALL', ...Array.from(new Set(applications.map((c) => c.job?.department).filter(Boolean)))];
@@ -127,6 +156,7 @@ export default function CandidatesClient({
   // URL and is applied by the server.
   const filteredCandidates = applications.filter((c) => {
     if (!search) return true;
+    if (selectedDept !== 'ALL' && c.job?.department !== selectedDept) return false;
     const fullName = `${c.candidate?.firstName} ${c.candidate?.lastName}`.toLowerCase();
     const skills = (c.parsedProfile?.skills || []).join(' ').toLowerCase();
     return fullName.includes(search.toLowerCase()) || skills.includes(search.toLowerCase());
@@ -136,41 +166,47 @@ export default function CandidatesClient({
   const averageScore = applications.reduce((total, app) => total + (Number(app.screeningRuns?.[0]?.effectiveResult ?? app.screeningRuns?.[0]?.totalResult) || 0), 0) / Math.max(applications.length, 1);
 
   return (
-    <div className="space-y-5 max-w-[1440px] mx-auto">
+    <div className="space-y-4 max-w-[1440px] mx-auto">
       {/* Top Header & Search Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b dark:border-slate-800/80 border-slate-200">
+      <div className="page-header pb-3 border-b border-[var(--border)]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
-              {t('pipeline_title')}
-            </h1>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/50 border-teal-200">
-              {pagination ? `${pagination.total} APPLICANTS` : `${filteredCandidates.length} APPLICANTS`}
+            <h1 className="h-page">{t('pipeline_title')}</h1>
+            <span className="chip chip-accent">
+              {t('applicants_count').replace('{count}', String(pagination ? pagination.total : filteredCandidates.length))}
             </span>
           </div>
-          <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
-            {t('pipeline_subtitle')}
-          </p>
+          <p className="page-subtitle mt-0.5">{t('pipeline_subtitle')}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           {/* Search Input */}
           <div className="relative">
+            <svg
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--muted)] pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('search_candidate_placeholder')}
-              className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-3 py-1.5 pl-8 text-xs dark:text-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 w-48 sm:w-56"
+              className="field !w-48 sm:!w-56 !pl-8"
+              aria-label={t('search_candidate_placeholder')}
             />
-            <span className="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
 
           {/* Department Filter */}
           <select
             value={selectedDept}
             onChange={(e) => setSelectedDept(e.target.value)}
-            className="dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium"
+            className="field !w-auto font-medium"
+            aria-label={t('aria_filter_department')}
           >
             {departments.map((dept: any) => (
               <option key={dept} value={dept}>
@@ -183,24 +219,20 @@ export default function CandidatesClient({
           {filters && <FilterBar filters={filters} />}
 
           {/* View Switcher (Kanban / Table) */}
-          <div className="flex p-0.5 rounded-lg dark:bg-[#0F171D] bg-slate-100 border dark:border-[#30424A] border-slate-200 text-xs">
+          <div className="segmented" role="tablist" aria-label={t('aria_pipeline_view')}>
             <button
+              role="tab"
+              aria-selected={activeTab === 'kanban'}
               onClick={() => setActiveTab('kanban')}
-              className={`px-2.5 py-1 rounded-md font-medium transition ${
-                activeTab === 'kanban'
-                  ? 'bg-teal-700 dark:bg-teal-600 text-white shadow-xs'
-                  : 'dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              className={activeTab === 'kanban' ? 'active' : ''}
             >
               {t('view_kanban')}
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === 'table'}
               onClick={() => setActiveTab('table')}
-              className={`px-2.5 py-1 rounded-md font-medium transition ${
-                activeTab === 'table'
-                  ? 'bg-teal-700 dark:bg-teal-600 text-white shadow-xs'
-                  : 'dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              className={activeTab === 'table' ? 'active' : ''}
             >
               {t('view_table')}
             </button>
@@ -208,17 +240,17 @@ export default function CandidatesClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
         {[
-          { label: 'Visible applications', value: filteredCandidates.length, tone: 'text-slate-900 dark:text-white' },
-          { label: 'Needs review', value: reviewCount, tone: 'text-amber-600 dark:text-amber-300' },
-          { label: 'Average match', value: `${Math.round(averageScore)}%`, tone: 'text-teal-700 dark:text-teal-300' },
-          { label: 'Shortlisted', value: applications.filter((app) => app.stage === 'SHORTLISTED').length, tone: 'text-sky-700 dark:text-sky-300' },
-          { label: 'Rejected', value: applications.filter((app) => app.stage === 'REJECTED').length, tone: 'text-rose-600 dark:text-rose-300' }
+          { label: t('metric_visible_apps'), value: filteredCandidates.length, tone: 'text-[var(--foreground)]' },
+          { label: t('metric_needs_review'), value: reviewCount, tone: 'text-[var(--warning)]' },
+          { label: t('metric_avg_match'), value: `${Math.round(averageScore)}%`, tone: 'text-[var(--accent)]' },
+          { label: t('metric_shortlisted'), value: applications.filter((app) => app.stage === 'SHORTLISTED').length, tone: 'text-[var(--success)]' },
+          { label: t('metric_rejected'), value: applications.filter((app) => app.stage === 'REJECTED').length, tone: 'text-[var(--danger)]' },
         ].map((metric) => (
-          <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3.5 py-3">
-            <p className="text-[10px] uppercase tracking-wider font-semibold dark:text-slate-500 text-slate-500">{metric.label}</p>
-            <p className={`mt-1 text-xl font-bold font-mono ${metric.tone}`}>{metric.value}</p>
+          <div key={metric.label} className="stat-card">
+            <p className="stat-label">{metric.label}</p>
+            <p className={`mt-1 text-xl font-bold tabular-nums ${metric.tone}`}>{metric.value}</p>
           </div>
         ))}
       </div>
@@ -232,24 +264,27 @@ export default function CandidatesClient({
             return (
               <div
                 key={stage.key}
-                className="dark:bg-[#17242B]/65 bg-[#F8F5EE]/80 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-3 flex flex-col min-h-[430px]"
+                className="bg-[var(--surface-muted)]/60 border border-[var(--border)] rounded-xl p-3 flex flex-col min-h-[430px]"
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-2 mb-2 border-b dark:border-[#30424A] border-slate-200/60">
-                  <span className="text-xs font-bold dark:text-slate-200 text-slate-800">
-                    {stage.label}
-                  </span>
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${stage.color}`}>
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--border)]">
+                  <span className="text-xs font-bold text-[var(--foreground)]">{stage.label}</span>
+                  <span
+                    className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold border"
+                    style={{
+                      color: stage.tone,
+                      borderColor: `color-mix(in srgb, ${stage.tone} 35%, transparent)`,
+                      backgroundColor: `color-mix(in srgb, ${stage.tone} 7%, transparent)`,
+                    }}
+                  >
                     {stageCandidates.length}
                   </span>
                 </div>
 
                 {/* Candidate Cards Column */}
-                <div className="flex-1 space-y-2.5 overflow-y-auto">
+                <div className="flex-1 space-y-2 overflow-y-auto">
                   {stageCandidates.length === 0 ? (
-                    <div className="py-12 text-center text-slate-400 text-[11px]">
-                      {t('no_candidates_stage')}
-                    </div>
+                    <div className="py-12 text-center text-[var(--muted)] text-[11px]">{t('no_candidates_stage')}</div>
                   ) : (
                     stageCandidates.map((app) => {
                       const latestRun = app.screeningRuns?.[0];
@@ -259,23 +294,21 @@ export default function CandidatesClient({
                         <Link
                           key={app.id}
                           href={`/candidates/${app.id}`}
-                          className="block dark:bg-[#18242C] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-lg p-3 hover:border-teal-500/60 transition shadow-xs space-y-2 group"
+                          className="block bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 panel-hover space-y-2 group"
                         >
                           <div className="flex items-start justify-between gap-1">
                             <div>
-                              <h3 className="text-xs font-bold dark:text-white text-slate-900 group-hover:text-teal-600 dark:group-hover:text-teal-300 transition leading-tight">
+                              <h3 className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--accent)] transition leading-tight">
                                 {app.candidate?.firstName} {app.candidate?.lastName}
                               </h3>
-                              <p className="text-[10px] dark:text-slate-400 text-slate-500 truncate max-w-[130px]">
-                                {app.job?.title}
-                              </p>
+                              <p className="text-[10px] text-[var(--muted)] truncate max-w-[130px]">{app.job?.title}</p>
                             </div>
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-teal-700 dark:text-teal-300 dark:bg-teal-950/60 bg-teal-50 border dark:border-teal-800/60 border-teal-200 shrink-0">
+                            <span className="chip chip-accent shrink-0">
                               {score}% {t('match_score')}
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between text-[10px] dark:text-slate-500 text-slate-400 font-mono pt-1.5 border-t dark:border-[#30424A]/60 border-slate-100">
+                          <div className="flex items-center justify-between text-[10px] text-[var(--muted)] font-mono pt-1.5 border-t border-[var(--border)]">
                             <span>{app.job?.department}</span>
                             <span>{new Date(app.createdAt).toLocaleDateString()}</span>
                           </div>
@@ -293,127 +326,109 @@ export default function CandidatesClient({
         <div className="space-y-2">
           {/* Bulk action bar (§6.3: bulk actions with confirmation + audit) */}
           {canMakeDecisions && selectedIds.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3.5 py-2.5">
-              <span className="text-xs font-semibold dark:text-white text-slate-900 mr-1">
-                {selectedIds.size} selected:
-              </span>
+            <div className="flex flex-wrap items-center gap-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2">
+              <span className="text-xs font-semibold text-[var(--foreground)] mr-1">{t('bulk_selected').replace('{count}', String(selectedIds.size))}</span>
               {([
-                ['SHORTLIST', 'Shortlist', 'border-teal-500/40 text-teal-600 dark:text-teal-300 hover:bg-teal-500/10'],
-                ['ADVANCE', 'Advance', 'border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10'],
-                ['HOLD', 'Hold', 'border-violet-500/40 text-violet-600 dark:text-violet-300 hover:bg-violet-500/10'],
-                ['REVIEW', 'Return to review', 'border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-500/10'],
-                ['REJECT', 'Reject', 'border-rose-500/40 text-rose-600 dark:text-rose-300 hover:bg-rose-500/10'],
-                ['WITHDRAW', 'Withdraw', 'border-slate-500/40 text-slate-600 dark:text-slate-300 hover:bg-slate-500/10'],
-              ] as const).map(([action, label, classes]) => (
+                ['SHORTLIST', t('bulk_shortlist'), 'chip-success'],
+                ['ADVANCE', t('bulk_advance'), 'chip-info'],
+                ['HOLD', t('bulk_hold'), 'chip'],
+                ['REVIEW', t('bulk_review'), 'chip-accent'],
+                ['REJECT', t('bulk_reject'), 'chip-danger'],
+                ['WITHDRAW', t('bulk_withdraw'), 'chip'],
+              ] as const).map(([action, label, chipClass]) => (
                 <button
                   key={action}
                   onClick={() => openBulkModal(action)}
-                  className={`px-2.5 py-1 rounded-md border text-xs font-medium transition ${classes}`}
+                  className={`chip ${chipClass} !cursor-pointer hover:brightness-95 transition`}
                 >
                   {label}
                 </button>
               ))}
-              <button
-                onClick={() => setSelectedIds(new Set())}
-                className="ml-auto text-xs dark:text-slate-400 text-slate-500 hover:underline"
-              >
-                Clear selection
+              <button onClick={() => setSelectedIds(new Set())} className="ml-auto text-xs text-[var(--muted)] hover:underline">
+                {t('bulk_clear_selection')}
               </button>
             </div>
           )}
 
-          <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl overflow-hidden shadow-xs">
-          <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
-            <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-[#30424A] border-slate-200 border-b">
-              <tr>
-                {canMakeDecisions && (
-                  <th className="p-3 w-8">
-                    <input
-                      type="checkbox"
-                      aria-label="Select all visible applications"
-                      checked={selectedIds.size > 0 && selectedIds.size === filteredCandidates.length}
-                      onChange={toggleSelectAll}
-                      className="accent-teal-600"
-                    />
-                  </th>
-                )}
-                <th className="p-3">{t('candidate_name_col')}</th>
-                <th className="p-3">{t('position_applied_col')}</th>
-                <th className="p-3">{t('department_col')}</th>
-                <th className="p-3">{t('stage_col')}</th>
-                <th className="p-3">{t('score_col')}</th>
-                <th className="p-3 text-right">{t('actions_col')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y dark:divide-[#30424A]/60 divide-slate-100">
-              {filteredCandidates.map((app) => {
-                const latestRun = app.screeningRuns?.[0];
-                const score = Number(latestRun?.effectiveResult ?? latestRun?.totalResult) || 0;
+          <div className="panel overflow-hidden">
+            <table className="table">
+              <thead>
+                <tr>
+                  {canMakeDecisions && (
+                    <th className="w-8">
+                      <input
+                        type="checkbox"
+                        aria-label={t('aria_select_all')}
+                        checked={selectedIds.size > 0 && selectedIds.size === filteredCandidates.length}
+                        onChange={toggleSelectAll}
+                        className="accent-[var(--accent)]"
+                      />
+                    </th>
+                  )}
+                  <th>{t('candidate_name_col')}</th>
+                  <th>{t('position_applied_col')}</th>
+                  <th>{t('department_col')}</th>
+                  <th>{t('stage_col')}</th>
+                  <th>{t('score_col')}</th>
+                  <th className="!text-right">{t('actions_col')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCandidates.map((app) => {
+                  const latestRun = app.screeningRuns?.[0];
+                  const score = Number(latestRun?.effectiveResult ?? latestRun?.totalResult) || 0;
 
-                return (
-                  <tr key={app.id} className="dark:hover:bg-slate-900/50 hover:bg-slate-50 transition">
-                    {canMakeDecisions && (
-                      <td className="p-3 w-8">
-                        <input
-                          type="checkbox"
-                          aria-label={`Select application for ${app.candidate?.firstName} ${app.candidate?.lastName}`}
-                          checked={selectedIds.has(app.id)}
-                          onChange={() => toggleSelected(app.id)}
-                          className="accent-teal-600"
-                        />
+                  return (
+                    <tr key={app.id}>
+                      {canMakeDecisions && (
+                        <td className="w-8">
+                          <input
+                            type="checkbox"
+                            aria-label={`Select application for ${app.candidate?.firstName} ${app.candidate?.lastName}`}
+                            checked={selectedIds.has(app.id)}
+                            onChange={() => toggleSelected(app.id)}
+                            className="accent-[var(--accent)]"
+                          />
+                        </td>
+                      )}
+                      <td className="font-semibold text-[var(--foreground)]">
+                        {app.candidate?.firstName} {app.candidate?.lastName}
                       </td>
-                    )}
-                    <td className="p-3 font-semibold dark:text-white text-slate-900">
-                      {app.candidate?.firstName} {app.candidate?.lastName}
-                    </td>
-                    <td className="p-3 dark:text-slate-300 text-slate-700">{app.job?.title}</td>
-                    <td className="p-3 font-mono text-[11px] dark:text-slate-400 text-slate-500">{app.job?.department}</td>
-                    <td className="p-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold dark:bg-[#0F171D] bg-slate-100 border dark:border-[#30424A] border-slate-200">
-                        {app.stage || 'INGESTED'}
-                      </span>
-                    </td>
-                    <td className="p-3 font-mono font-bold text-teal-600 dark:text-teal-400 text-xs">
-                      {score}%
-                    </td>
-                    <td className="p-3 text-right">
-                      <Link
-                        href={`/candidates/${app.id}`}
-                        className="px-2.5 py-1 rounded-md bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-medium text-xs transition"
-                      >
-                        {t('view_details')} &rarr;
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td className="text-[var(--foreground)]">{app.job?.title}</td>
+                      <td className="font-mono text-[11px] text-[var(--muted)]">{app.job?.department}</td>
+                      <td>
+                        <span className="chip">{stageLabels[app.stage || 'INGESTED'] || app.stage || 'INGESTED'}</span>
+                      </td>
+                      <td className="font-mono font-bold text-[var(--accent)] text-xs tabular-nums">{score}%</td>
+                      <td className="text-right">
+                        <Link href={`/candidates/${app.id}`} className="btn btn-secondary btn-sm">
+                          {t('view_details')} <span aria-hidden="true">&rarr;</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {/* Bulk decision confirmation modal (§6.12) */}
       {/* Server-side pagination (§9 performance) */}
       {pagination && <PaginationControls pagination={pagination} />}
 
+      {/* Bulk decision confirmation modal (§6.12) */}
       {bulkModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Confirm bulk decision"
-        >
-          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-xl w-full max-w-md p-5 space-y-3">
-            <h2 className="text-sm font-bold dark:text-white text-slate-900">
-              Confirm bulk “{bulkAction}” on {selectedIds.size} application(s)
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label={t('bulk_confirm_aria')}>
+          <div className="modal max-w-md p-5 space-y-3">
+            <h2 className="text-sm font-bold text-[var(--foreground)]">
+              {t('bulk_confirm_title').replace('{action}', bulkAction).replace('{count}', String(selectedIds.size))}
             </h2>
-            <p className="text-xs dark:text-slate-400 text-slate-500">
-              This records a decision on every selected application under your account and is
-              written to the audit trail. It cannot be undone silently.
+            <p className="text-xs text-[var(--muted)] leading-relaxed">
+              {t('bulk_confirm_desc')}
             </p>
-            <label htmlFor="bulk-reason" className="block text-xs font-semibold dark:text-slate-200 text-slate-800">
-              Reason (required)
+            <label htmlFor="bulk-reason" className="field-label">
+              {t('bulk_reason_label')}
             </label>
             <textarea
               id="bulk-reason"
@@ -421,23 +436,20 @@ export default function CandidatesClient({
               onChange={(e) => setBulkReason(e.target.value)}
               rows={3}
               maxLength={5000}
-              placeholder="Why is this bulk decision being applied?"
-              className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-3 py-2 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+              placeholder={t('bulk_reason_placeholder')}
+              className="field"
             />
-            {bulkError && <p className="text-xs text-rose-500">{bulkError}</p>}
+            {bulkError && (
+              <p className="text-xs text-[var(--danger)] font-medium" role="alert">
+                {bulkError}
+              </p>
+            )}
             <div className="flex justify-end gap-2 pt-1">
-              <button
-                onClick={() => setBulkModalOpen(false)}
-                className="px-3 py-1.5 rounded-md border dark:border-[#30424A] border-slate-200 text-xs dark:text-slate-300 text-slate-700 hover:bg-slate-500/10"
-              >
-                Cancel
+              <button onClick={() => setBulkModalOpen(false)} className="btn btn-secondary">
+                {t('cancel')}
               </button>
-              <button
-                onClick={submitBulkAction}
-                disabled={bulkSubmitting}
-                className="px-3 py-1.5 rounded-md bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-semibold disabled:opacity-60"
-              >
-                {bulkSubmitting ? 'Applying…' : `Confirm ${bulkAction.toLowerCase()}`}
+              <button onClick={submitBulkAction} disabled={bulkSubmitting} className="btn btn-primary">
+                {bulkSubmitting ? t('bulk_applying') : t('bulk_confirm_action').replace('{action}', bulkAction.toLowerCase())}
               </button>
             </div>
           </div>
@@ -446,6 +458,7 @@ export default function CandidatesClient({
     </div>
   );
 }
+
 /**
  * Server-driven filter bar (spec §6.7): job, stage, recruiter, score range,
  * required-criterion status, processing status, tags, and application date
@@ -454,6 +467,7 @@ export default function CandidatesClient({
  */
 function FilterBar({ filters }: { filters: FilterFacets }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const current = filters.current;
 
   const setParam = (key: string, value: string) => {
@@ -469,9 +483,9 @@ function FilterBar({ filters }: { filters: FilterFacets }) {
     'INTERVIEW_SCHEDULED', 'OFFERED', 'HIRED', 'REJECTED', 'WITHDRAWN',
   ];
   const processingOptions = ['QUEUED', 'PROCESSING', 'COMPLETED', 'NEEDS_REVIEW', 'FAILED'];
+  const stageLabels = buildStageLabels(t);
+  const processingLabels = buildProcessingLabels(t);
 
-  const inputClass =
-    'dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 font-medium';
   const activeCount = [
     'job', 'stage', 'recruiter', 'minScore', 'maxScore', 'requiredStatus', 'processing', 'tags', 'from', 'to',
   ].filter((k) => current[k]).length;
@@ -479,118 +493,106 @@ function FilterBar({ filters }: { filters: FilterFacets }) {
   return (
     <details className="relative">
       <summary
-        className={`cursor-pointer list-none px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
-          activeCount > 0
-            ? 'dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 dark:border-teal-800/60 border-teal-200'
-            : 'dark:bg-[#0F171D] bg-white dark:border-[#30424A] border-slate-200 dark:text-slate-200 text-slate-800'
-        }`}
+        className={`cursor-pointer list-none btn btn-secondary ${activeCount > 0 ? '!border-[var(--accent)] !text-[var(--accent)]' : ''}`}
       >
-        Filters{activeCount > 0 ? ` (${activeCount})` : ''}
+        {t('filters')}{activeCount > 0 ? ` (${activeCount})` : ''}
       </summary>
-      <div className="absolute right-0 mt-2 z-40 w-[min(92vw,640px)] p-4 rounded-xl border dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-slate-200 shadow-2xl grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <label className="col-span-2 sm:col-span-1 text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Job
-          <select value={current.job ?? 'ALL'} onChange={(e) => setParam('job', e.target.value)} className={inputClass + ' w-full'}>
-            <option value="ALL">All jobs</option>
+      <div className="absolute right-0 mt-2 z-40 w-[min(92vw,640px)] p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <label className="col-span-2 sm:col-span-1 text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_job')}
+          <select value={current.job ?? 'ALL'} onChange={(e) => setParam('job', e.target.value)} className="field">
+            <option value="ALL">{t('filter_all_jobs')}</option>
             {filters.jobs.map((j) => (
               <option key={j.id} value={j.id}>{j.title}</option>
             ))}
           </select>
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Stage
-          <select value={current.stage ?? 'ALL'} onChange={(e) => setParam('stage', e.target.value)} className={inputClass + ' w-full'}>
-            <option value="ALL">All stages</option>
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_stage')}
+          <select value={current.stage ?? 'ALL'} onChange={(e) => setParam('stage', e.target.value)} className="field">
+            <option value="ALL">{t('filter_all_stages')}</option>
             {stageOptions.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>{stageLabels[s] || s}</option>
             ))}
           </select>
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Recruiter
-          <select value={current.recruiter ?? 'ALL'} onChange={(e) => setParam('recruiter', e.target.value)} className={inputClass + ' w-full'}>
-            <option value="ALL">All recruiters</option>
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_recruiter')}
+          <select value={current.recruiter ?? 'ALL'} onChange={(e) => setParam('recruiter', e.target.value)} className="field">
+            <option value="ALL">{t('filter_all_recruiters')}</option>
             {filters.recruiters.map((r) => (
               <option key={r.id} value={r.id}>{r.name ?? r.email}</option>
             ))}
           </select>
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Min score (%)
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_min_score')}
           <input
             type="number" min={0} max={100} defaultValue={current.minScore ?? ''}
             onBlur={(e) => setParam('minScore', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setParam('minScore', (e.target as HTMLInputElement).value)}
-            placeholder="e.g. 60" className={inputClass + ' w-full'}
+            placeholder="e.g. 60" className="field"
           />
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Max score (%)
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_max_score')}
           <input
             type="number" min={0} max={100} defaultValue={current.maxScore ?? ''}
             onBlur={(e) => setParam('maxScore', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setParam('maxScore', (e.target as HTMLInputElement).value)}
-            placeholder="e.g. 100" className={inputClass + ' w-full'}
+            placeholder="e.g. 100" className="field"
           />
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Required criteria
-          <select value={current.requiredStatus ?? 'ALL'} onChange={(e) => setParam('requiredStatus', e.target.value)} className={inputClass + ' w-full'}>
-            <option value="ALL">Any status</option>
-            <option value="missing">Missing required</option>
-            <option value="uncertain">Uncertain evidence</option>
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_required_criteria')}
+          <select value={current.requiredStatus ?? 'ALL'} onChange={(e) => setParam('requiredStatus', e.target.value)} className="field">
+            <option value="ALL">{t('filter_any_status')}</option>
+            <option value="missing">{t('filter_missing_required')}</option>
+            <option value="uncertain">{t('filter_uncertain_evidence')}</option>
           </select>
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Processing
-          <select value={current.processing ?? 'ALL'} onChange={(e) => setParam('processing', e.target.value)} className={inputClass + ' w-full'}>
-            <option value="ALL">Any status</option>
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_processing')}
+          <select value={current.processing ?? 'ALL'} onChange={(e) => setParam('processing', e.target.value)} className="field">
+            <option value="ALL">{t('filter_any_status')}</option>
             {processingOptions.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p} value={p}>{processingLabels[p] || p}</option>
             ))}
           </select>
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Tag
-          <select value={current.tags ?? 'ALL'} onChange={(e) => setParam('tags', e.target.value)} className={inputClass + ' w-full'}>
-            <option value="ALL">Any tag</option>
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_tag')}
+          <select value={current.tags ?? 'ALL'} onChange={(e) => setParam('tags', e.target.value)} className="field">
+            <option value="ALL">{t('filter_any_tag')}</option>
             {filters.tags.map((tg) => (
               <option key={tg} value={tg}>{tg}</option>
             ))}
           </select>
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Applied from
-          <input
-            type="date" defaultValue={current.from ?? ''}
-            onChange={(e) => setParam('from', e.target.value)}
-            className={inputClass + ' w-full'}
-          />
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_applied_from')}
+          <input type="date" defaultValue={current.from ?? ''} onChange={(e) => setParam('from', e.target.value)} className="field" />
         </label>
 
-        <label className="text-[10px] font-mono uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1 block">
-          Applied to
-          <input
-            type="date" defaultValue={current.to ?? ''}
-            onChange={(e) => setParam('to', e.target.value)}
-            className={inputClass + ' w-full'}
-          />
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
+          {t('filter_applied_to')}
+          <input type="date" defaultValue={current.to ?? ''} onChange={(e) => setParam('to', e.target.value)} className="field" />
         </label>
 
         {activeCount > 0 && (
           <button
             onClick={() => router.push('/candidates')}
-            className="col-span-2 sm:col-span-3 justify-self-start px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-slate-800 bg-slate-100 dark:text-slate-200 text-slate-700 hover:opacity-90"
+            className="col-span-2 sm:col-span-3 justify-self-start btn btn-ghost !text-[var(--accent)]"
           >
-            Clear all filters
+            {t('filter_clear_all')}
           </button>
         )}
       </div>
@@ -604,6 +606,7 @@ function FilterBar({ filters }: { filters: FilterFacets }) {
  */
 function PaginationControls({ pagination }: { pagination: PaginationInfo }) {
   const router = useRouter();
+  const { t } = useLanguage();
   if (pagination.totalPages <= 1) return null;
 
   const go = (page: number) => {
@@ -613,28 +616,22 @@ function PaginationControls({ pagination }: { pagination: PaginationInfo }) {
   };
 
   return (
-    <nav className="flex items-center justify-between gap-2 pt-2" aria-label="Pipeline pagination">
-      <span className="text-[11px] dark:text-slate-500 text-slate-500">
-        {((pagination.page - 1) * pagination.pageSize) + 1}–
-        {Math.min(pagination.page * pagination.pageSize, pagination.total)} of {pagination.total}
+    <nav className="flex items-center justify-between gap-2 pt-2" aria-label={t('aria_pipeline_pagination')}>
+      <span className="text-[11px] text-[var(--muted)]">
+        {t('pagination_showing')
+          .replace('{from}', String((pagination.page - 1) * pagination.pageSize + 1))
+          .replace('{to}', String(Math.min(pagination.page * pagination.pageSize, pagination.total)))
+          .replace('{total}', String(pagination.total))}
       </span>
       <div className="flex items-center gap-1.5">
-        <button
-          onClick={() => go(pagination.page - 1)}
-          disabled={pagination.page <= 1}
-          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
-        >
-          ← Prev
+        <button onClick={() => go(pagination.page - 1)} disabled={pagination.page <= 1} className="btn btn-secondary btn-sm disabled:opacity-40">
+          {t('pagination_prev')}
         </button>
-        <span className="text-[11px] font-mono dark:text-slate-400 text-slate-500">
+        <span className="text-[11px] font-mono text-[var(--muted)]">
           {pagination.page} / {pagination.totalPages}
         </span>
-        <button
-          onClick={() => go(pagination.page + 1)}
-          disabled={pagination.page >= pagination.totalPages}
-          className="px-2.5 py-1 rounded-lg border text-xs font-medium disabled:opacity-40 dark:border-slate-700 border-slate-200 dark:text-slate-300 text-slate-600"
-        >
-          Next →
+        <button onClick={() => go(pagination.page + 1)} disabled={pagination.page >= pagination.totalPages} className="btn btn-secondary btn-sm disabled:opacity-40">
+          {t('pagination_next')}
         </button>
       </div>
     </nav>

@@ -99,13 +99,13 @@ export default function CandidateProfileClient({
     criterionDescription: assessment.criterion?.description || '',
     score: assessment.effectiveResult || assessment.result,
     quotedEvidence: assessment.supportingEvidence,
-    reasoning: assessment.uncertainty ? 'This result requires human review because the evidence is uncertain.' : '',
+    reasoning: assessment.uncertainty ? t('cprofile_uncertain_evidence') : '',
   })) || [];
   const score = Number(latestRun?.effectiveResult ?? (typeof storedResult === 'number' ? storedResult : totalResult.overallScore)) || 0;
 
   const candidateName = blindMode
-    ? `Candidate #${(app.id || 'ANON').substring(0, 8).toUpperCase()}`
-    : `${app.candidate?.firstName || 'Applicant'} ${app.candidate?.lastName || ''}`;
+    ? t('cprofile_candidate_code').replace('{code}', (app.id || 'ANON').substring(0, 8).toUpperCase())
+    : `${app.candidate?.firstName || t('cprofile_applicant_fallback')} ${app.candidate?.lastName || ''}`;
 
   const candidateEmail = blindMode ? '••••••@protected.id' : app.candidate?.email;
 
@@ -142,12 +142,12 @@ export default function CandidateProfileClient({
         }));
         setOverrideModalOpen(false);
         setOverrideReason('');
-        showToast(`Match score recalibrated to ${overrideScore}%`, 'success', 'Score Recalibrated');
+        showToast(t('toast_score_recalibrated').replace('{score}', String(overrideScore)), 'success', t('toast_score_recalibrated_title'));
       } else {
-        showToast('Failed to record score recalibration', 'error', 'Error');
+        showToast(t('toast_score_recalibration_failed'), 'error', t('error'));
       }
     } catch (err) {
-      showToast('Network error during recalibration', 'error', 'Error');
+      showToast(t('toast_network_recalibration'), 'error', t('error'));
     } finally {
       setSubmittingOverride(false);
     }
@@ -197,12 +197,12 @@ export default function CandidateProfileClient({
       if (res.ok) {
         setApp((prev: any) => ({ ...prev, stage: 'OFFERED', status: 'ACTIVE' }));
         setShowOfferModal(false);
-        showToast(`Offer of ${offerSalary} extended to candidate`, 'success', 'Offer Sent');
+        showToast(t('toast_offer_sent').replace('{salary}', offerSalary), 'success', t('toast_offer_sent_title'));
       } else {
-        showToast('Failed to extend formal offer', 'error');
+        showToast(t('toast_offer_failed'), 'error');
       }
     } catch {
-      showToast('Network error while sending offer', 'error');
+      showToast(t('toast_network_offer'), 'error');
     } finally {
       setSendingOffer(false);
     }
@@ -229,7 +229,7 @@ export default function CandidateProfileClient({
         setScorecards((prev) => [
           {
             id: data.participant?.id || Date.now().toString(),
-            interviewer: { name: 'You (Current User)' },
+            interviewer: { name: t('cprofile_scorecard_you') },
             ratings: { techRating, commRating, problemRating },
             recommendation,
             comments: scorecardNotes,
@@ -239,13 +239,13 @@ export default function CandidateProfileClient({
         ]);
         setShowScorecardModal(false);
         setScorecardNotes('');
-        showToast(`Interview scorecard (${recommendation}) recorded successfully`, 'success', 'Scorecard Saved');
+        showToast(t('toast_scorecard_recorded').replace('{recommendation}', recommendation), 'success', t('toast_scorecard_title'));
       } else {
         const data = await res.json().catch(() => null);
-        showToast(data?.error || 'Failed to submit scorecard', 'error');
+        showToast(data?.error || t('toast_scorecard_failed'), 'error');
       }
     } catch (err) {
-      showToast('Network error while saving scorecard', 'error');
+      showToast(t('toast_network_scorecard'), 'error');
     } finally {
       setSubmittingScorecard(false);
     }
@@ -254,7 +254,7 @@ export default function CandidateProfileClient({
   const handleRecordDecision = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!decisionRationale.trim()) {
-      showToast('Decision justification rationale is required', 'error');
+      showToast(t('toast_decision_rationale_required'), 'error');
       return;
     }
 
@@ -280,13 +280,13 @@ export default function CandidateProfileClient({
         }));
         setShowDecisionModal(false);
         setDecisionRationale('');
-        showToast(`Decision "${selectedDecision}" recorded in audit trail`, 'success', 'Decision Finalized');
+        showToast(t('toast_decision_recorded').replace('{decision}', selectedDecision), 'success', t('toast_decision_title'));
       } else {
         const data = await res.json().catch(() => null);
-        showToast(data?.error || 'Failed to record decision', 'error');
+        showToast(data?.error || t('toast_decision_failed'), 'error');
       }
     } catch (err) {
-      showToast('Network error while recording decision', 'error');
+      showToast(t('toast_network_decision'), 'error');
     } finally {
       setSubmittingDecision(false);
     }
@@ -304,7 +304,7 @@ export default function CandidateProfileClient({
 
   const handleCopyQuestion = (text: string) => {
     navigator.clipboard.writeText(text);
-    showToast('Question copied to clipboard', 'info');
+    showToast(t('toast_question_copied'), 'info');
   };
 
   const radius = 28;
@@ -334,7 +334,7 @@ export default function CandidateProfileClient({
               onClick={() => {
                 const next = !blindMode;
                 setBlindMode(next);
-                showToast(next ? 'Blind Screening enabled: PII hidden' : 'PII revealed', 'info');
+                showToast(next ? t('toast_blind_enabled') : t('toast_pii_revealed'), 'info');
               }}
               className="text-[11px] px-2 py-0.5 rounded-md dark:bg-slate-900 bg-slate-100 dark:hover:bg-slate-800 hover:bg-slate-200 dark:border-slate-800 border-slate-200 border dark:text-slate-300 text-slate-700 font-mono transition"
             >
@@ -426,7 +426,7 @@ export default function CandidateProfileClient({
         {[
           { label: t('match_score'), value: `${score}%`, tone: 'text-teal-700 dark:text-teal-300' },
           { label: t('scored_criteria'), value: criteriaScores.length, tone: 'text-slate-900 dark:text-white' },
-          { label: 'Status', value: app.resumeDocument?.processingStatus || 'NOT_STARTED', tone: app.resumeDocument?.processingStatus === 'NEEDS_REVIEW' ? 'text-amber-600 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' },
+          { label: t('cprofile_status_label'), value: app.resumeDocument?.processingStatus || 'NOT_STARTED', tone: app.resumeDocument?.processingStatus === 'NEEDS_REVIEW' ? 'text-amber-600 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' },
           { label: t('stage_col'), value: app.stage || app.status || t('stage_ingested'), tone: 'text-sky-700 dark:text-sky-300' }
         ].map((metric) => (
           <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3 py-2.5">
@@ -455,7 +455,7 @@ export default function CandidateProfileClient({
                 <button onClick={() => setHighlightedSnippet(null)} className="text-teal-400 hover:text-white font-bold ml-2">✕</button>
               </div>
             )}
-            {app.resumeDocument?.extractedText || app.resumeText || 'No plain text resume parsed for this application.'}
+            {app.resumeDocument?.extractedText || app.resumeText || t('cprofile_no_resume_text')}
           </div>
         </div>
 
@@ -509,7 +509,7 @@ export default function CandidateProfileClient({
             </div>
 
             <p className="text-[11px] dark:text-slate-400 text-slate-600 leading-relaxed pt-2 border-t dark:border-[#30424A] border-slate-100">
-              {totalResult.summary || 'AI-assisted evaluation mapped against approved vacancy screening criteria.'}
+              {totalResult.summary || t('cprofile_summary_fallback')}
             </p>
           </div>
 
@@ -542,7 +542,7 @@ export default function CandidateProfileClient({
                   <button
                     onClick={() => {
                       setHighlightedSnippet(crit.quotedEvidence);
-                      showToast(`Located evidence: "${crit.quotedEvidence}"`, 'info');
+                      showToast(t('toast_evidence_located').replace('{evidence}', crit.quotedEvidence), 'info');
                     }}
                     className="w-full text-left p-2 dark:bg-[#0F171D] bg-slate-50 border-l-2 border-teal-500 rounded-r-md text-[10px] dark:text-slate-300 text-slate-700 font-mono italic hover:bg-teal-500/10 transition"
                   >
@@ -565,7 +565,7 @@ export default function CandidateProfileClient({
                 <h3 className="text-[11px] font-semibold dark:text-slate-400 text-slate-500 uppercase tracking-wider">
                   {t('scorecards_submitted_heading')} ({scorecards.length})
                 </h3>
-                <span className="text-[10px] font-mono text-teal-600 dark:text-teal-300 font-bold">● ACTIVE</span>
+                <span className="text-[10px] font-mono text-teal-600 dark:text-teal-300 font-bold">● {t('cprofile_active_badge')}</span>
               </div>
 
               {scorecards.map((sc: any, idx: number) => (
@@ -575,7 +575,7 @@ export default function CandidateProfileClient({
                 >
                   <div className="flex items-center justify-between">
                     <div className="font-semibold dark:text-white text-slate-900">
-                      {sc.interviewer?.name || sc.interviewer?.email || 'Interviewer'}
+                      {sc.interviewer?.name || sc.interviewer?.email || t('cprofile_interviewer_fallback')}
                     </div>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
                       sc.recommendation === 'STRONG_HIRE' || sc.recommendation === 'HIRE'
@@ -589,9 +589,9 @@ export default function CandidateProfileClient({
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 py-1 border-y dark:border-[#30424A] border-slate-100 text-[10px] font-mono">
-                    <div>Tech: <span className="font-bold text-teal-600 dark:text-teal-400">{sc.ratings?.techRating || 4}/5</span></div>
-                    <div>Comm: <span className="font-bold text-teal-600 dark:text-teal-400">{sc.ratings?.commRating || 4}/5</span></div>
-                    <div>Problem: <span className="font-bold text-teal-600 dark:text-teal-400">{sc.ratings?.problemRating || 5}/5</span></div>
+                    <div>{t('cprofile_tech_short')}: <span className="font-bold text-teal-600 dark:text-teal-400">{sc.ratings?.techRating || 4}/5</span></div>
+                    <div>{t('cprofile_comm_short')}: <span className="font-bold text-teal-600 dark:text-teal-400">{sc.ratings?.commRating || 4}/5</span></div>
+                    <div>{t('cprofile_problem_short')}: <span className="font-bold text-teal-600 dark:text-teal-400">{sc.ratings?.problemRating || 5}/5</span></div>
                   </div>
 
                   {sc.comments && (
@@ -615,7 +615,7 @@ export default function CandidateProfileClient({
                 <span className="text-base">🤖</span>
                 <div>
                   <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('qp_questions')}</h3>
-                  <p className="text-[10px] dark:text-slate-400 text-slate-500">Targeting candidate criteria gaps & evaluation signals</p>
+                  <p className="text-[10px] dark:text-slate-400 text-slate-500">{t('cprofile_questions_targeting')}</p>
                 </div>
               </div>
               <button onClick={() => setShowQuestionsModal(false)} className="text-slate-400 hover:text-white">✕</button>
@@ -624,13 +624,13 @@ export default function CandidateProfileClient({
             {generatingQuestions ? (
               <div className="py-10 text-center text-xs text-teal-600 dark:text-teal-400 space-y-2">
                 <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p>Analyzing candidate skill gaps and synthesizing targeted questions...</p>
+                <p>{t('cprofile_questions_analyzing')}</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {generatedQuestions.map((item: any, i: number) => {
                   const isObj = typeof item === 'object' && item !== null;
-                  const skill = isObj ? item.skill || 'Targeted Competency' : `Question ${i + 1}`;
+                  const skill = isObj ? item.skill || t('cprofile_targeted_competency') : t('cprofile_question_n').replace('{count}', String(i + 1));
                   const questionText = isObj ? item.question || JSON.stringify(item) : String(item);
                   const expected = isObj ? item.expectedAnswer : null;
 
@@ -644,7 +644,7 @@ export default function CandidateProfileClient({
                           onClick={() => handleCopyQuestion(questionText)}
                           className="text-[10px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-mono font-semibold"
                         >
-                          📋 Copy
+                          📋 {t('cprofile_copy_btn')}
                         </button>
                       </div>
 
@@ -654,7 +654,7 @@ export default function CandidateProfileClient({
 
                       {expected && (
                         <div className="pt-2 border-t dark:border-[#30424A]/80 border-slate-200 text-[10px] dark:text-slate-400 text-slate-600">
-                          <span className="font-semibold text-teal-600 dark:text-teal-400">What to look for: </span>
+                          <span className="font-semibold text-teal-600 dark:text-teal-400">{t('cprofile_what_to_look_for')} </span>
                           <span>{expected}</span>
                         </div>
                       )}
@@ -744,7 +744,7 @@ export default function CandidateProfileClient({
                   rows={2}
                   value={scorecardNotes}
                   onChange={(e) => setScorecardNotes(e.target.value)}
-                  placeholder="Notes..."
+                  placeholder={t('cprofile_notes_placeholder')}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2"
                 ></textarea>
               </div>
@@ -803,14 +803,14 @@ export default function CandidateProfileClient({
                   onChange={(e) => setDecisionReasonCode(e.target.value)}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2 font-medium"
                 >
-                  <option value="QUALIFICATIONS_MATCH">Qualifications & Skills Match</option>
-                  <option value="EXCELLENT_TECHNICAL_FIT">Excellent Technical Fit</option>
-                  <option value="EXPERIENCE_GAP">Experience / Skill Gap</option>
-                  <option value="COMMUNICATION_FIT">Communication & Team Fit</option>
-                  <option value="COMPENSATION_MISMATCH">Compensation / Schedule Mismatch</option>
-                  <option value="TALENT_BENCH">Retained for Future Vacancy</option>
-                  <option value="CANDIDATE_WITHDREW">Candidate Withdrew Request</option>
-                  <option value="OTHER">Other Job-Related Reason</option>
+                  <option value="QUALIFICATIONS_MATCH">{t('cprofile_reason_qualifications_match')}</option>
+                  <option value="EXCELLENT_TECHNICAL_FIT">{t('cprofile_reason_excellent_technical_fit')}</option>
+                  <option value="EXPERIENCE_GAP">{t('cprofile_reason_experience_gap')}</option>
+                  <option value="COMMUNICATION_FIT">{t('cprofile_reason_communication_fit')}</option>
+                  <option value="COMPENSATION_MISMATCH">{t('cprofile_reason_compensation_mismatch')}</option>
+                  <option value="TALENT_BENCH">{t('cprofile_reason_talent_bench')}</option>
+                  <option value="CANDIDATE_WITHDREW">{t('cprofile_reason_candidate_withdrew')}</option>
+                  <option value="OTHER">{t('cprofile_reason_other')}</option>
                 </select>
               </div>
 
@@ -823,7 +823,7 @@ export default function CandidateProfileClient({
                   required
                   value={decisionRationale}
                   onChange={(e) => setDecisionRationale(e.target.value)}
-                  placeholder="Justification..."
+                  placeholder={t('cprofile_justification_placeholder')}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2"
                 ></textarea>
               </div>
@@ -855,13 +855,13 @@ export default function CandidateProfileClient({
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-md w-full shadow-xl space-y-3 dark:text-slate-200 text-slate-800 text-xs">
             <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('btn_recalibrate')}</h3>
             <p className="text-[11px] dark:text-slate-400 text-slate-500">
-              Score recalibrations are permanently recorded in the immutable audit ledger.
+              {t('cprofile_override_warning')}
             </p>
 
             <form onSubmit={handleRecalibrateScore} className="space-y-3">
               <div>
                 <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
-                  Adjusted Score (0 - 100)
+                  {t('cprofile_adjusted_score')}
                 </label>
                 <input
                   type="number"
@@ -876,7 +876,7 @@ export default function CandidateProfileClient({
 
               <div>
                 <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
-                  Justification *
+                  {t('cprofile_justification_label')} *
                 </label>
                 <textarea
                   id="overrideReason"
@@ -884,7 +884,7 @@ export default function CandidateProfileClient({
                   required
                   value={overrideReason}
                   onChange={(e) => setOverrideReason(e.target.value)}
-                  placeholder="Demonstrated strong system architecture skills..."
+                  placeholder={t('cprofile_override_placeholder')}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5"
                 ></textarea>
               </div>
@@ -919,7 +919,7 @@ export default function CandidateProfileClient({
             <form onSubmit={handleSendOffer} className="space-y-3">
               <div>
                 <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
-                  Annual Compensation Package *
+                  {t('cprofile_annual_compensation')} *
                 </label>
                 <input
                   type="text"
@@ -932,7 +932,7 @@ export default function CandidateProfileClient({
 
               <div>
                 <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
-                  Start Date *
+                  {t('cprofile_start_date')} *
                 </label>
                 <input
                   type="date"

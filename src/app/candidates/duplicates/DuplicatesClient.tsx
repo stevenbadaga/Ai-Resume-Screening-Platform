@@ -27,14 +27,14 @@ export default function DuplicatesClient({ duplicates: initialDuplicates }: Dupl
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        showToast(data?.error || 'Merge failed — please try again.', 'error', 'Deduplication Error');
+        showToast(data?.error || t('dup_merge_failed'), 'error', t('dup_merge_error_title'));
         return;
       }
       setDuplicates((prev) => prev.filter((d) => d.email !== email));
-      showToast(`Merged duplicate candidate records for ${email}`, 'success', 'Deduplication Complete');
+      showToast(t('dup_merged_toast').replace('{email}', email), 'success', t('dup_merged_title'));
     } catch (e) {
       console.error(e);
-      showToast('Merge failed — please try again.', 'error', 'Deduplication Error');
+      showToast(t('dup_merge_failed'), 'error', t('dup_merge_error_title'));
     } finally {
       setMergingEmail(null);
     }
@@ -77,7 +77,7 @@ export default function DuplicatesClient({ duplicates: initialDuplicates }: Dupl
                 <div>
                   <h3 className="font-bold dark:text-white text-slate-900 text-sm">{dup.email}</h3>
                   <span className="text-[10px] font-mono text-teal-600 dark:text-teal-400">
-                    {dup.candidates.length} matching candidate profiles
+                    {t('dup_profiles_count').replace('{count}', String(dup.candidates.length))}
                   </span>
                 </div>
                 <button
@@ -85,7 +85,7 @@ export default function DuplicatesClient({ duplicates: initialDuplicates }: Dupl
                   disabled={mergingEmail === dup.email}
                   className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition shadow-xs disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {mergingEmail === dup.email ? 'Merging…' : t('duplicates_merge_btn')}
+                  {mergingEmail === dup.email ? t('dup_merging') : t('duplicates_merge_btn')}
                 </button>
               </div>
 
@@ -95,7 +95,7 @@ export default function DuplicatesClient({ duplicates: initialDuplicates }: Dupl
                     <div>
                       <p className="font-semibold dark:text-white text-slate-900">{c.firstName} {c.lastName}</p>
                       <p className="text-[10px] dark:text-slate-400 text-slate-500 font-mono">
-                        {c.applications?.length || 0} applications submitted
+                        {t('dup_applications_count').replace('{count}', String(c.applications?.length || 0))}
                       </p>
                     </div>
                     <span className="text-[10px] font-mono text-slate-400">

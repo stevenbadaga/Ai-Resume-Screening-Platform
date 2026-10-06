@@ -13,11 +13,7 @@ export default async function ApplyPage() {
   return (
     <div className="animate-in" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100%', padding: '2rem' }}>
       <div className="glass-panel" style={{ maxWidth: '600px', width: '100%', padding: '3rem' }}>
-        <h1 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>Submit Application</h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-          Please fill out the form below and upload your resume (PDF or DOCX, max 5MB).
-        </p>
-
+        {/* Localized header is rendered inside the client ApplyForm (uses the i18n dictionary). */}
         <ApplyForm jobs={jobs} />
       </div>
     </div>

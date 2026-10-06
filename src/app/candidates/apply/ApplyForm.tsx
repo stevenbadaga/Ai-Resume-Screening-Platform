@@ -2,18 +2,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function ApplyForm({ jobs }: { jobs: { id: string, title: string }[] }) {
+  const { t } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ text: string; error: boolean } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsUploading(true);
-    setStatus('Uploading resume...');
+    setStatus({ text: t('apply_legacy_status_uploading'), error: false });
 
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -23,13 +25,13 @@ export default function ApplyForm({ jobs }: { jobs: { id: string, title: string 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+        throw new Error(data.error || t('apply_legacy_upload_failed'));
       }
 
-      setStatus('Success! Your application has been submitted and is processing.');
+      setStatus({ text: t('apply_legacy_status_success'), error: false });
       (e.target as HTMLFormElement).reset();
     } catch (err: any) {
-      setStatus(`Error: ${err.message}`);
+      setStatus({ text: err.message || t('apply_legacy_upload_failed'), error: true });
     } finally {
       setIsUploading(false);
     }
@@ -37,46 +39,51 @@ export default function ApplyForm({ jobs }: { jobs: { id: string, title: string 
 
   return (
     <>
+      <h1 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>{t('apply_legacy_title')}</h1>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
+        {t('apply_legacy_desc')}
+      </p>
+
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Select Job Requisition</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_select')}</label>
           <select name="jobId" className="input-field" required>
-            <option value="">-- Choose a Job --</option>
+            <option value="">{t('apply_legacy_choose')}</option>
             {jobs.map(job => (
               <option key={job.id} value={job.id}>{job.title}</option>
             ))}
           </select>
         </div>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>First Name</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_first_name')}</label>
           <input name="firstName" className="input-field" required placeholder="Jane" />
         </div>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Last Name</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_last_name')}</label>
           <input name="lastName" className="input-field" required placeholder="Doe" />
         </div>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_email')}</label>
           <input name="email" type="email" className="input-field" required placeholder="jane.doe@example.com" />
         </div>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Resume Document</label>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_resume')}</label>
           <input name="resume" type="file" accept=".pdf,.docx" className="input-field" required style={{ padding: '0.5rem' }} />
         </div>
-        
+
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
           <input name="consent" type="checkbox" required />
-          I consent to my data being processed for recruitment purposes, including automated AI screening support.
+          {t('apply_legacy_consent')}
         </label>
 
         <button type="submit" className="btn-primary" disabled={isUploading || jobs.length === 0} style={{ marginTop: '1rem' }}>
-          {isUploading ? 'Uploading...' : 'Submit Application'}
+          {isUploading ? t('apply_legacy_uploading') : t('apply_legacy_title')}
         </button>
       </form>
 
       {status && (
-        <div style={{ marginTop: '2rem', padding: '1rem', borderRadius: '0.5rem', backgroundColor: status.startsWith('Error') ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: status.startsWith('Error') ? 'var(--accent)' : 'var(--secondary)' }}>
-          {status}
+        <div style={{ marginTop: '2rem', padding: '1rem', borderRadius: '0.5rem', backgroundColor: status.error ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: status.error ? 'var(--accent)' : 'var(--secondary)' }}>
+          {status.text}
         </div>
       )}
     </>

@@ -88,10 +88,10 @@ export default function CompareClient({ applications }: CompareClientProps) {
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 shadow-xs space-y-4">
           <div>
             <h2 className="text-sm font-bold dark:text-white text-slate-900">
-              Side-by-Side Candidate Benchmark Matrix
+              {t('compare_matrix_title')}
             </h2>
             <p className="text-xs dark:text-slate-400 text-slate-500 mt-0.5">
-              Direct comparison of weighted match scores, recruitment stages, and candidate qualifications.
+              {t('compare_matrix_subtitle')}
             </p>
           </div>
 
@@ -99,12 +99,12 @@ export default function CompareClient({ applications }: CompareClientProps) {
             <table className="w-full text-left text-xs dark:text-slate-300 text-slate-700">
               <thead className="dark:bg-slate-900/60 bg-slate-50 dark:text-slate-400 text-slate-500 font-mono uppercase text-[10px] dark:border-[#30424A] border-slate-200 border-b">
                 <tr>
-                  <th className="p-3">Candidate</th>
-                  <th className="p-3">Requisition</th>
-                  <th className="p-3">Match Score</th>
-                  <th className="p-3">Current Stage</th>
-                  <th className="p-3">Top Skills</th>
-                  <th className="p-3 text-right">Action</th>
+                  <th className="p-3">{t('compare_col_candidate')}</th>
+                  <th className="p-3">{t('compare_col_requisition')}</th>
+                  <th className="p-3">{t('compare_col_match_score')}</th>
+                  <th className="p-3">{t('compare_col_stage')}</th>
+                  <th className="p-3">{t('compare_col_skills')}</th>
+                  <th className="p-3 text-right">{t('compare_col_action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y dark:divide-[#30424A]/60 divide-slate-100">
@@ -144,7 +144,7 @@ export default function CompareClient({ applications }: CompareClientProps) {
                           href={`/candidates/${app.id}`}
                           className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border rounded text-xs font-semibold transition"
                         >
-                          View &rarr;
+                          {t('compare_view')} &rarr;
                         </Link>
                       </td>
                     </tr>
