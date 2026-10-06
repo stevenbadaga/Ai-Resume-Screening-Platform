@@ -44,6 +44,10 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   tooManyAttempts: string;
   activate: string;
   activationSuccess: string;
+  registeredEmailFailed: string;
+  registeredSuccess: string;
+  forgotPassword: string;
+  loadingText: string;
 }> = {
   en: {
     title: 'Sign In to RecruitAI',
@@ -79,6 +83,10 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     tooManyAttempts: 'Too many attempts. Please try again later.',
     activate: 'Activate ➔',
     activationSuccess: 'Email verified! Continuing to sign-in…',
+    registeredEmailFailed: 'Account created, but the verification email could not be sent (email delivery is not working right now).',
+    registeredSuccess: 'Account created. Sign in with your email and password — you will then be asked for the verification code we emailed you.',
+    forgotPassword: 'Forgot your password?',
+    loadingText: 'Loading…',
   },
   fr: {
     title: 'Se connecter à RecruitAI',
@@ -114,6 +122,10 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     tooManyAttempts: 'Trop de tentatives. Veuillez réessayer plus tard.',
     activate: 'Activer ➔',
     activationSuccess: 'E-mail vérifié ! Continuation de la connexion…',
+    registeredEmailFailed: 'Compte créé, mais l’e-mail de vérification n’a pas pu être envoyé (l’envoi d’e-mails ne fonctionne pas pour le moment).',
+    registeredSuccess: 'Compte créé. Connectez-vous avec votre e-mail et votre mot de passe — le code de vérification qui vous a été envoyé vous sera ensuite demandé.',
+    forgotPassword: 'Mot de passe oublié ?',
+    loadingText: 'Chargement…',
   },
   es: {
     title: 'Iniciar sesión en RecruitAI',
@@ -149,6 +161,10 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     tooManyAttempts: 'Demasiados intentos. Inténtelo más tarde.',
     activate: 'Activar ➔',
     activationSuccess: '¡Correo verificado! Continuando con el inicio de sesión…',
+    registeredEmailFailed: 'Cuenta creada, pero no se pudo enviar el correo de verificación (el envío de correos no funciona en este momento).',
+    registeredSuccess: 'Cuenta creada. Inicie sesión con su correo y contraseña; después se le pedirá el código de verificación que le enviamos.',
+    forgotPassword: '¿Olvidó su contraseña?',
+    loadingText: 'Cargando…',
   },
   de: {
     title: 'Bei RecruitAI anmelden',
@@ -184,6 +200,10 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     tooManyAttempts: 'Zu viele Versuche. Bitte später erneut versuchen.',
     activate: 'Aktivieren ➔',
     activationSuccess: 'E-Mail bestätigt! Anmeldung wird fortgesetzt…',
+    registeredEmailFailed: 'Konto erstellt, aber die Bestätigungs-E-Mail konnte nicht gesendet werden (der E-Mail-Versand funktioniert derzeit nicht).',
+    registeredSuccess: 'Konto erstellt. Melden Sie sich mit E-Mail und Passwort an — anschließend werden Sie nach dem per E-Mail gesendeten Bestätigungscode gefragt.',
+    forgotPassword: 'Passwort vergessen?',
+    loadingText: 'Wird geladen…',
   },
   rw: {
     title: 'Injira muri RecruitAI',
@@ -219,6 +239,10 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     tooManyAttempts: 'Ongeraneza bwinshi. Ongera ugerageze nyuma.',
     activate: 'Emeza konti ➔',
     activationSuccess: 'Imeyili yemejwe! Birimo gukomeza kwinjira…',
+    registeredEmailFailed: 'Konti yafunguwe, ariko imeyili yo kwemeza ntishobora koherezwa (kohereza imeyili ntikora ubu).',
+    registeredSuccess: 'Konti yafunguwe. Injira ukoresha imeyili n’ijambo ry’ibanga — hanyuma ugasabwa kode yo kwemeza twoherejwe.',
+    forgotPassword: 'Wibagiwe ijambo ry’ibanga?',
+    loadingText: 'Birimo gupakura…',
   },
 };
 
@@ -447,33 +471,33 @@ function SignInForm() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center py-8 px-2 sm:px-4">
-      <div className="relative max-w-lg w-full dark:bg-[#17242B]/95 bg-[#FFFDF8]/95 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 sm:p-8 shadow-xl shadow-slate-950/10 dark:shadow-black/25 space-y-6 backdrop-blur-sm transition overflow-hidden">
+      <div className="panel-raised rounded-2xl max-w-lg w-full p-5 sm:p-8 space-y-6 overflow-hidden">
         {/* Brand Header */}
         <div className="text-center space-y-3 pt-1">
-          <div className="w-14 h-14 rounded-2xl bg-[#0F766E] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-teal-900/20 ring-4 ring-teal-700/10">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white dark:text-[#0B0F14] text-2xl font-extrabold mx-auto shadow-md ring-4 ring-[var(--accent-ring)]">
             R
           </div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full dark:bg-emerald-400/10 bg-emerald-50 dark:text-emerald-300 text-emerald-700 border dark:border-emerald-400/20 border-emerald-200 text-[9px] font-bold uppercase tracking-[0.18em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+          <div className="chip chip-success !text-[9px] !tracking-[0.18em] uppercase">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
             {copy.secureAccess}
           </div>
-          <h1 className="text-2xl font-extrabold dark:text-white text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-extrabold text-[var(--foreground)] tracking-tight">
             {step === 'code' ? copy.codeTitle : copy.title}
           </h1>
           {step === 'credentials' && (
-            <p className="text-xs dark:text-slate-400 text-slate-500">
+            <p className="text-xs text-[var(--muted)]">
               {copy.subtitle}
             </p>
           )}
           {step === 'code' && (
-            <p className="text-xs dark:text-slate-400 text-slate-500">
-              {copy.codeSentTo} <span className="font-bold dark:text-white text-slate-800">{email}</span>
+            <p className="text-xs text-[var(--muted)]">
+              {copy.codeSentTo} <span className="font-bold text-[var(--foreground)]">{email}</span>
             </p>
           )}
         </div>
 
         {error && (
-          <div role="alert" className="p-3.5 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 text-xs font-bold text-center">
+          <div role="alert" className="p-3.5 rounded-lg border text-xs font-bold text-center" style={{ backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))', borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)', color: 'var(--danger)' }}>
             ⚠️ {error}
           </div>
         )}
@@ -482,18 +506,18 @@ function SignInForm() {
           <div
             className={
               emailDeliveryFailed
-                ? 'p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 text-xs font-semibold text-center space-y-2'
-                : 'p-3.5 bg-teal-950/70 border border-teal-800 rounded-xl text-teal-300 text-xs font-semibold text-center'
+                ? 'p-3.5 rounded-lg border text-xs font-semibold text-center space-y-2 border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]'
+                : 'p-3.5 rounded-lg border text-xs font-semibold text-center border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)] text-[var(--accent)]'
             }
           >
             {emailDeliveryFailed ? (
               <>
-                <p>⚠️ Account created, but the verification email could not be sent (email delivery is not working right now).</p>
+                <p>⚠️ {copy.registeredEmailFailed}</p>
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={resendState === 'sending' || cooldownSeconds > 0}
-                  className="px-3 py-1.5 bg-amber-700/80 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
                 >
                   {cooldownSeconds > 0
                     ? `⏳ ${cooldownSeconds}s`
@@ -509,17 +533,17 @@ function SignInForm() {
                 )}
               </>
             ) : (
-              <p>✅ Account created. Sign in with your email and password — you will then be asked for the verification code we emailed you.</p>
+              <p>✅ {copy.registeredSuccess}</p>
             )}
           </div>
         )}
 
         {emailNotVerified && (
-          <div role="alert" className="p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 text-xs space-y-3 text-center">
+          <div role="alert" className="p-3.5 rounded-lg border text-xs space-y-3 text-center border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
             <p className="font-bold">⚠️ {copy.emailNotVerified}</p>
             <p className="font-medium opacity-90">{copy.emailNotVerifiedHint}</p>
             {activationState === 'done' ? (
-              <p className="font-semibold text-emerald-300">✅ {copy.activationSuccess}</p>
+              <p className="font-semibold text-[var(--success)]">✅ {copy.activationSuccess}</p>
             ) : (
               <>
                 <div className="flex items-center justify-center gap-2">
@@ -534,13 +558,13 @@ function SignInForm() {
                     value={activationCode}
                     onChange={(e) => setActivationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder={copy.codePlaceholder}
-                    className="w-40 dark:bg-slate-950/80 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-xl px-3 py-2 dark:text-white text-slate-900 placeholder-slate-400 text-center text-lg font-bold tracking-[0.3em] focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition"
+                    className="w-40 field !rounded-lg !px-3 !py-2 text-center !text-lg !font-bold !tracking-[0.3em]"
                   />
                   <button
                     type="button"
                     onClick={handleActivate}
                     disabled={activationState === 'activating' || activationCode.length !== 6}
-                    className="px-3 py-2 bg-amber-700/80 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                    className="px-3 py-2 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
                   >
                     {activationState === 'activating' ? copy.verifying : copy.activate}
                   </button>
@@ -549,13 +573,13 @@ function SignInForm() {
                   <p className="font-medium text-amber-200">⚠️ {copy.codeDeliveryFailed}</p>
                 )}
                 {resendState === 'sent' ? (
-                  <p className="font-semibold text-emerald-300">✅ {copy.resendSent}</p>
+                  <p className="font-semibold text-[var(--success)]">✅ {copy.resendSent}</p>
                 ) : (
                   <button
                     type="button"
                     onClick={handleResend}
                     disabled={resendState === 'sending' || cooldownSeconds > 0}
-                    className="px-3 py-1.5 bg-amber-700/80 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
                   >
                     {cooldownSeconds > 0
                       ? `⏳ ${cooldownSeconds}s`
@@ -572,7 +596,7 @@ function SignInForm() {
         {step === 'credentials' ? (
           <form onSubmit={handleCredentialsSubmit} className="space-y-4 text-xs">
             <div>
-              <label htmlFor="signin-email" className="block dark:text-slate-400 text-slate-600 font-bold uppercase tracking-wider mb-1.5">
+              <label htmlFor="signin-email" className="field-label">
                 {copy.email}
               </label>
               <input
@@ -589,10 +613,10 @@ function SignInForm() {
               placeholder="user@codafriqa.rw"
               aria-invalid={emailFormatError || undefined}
               aria-describedby={emailFormatError ? 'signin-email-format-error' : undefined}
-              className={`w-full dark:bg-slate-950/80 bg-slate-50 border rounded-xl px-4 py-2.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 transition ${
+              className={`w-full field !rounded-lg !px-4 !py-2.5 ${
                 emailFormatError
-                  ? 'border-rose-500 dark:border-rose-500 bg-rose-50/50 focus:border-rose-500 focus:ring-rose-500/10'
-                  : 'dark:bg-slate-950/80 dark:border-slate-800 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/10'
+                  ? '!border-[var(--danger)]'
+                  : ''
               }`}
             />
             {emailFormatError && (
@@ -607,7 +631,7 @@ function SignInForm() {
             </div>
 
             <div>
-              <label htmlFor="signin-password" className="block dark:text-slate-400 text-slate-600 font-bold uppercase tracking-wider mb-1.5">
+              <label htmlFor="signin-password" className="field-label">
                 {copy.password}
               </label>
               <div className="relative">
@@ -620,13 +644,13 @@ function SignInForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full dark:bg-slate-950/80 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-xl px-4 py-2.5 pr-16 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                  className="w-full field !rounded-lg !px-4 !py-2.5 !pr-16"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((visible) => !visible)}
                   aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1.5 rounded-md text-[10px] font-bold dark:text-slate-400 text-slate-500 hover:bg-slate-200/70 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1.5 rounded-md text-[10px] font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] focus:outline-none"
                 >
                   {showPassword ? '🙈' : '👁'}
                 </button>
@@ -636,7 +660,7 @@ function SignInForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-teal-900/20 hover:-translate-y-0.5"
+              className="w-full !py-3 btn btn-primary !rounded-lg !text-xs !font-bold"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -649,7 +673,7 @@ function SignInForm() {
         ) : (
           <form onSubmit={handleCodeSubmit} className="space-y-4 text-xs">
             <div>
-              <label htmlFor="signin-code" className="block dark:text-slate-400 text-slate-600 font-bold uppercase tracking-wider mb-1.5">
+              <label htmlFor="signin-code" className="field-label">
                 {copy.codeLabel}
               </label>
               <input
@@ -664,18 +688,18 @@ function SignInForm() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder={copy.codePlaceholder}
-                className="w-full dark:bg-slate-950/80 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-xl px-4 py-3 dark:text-white text-slate-900 placeholder-slate-400 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                className="w-full field !rounded-lg !px-4 !py-3 text-center !text-2xl !font-bold !tracking-[0.5em]"
               />
-              <p className="mt-2 text-[11px] dark:text-slate-500 text-slate-400">{copy.codeHint}</p>
+              <p className="mt-2 text-[11px] text-[var(--muted)]">{copy.codeHint}</p>
             </div>
 
             {codeStatus === 'delivery-failed' && (
-              <div role="alert" className="p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 text-xs font-semibold text-center">
+              <div role="alert" className="p-3.5 rounded-lg border text-xs font-semibold text-center border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
                 ⚠️ {copy.codeDeliveryFailed}
               </div>
             )}
             {codeStatus === 'resent' && (
-              <div role="status" className="p-3.5 bg-teal-950/70 border border-teal-800 rounded-xl text-teal-300 text-xs font-semibold text-center">
+              <div role="status" className="p-3.5 rounded-lg border text-xs font-semibold text-center border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)] text-[var(--accent)]">
                 ✅ {copy.codeResent}
               </div>
             )}
@@ -683,7 +707,7 @@ function SignInForm() {
             <button
               type="submit"
               disabled={codeStatus === 'verifying' || code.length !== 6}
-              className="w-full py-3 bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-teal-900/20 hover:-translate-y-0.5"
+              className="w-full !py-3 btn btn-primary !rounded-lg !text-xs !font-bold"
             >
               {codeStatus === 'verifying' ? (
                 <span className="flex items-center justify-center gap-2">
@@ -701,7 +725,7 @@ function SignInForm() {
                   setCode('');
                   setError('');
                 }}
-                className="dark:text-slate-400 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
+                className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline"
               >
                 {copy.backToCredentials}
               </button>
@@ -709,7 +733,7 @@ function SignInForm() {
                 type="button"
                 onClick={handleResendCode}
                 disabled={cooldownSeconds > 0}
-                className="dark:text-slate-400 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline disabled:opacity-60 disabled:hover:no-underline"
+                className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline disabled:opacity-60 disabled:hover:no-underline"
               >
                 {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
               </button>
@@ -721,16 +745,16 @@ function SignInForm() {
         <div className="pt-2 text-center text-xs">
           <a
             href="/auth/forgot-password"
-            className="dark:text-slate-400 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
+            className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline"
           >
-            Forgot your password?
+            {copy.forgotPassword}
           </a>
         </div>
 
         {/* Link to Registration */}
-        <div className="pt-2 text-center text-xs dark:text-slate-400 text-slate-500">
+        <div className="pt-2 text-center text-xs text-[var(--muted)]">
           {copy.noAccount}{' '}
-          <Link href="/auth/signup" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+          <Link href="/auth/signup" className="link">
             {copy.createAccount}
           </Link>
         </div>
@@ -739,9 +763,17 @@ function SignInForm() {
   );
 }
 
-export default function SignIn() {
+function SignInLoading() {
+  const { language } = useLanguage();
   return (
-    <Suspense fallback={<div className="min-h-[85vh] flex items-center justify-center text-xs dark:text-slate-400 text-slate-500">Loading…</div>}>
+    <div className="min-h-[85vh] flex items-center justify-center text-xs text-[var(--muted)]">
+      {SIGN_IN_COPY[language].loadingText}
+    </div>
+  );
+}
+
+export default function SignIn() {
+  return (      <Suspense fallback={<SignInLoading />}>
       <SignInForm />
     </Suspense>
   );
