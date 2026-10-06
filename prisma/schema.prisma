@@ -126,6 +126,17 @@ model Candidate {
   consentChoices       String? // JSON — permitted consent choices
   source               String? // E.g., LinkedIn, Career Page
   tags                 String[]
+  // Self-service candidate profile: skills/experience the candidate maintains
+  // (JSON strings) plus their saved default CV. The saved CV powers one-click
+  // applications — the candidate uploads once, then applies to any OPEN
+  // requisition in a click; each application still stores its own
+  // ResumeDocument snapshot via the standard intake pipeline.
+  skills               String? // JSON — self-declared skills
+  experience           String? // JSON — self-declared experience summary
+  profileResumeRef     String? // Storage reference (supabase:<bucket>:<key> or legacy path)
+  profileResumeName    String? // Original filename (display only)
+  profileResumeSize    Int?
+  profileResumeUploadedAt DateTime?
   applications         Application[]
   privacyRequests      PrivacyRequest[]
   createdAt            DateTime         @default(now())
