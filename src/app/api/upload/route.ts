@@ -3,6 +3,7 @@ import { submitApplication } from '@/lib/intakeService';
 import { safeErrorResponse } from '@/lib/validation';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import { requestIdOf } from '@/lib/observability';
+import { StorageError } from '@/lib/storage';
 
 /**
  * Candidate self-service application intake (in-app form).
@@ -23,7 +24,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const data = await req.formData();
+    let formData: FormData;
+    try {
+      formData = await req.formData();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid upload format — please submit the form again.' },
+        { status: 400 }
+      );
+    }
+    const data = formData;
     const file = data.get('resume') as unknown as File | null;
     const firstName = data.get('firstName') as string;
     const lastName = data.get('lastName') as string;
@@ -47,9 +57,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (!result.ok) {
+      const headers: Record<string, string> = {};
+      if (result.status === 503) headers['Retry-After'] = '120';
       return NextResponse.json(
         { success: false, error: result.error, applicationId: result.applicationId },
-        { status: result.status }
+        { status: result.status, headers }
       );
     }
 
@@ -62,6 +74,18 @@ export async function POST(req: NextRequest) {
       screeningQueued: result.screeningQueued,
     });
   } catch (error) {
+    if (error instanceof StorageError) {
+      console.error('Upload blocked: storage backend unavailable:', error.message);
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'We could not store your document right now — our file service appears to be down. '
+            + 'Nothing was submitted; please try again in a few minutes.',
+        },
+        { status: 503, headers: { 'Retry-After': '120' } }
+      );
+    }
     console.error('Upload error:', error);
     return safeErrorResponse('Server error during upload');
   }

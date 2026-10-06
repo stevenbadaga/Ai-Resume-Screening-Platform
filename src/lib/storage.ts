@@ -17,6 +17,20 @@ import path from 'path';
 
 export type StorageBackend = 'supabase' | 'local';
 
+/**
+ * Raised when the storage backend itself is unavailable or misconfigured
+ * (network/DNS failure, dead project, bad credentials). Callers distinguish
+ * this from caller-side validation errors: the candidate's submission is
+ * valid, the platform just cannot persist the document right now — so it
+ * must be surfaced as a retryable 503, not a generic 500.
+ */
+export class StorageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StorageError';
+  }
+}
+
 export interface StoredFile {
   /** Key stored in ResumeDocument.fileReference */
   reference: string;
@@ -47,17 +61,25 @@ export function buildObjectKey(originalName: string): string {
 /** Uploads bytes to the private cloud bucket. Throws on failure (no fakes). */
 export async function putObject(buffer: Buffer, objectKey: string, contentType: string): Promise<StoredFile> {
   if (!isSupabaseConfigured()) {
-    throw new Error(
+    throw new StorageError(
       'Cloud storage is not configured — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. ' +
         'Resume files must not be stored on the local machine.'
     );
   }
   const supabase = await getSupabaseAdmin();
-  const { error } = await supabase.storage.from(RESUME_BUCKET).upload(objectKey, buffer, {
-    contentType,
-    upsert: false,
-  });
-  if (error) throw new Error(`Cloud storage upload failed: ${error.message}`);
+  let uploadError: { message: string } | null;
+  try {
+    ({ error: uploadError } = await supabase.storage.from(RESUME_BUCKET).upload(objectKey, buffer, {
+      contentType,
+      upsert: false,
+    }));
+  } catch (err) {
+    // supabase-js surfaces network/DNS failures as fetch errors — normalize
+    // them so a dead/unreachable project is diagnosable from the response.
+    const detail = err instanceof Error ? err.message : String(err);
+    throw new StorageError(`Cloud storage unreachable: ${detail}`);
+  }
+  if (uploadError) throw new StorageError(`Cloud storage upload failed: ${uploadError.message}`);
   return { reference: `supabase:${RESUME_BUCKET}:${objectKey}`, backend: 'supabase' };
 }
 

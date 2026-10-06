@@ -4,7 +4,7 @@ import { resumeQueue } from '@/lib/queue';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { validateFileMagicBytes, PRIVACY_NOTICE_VERSION } from '@/lib/validation';
 import { scanDocumentForMalware } from '@/lib/malwareScan';
-import { putObject, buildObjectKey, contentTypeFromKey } from '@/lib/storage';
+import { putObject, buildObjectKey, contentTypeFromKey, StorageError } from '@/lib/storage';
 import { sendRecordedEmail } from '@/lib/emailService';
 import { logEvent } from '@/lib/observability';
 
@@ -123,8 +123,34 @@ export async function submitApplication(input: IntakeInput): Promise<IntakeResul
   }
 
   // Cloud object storage (private bucket) — resume bytes never persist on the
-  // host machine. Unique, sanitized object key (§6.4).
-  const stored = await putObject(file.buffer, buildObjectKey(file.name), file.type || contentTypeFromKey(file.name));
+  // host machine. Unique, sanitized object key (§6.4). A storage-backend
+  // failure (unreachable project, dead credentials, DNS) is reported to the
+  // candidate as a retryable outage — NOT as a generic submission failure —
+  // and nothing is persisted, so a retry never creates orphans.
+  let stored;
+  try {
+    stored = await putObject(
+      file.buffer,
+      buildObjectKey(file.name),
+      file.type || contentTypeFromKey(file.name)
+    );
+  } catch (err) {
+    if (err instanceof StorageError) {
+      logEvent('error', 'intake.storageUnavailable', {
+        requestId: input.requestId,
+        jobId,
+        detail: err.message,
+      });
+      return {
+        ok: false,
+        status: 503,
+        error:
+          'We could not store your document right now — our file service appears to be down. '
+          + 'Nothing was submitted; please try again in a few minutes.',
+      };
+    }
+    throw err;
+  }
   const checksum = crypto.createHash('sha256').update(file.buffer).digest('hex');
 
   // §6.3 duplicate detection: controlled matching rules — exact email plus a
