@@ -178,62 +178,58 @@ export default function SignupPage() {
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
       {/* Brand Header */}
       <div className="text-center space-y-1.5">
-        <div className="w-10 h-10 rounded-xl bg-teal-700 dark:bg-teal-500 flex items-center justify-center text-white dark:text-slate-950 text-lg font-extrabold mx-auto shadow-md shadow-teal-900/20">
+        <div className="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center text-white dark:text-[#0B0F14] text-lg font-extrabold mx-auto shadow-md">
           R
         </div>
-        <h1 className="text-2xl font-bold dark:text-white text-slate-900 tracking-tight">
+        <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">
           {copy.title}
         </h1>
-        <p className="text-xs dark:text-slate-400 text-slate-500 max-w-sm mx-auto">
+        <p className="text-xs text-[var(--muted)] max-w-sm mx-auto">
           {copy.subtitle}
         </p>
       </div>
 
       {error && (
-        <div className="p-3 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 text-xs font-semibold text-center max-w-md mx-auto">
+        <div className="p-3 rounded-lg text-xs font-semibold text-center max-w-md mx-auto border" style={{ backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))', borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)', color: 'var(--danger)' }}>
           ⚠️ {error}
         </div>
       )}
 
       {/* Account Type Classification Switcher */}
-      <div className="max-w-md mx-auto grid grid-cols-2 p-1 dark:bg-[#17242B] bg-[#E9E4D9] dark:border-[#30424A] border-[#D8D2C6] border rounded-xl text-xs">
+      <div className="max-w-md mx-auto segmented !flex w-full grid grid-cols-2 p-1">
         <button
           type="button"
           onClick={() => setAccountType('candidate')}
-          className={`py-2 px-3 rounded-lg font-semibold transition flex items-center justify-center gap-1.5 ${
-            accountType === 'candidate'
-              ? 'dark:bg-teal-500 bg-white text-slate-900 dark:text-slate-950 shadow-xs'
-              : 'dark:text-slate-400 text-slate-600 hover:dark:text-white'
+          className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
+            accountType === 'candidate' ? 'active' : ''
           }`}
         >
-          <span>🧑‍💼</span>
+          <span aria-hidden="true">🧑‍💼</span>
           <span>{copy.applicant}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setAccountType('worker')}
-          className={`py-2 px-3 rounded-lg font-semibold transition flex items-center justify-center gap-1.5 ${
-            accountType === 'worker'
-              ? 'dark:bg-teal-500 bg-white text-slate-900 dark:text-slate-950 shadow-xs'
-              : 'dark:text-slate-400 text-slate-600 hover:dark:text-white'
+          className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
+            accountType === 'worker' ? 'active' : ''
           }`}
         >
-          <span>🏢</span>
+          <span aria-hidden="true">🏢</span>
           <span>{copy.worker}</span>
         </button>
       </div>
 
       {/* Registration Card Form */}
-      <div className="max-w-xl mx-auto dark:bg-[#17242B]/95 bg-[#FFFDF8]/95 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-6 sm:p-7 shadow-xl space-y-4 text-xs">
+      <div className="panel-raised rounded-2xl max-w-xl mx-auto p-6 sm:p-7 space-y-4 text-xs">
         {/* Type Context Header */}
-        <div className="p-3 rounded-xl dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border flex items-center gap-2.5">
-          <span className="text-xl">{accountType === 'candidate' ? '📄' : '🏢'}</span>
+        <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] flex items-center gap-2.5">
+          <span className="text-xl" aria-hidden="true">{accountType === 'candidate' ? '📄' : '🏢'}</span>
           <div>
-            <h3 className="font-bold dark:text-white text-slate-900 text-xs">
+            <h3 className="font-bold text-[var(--foreground)] text-xs">
               {accountType === 'candidate' ? copy.candidateHeading : copy.workerHeading}
             </h3>
-            <p className="text-[10px] dark:text-slate-400 text-slate-500">
+            <p className="text-[10px] text-[var(--muted)]">
               {accountType === 'candidate'
                 ? copy.candidateDescription
                 : copy.workerDescription}
@@ -244,9 +240,9 @@ export default function SignupPage() {
         <form onSubmit={handleRegister} className="space-y-3.5">
           {/* Worker Specific Fields: Company Name and Staff Role */}
           {accountType === 'worker' && (
-                  <div className="space-y-3 p-3.5 dark:bg-[#101A20]/70 bg-teal-50/50 dark:border-[#30424A] border-teal-100 border rounded-xl">
+                  <div className="space-y-3 p-3.5 rounded-lg bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)]">
               <div>
-                <label className="block dark:text-slate-300 text-slate-700 font-semibold mb-1">
+                <label className="field-label !mb-1">
                   {copy.company} *
                 </label>
                 <input
@@ -255,11 +251,11 @@ export default function SignupPage() {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder={copy.companyPlaceholder}
-                  className="w-full dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                  className="field"
                 />
               </div>
 
-              <p className="text-[10px] dark:text-slate-400 text-slate-500 leading-relaxed">
+              <p className="text-[10px] text-[var(--muted)] leading-relaxed">
                 👑 {copy.staffRoleNote}
               </p>
             </div>
@@ -268,32 +264,32 @@ export default function SignupPage() {
           {/* Name Row */}
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{copy.firstName} *</label>
+              <label className="field-label !mb-1">{copy.firstName} *</label>
               <input
                 type="text"
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder={copy.firstName}
-                className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                className="field"
               />
             </div>
             <div>
-              <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{copy.lastName} *</label>
+              <label className="field-label !mb-1">{copy.lastName} *</label>
               <input
                 type="text"
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder={copy.lastName}
-                className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                className="field"
               />
             </div>
           </div>
 
           {/* Email */}
           <div>
-            <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">
+            <label className="field-label !mb-1">
               {accountType === 'worker' ? `${copy.workEmail} *` : `${copy.email} *`}
             </label>
             <input
@@ -302,13 +298,13 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={accountType === 'worker' ? 'you@company.com' : 'you@example.com'}
-              className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+              className="field"
             />
           </div>
 
           {/* Password */}
           <div>
-              <label className="block dark:text-slate-400 text-slate-600 font-semibold mb-1">{copy.password} *</label>
+              <label className="field-label !mb-1">{copy.password} *</label>
             <input
               type="password"
               required
@@ -316,16 +312,16 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
                 placeholder={copy.passwordHint}
-              className="w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+              className="field"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-500 dark:hover:bg-teal-400 dark:text-slate-950 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1.5"
+            className="w-full !py-2.5 btn btn-primary !font-semibold"
           >
-            <span>✨</span>
+            <span aria-hidden="true">✨</span>
             <span>
               {loading
                 ? copy.creating
@@ -336,9 +332,9 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <div className="pt-2 text-center text-xs dark:text-slate-400 text-slate-500 border-t dark:border-slate-800 border-slate-100">
+        <div className="pt-2 text-center text-xs text-[var(--muted)] border-t border-[var(--border)]">
           {copy.alreadyHaveAccount}{' '}
-          <Link href="/auth/signin" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+          <Link href="/auth/signin" className="link">
             {copy.signIn} &rarr;
           </Link>
         </div>
