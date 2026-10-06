@@ -30,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${jakarta.variable} dark`}>
-      <body className="min-h-screen dark:bg-[#070A11] bg-[#F8FAFC] dark:text-slate-100 text-slate-900 antialiased selection:bg-indigo-500/20 selection:text-indigo-300 font-sans text-xs">
+    <html lang="en" className={jakarta.variable} suppressHydrationWarning>
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans text-xs">
         {/* §9 Accessibility: keyboard users can jump past the navigation */}
         <a
           href="#main-content"
@@ -43,14 +43,14 @@ export default function RootLayout({
           <ThemeProvider>
             <LanguageProvider>
               <ToastProvider>
-                <div className="flex h-screen overflow-hidden dark:bg-[#070A11] bg-[#F8FAFC]">
+                <div className="flex h-screen overflow-hidden">
                   {/* Sidebar Navigation */}
                   <Navigation />
 
                   {/* Main Content Area */}
                   <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                     {/* Top Application Header */}
-                    <header className="h-13 shrink-0 dark:bg-[#0B0F19]/90 bg-white/90 backdrop-blur-md dark:border-slate-800/80 border-slate-200 border-b flex items-center justify-between px-4 z-20">
+                    <header className="h-12 shrink-0 bg-[var(--surface)]/75 backdrop-blur-xl backdrop-saturate-150 border-b border-[var(--border)] flex items-center justify-between px-3 sm:px-4 z-20">
                       {/* Global Search & Command Trigger */}
                       <div className="flex-1 max-w-sm mx-4 hidden md:block">
                         <CommandPalette />
@@ -61,7 +61,7 @@ export default function RootLayout({
                         <LanguageSelector />
                         <ThemeToggle />
                         <NotificationBell />
-                        <div className="h-4 w-px dark:bg-slate-800 bg-slate-200 mx-0.5" />
+                        <div className="h-4 w-px bg-[var(--border)] mx-0.5" />
                         <UserNav />
                       </div>
                     </header>

@@ -27,18 +27,18 @@ export default function UserNav() {
   const getRoleDescription = (role: string) => {
     switch (role) {
       case 'Admin':
-        return t('role_admin_desc') || 'Full System Administrator: System telemetry, candidate pipeline, and user governance.';
+        return t('role_admin_desc');
       case 'Recruiter':
-        return t('role_recruiter_desc') || 'Lead Recruiter: ATS Pipeline ownership, score recalibration & offer extension.';
+        return t('role_recruiter_desc');
       case 'HiringManager':
-        return t('role_hiring_manager_desc') || 'Hiring Manager: Departmental candidate review, benchmarks & interview scheduling.';
+        return t('role_hiring_manager_desc');
       case 'Interviewer':
-        return t('role_interviewer_desc') || 'Technical Interviewer: Candidate evaluation, question viewer & scorecard submission.';
+        return t('role_interviewer_desc');
       case 'ComplianceAuditor':
       case 'Auditor':
-        return t('role_auditor_desc') || 'Compliance Auditor: Read-only access to immutable audit trails & compliance metrics.';
+        return t('role_auditor_desc');
       case 'Candidate':
-        return t('role_candidate_desc') || 'Job Applicant: Application tracking, job directory & GDPR self-service privacy.';
+        return t('role_candidate_desc');
       default:
         return 'Authenticated User';
     }
@@ -50,7 +50,7 @@ export default function UserNav() {
         href="/auth/signin"
         className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-xs"
       >
-        {t('sign_in') || 'Sign In'}
+        {t('sign_in')}
       </Link>
     );
   }
@@ -95,10 +95,10 @@ export default function UserNav() {
           <div className="p-2 rounded-lg dark:bg-slate-950 bg-emerald-50/50 dark:border-slate-800 border-emerald-200 border space-y-0.5">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>{t('active_session') || 'Active Session'}</span>
+              <span>{t('active_session')}</span>
             </div>
             <p className="text-[10px] dark:text-slate-500 text-slate-500">
-              {t('session_enforced') || 'Role permissions strictly enforced.'}
+              {t('session_enforced')}
             </p>
           </div>
 
@@ -109,13 +109,13 @@ export default function UserNav() {
               onClick={() => setIsOpen(false)}
               className="text-xs dark:text-slate-400 text-slate-500 dark:hover:text-white hover:text-slate-900 font-medium"
             >
-              {t('nav_privacy') || 'Privacy'}
+              {t('nav_privacy')}
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/auth/signin' })}
               className="px-2.5 py-1 rounded-md dark:bg-rose-950/40 bg-rose-50 dark:hover:bg-rose-900/60 hover:bg-rose-100 dark:text-rose-300 text-rose-700 border dark:border-rose-800/50 border-rose-200 text-xs font-semibold transition"
             >
-              {t('sign_out') || 'Sign Out'}
+              {t('sign_out')}
             </button>
           </div>
         </div>
