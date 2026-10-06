@@ -52,6 +52,61 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' }
     });
 
+    // Candidates get their own standing per position (§6.3 explainability):
+    // application stage/status plus the latest AI screening score, so the
+    // board shows where they stand on each job and powers one-click apply.
+    let myApplications: Record<
+      string,
+      { applicationId: string; status: string; stage: string; score: number | null; appliedAt: string }
+    > = {};
+    if (auth.user.role === 'Candidate') {
+      const candidate = await prisma.candidate.findFirst({
+        where: { email: auth.user.email },
+        select: {
+          profileResumeRef: true,
+          applications: {
+            select: {
+              id: true,
+              jobId: true,
+              status: true,
+              stage: true,
+              createdAt: true,
+              screeningRuns: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: { totalResult: true, effectiveResult: true },
+              },
+            },
+          },
+        },
+      });
+      if (candidate) {
+        myApplications = Object.fromEntries(
+          candidate.applications.map((a) => {
+            const run = a.screeningRuns[0];
+            const raw = run?.effectiveResult ?? run?.totalResult ?? null;
+            const score = raw === null ? null : Number(raw);
+            return [
+              a.jobId,
+              {
+                applicationId: a.id,
+                status: a.status,
+                stage: a.stage,
+                score: score !== null && Number.isFinite(score) ? score : null,
+                appliedAt: a.createdAt.toISOString(),
+              },
+            ];
+          })
+        );
+      }
+      return NextResponse.json({
+        jobs,
+        count: jobs.length,
+        myApplications,
+        hasSavedResume: Boolean(candidate?.profileResumeRef),
+      });
+    }
+
     return NextResponse.json({ jobs, count: jobs.length });
   } catch (error: any) {
     console.error('Fetch jobs error:', error);

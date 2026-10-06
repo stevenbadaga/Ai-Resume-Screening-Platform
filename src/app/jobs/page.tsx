@@ -103,11 +103,65 @@ export default async function JobsPage({
     applications: Array.from({ length: job._count.applications }),
   }));
 
+  // Candidate context (§6.3 explainability): where the candidate stands on
+  // each position — application stage + latest AI screening score — plus
+  // whether they have a saved CV for one-click apply.
+  let myApplications: Record<
+    string,
+    { applicationId: string; status: string; stage: string; score: number | null; appliedAt: string }
+  > = {};
+  let hasSavedResume = false;
+  if (userRole === 'Candidate') {
+    const email = (session?.user as any)?.email as string | undefined;
+    if (email) {
+      const cand = await prisma.candidate.findFirst({
+        where: { email },
+        select: {
+          profileResumeRef: true,
+          applications: {
+            select: {
+              id: true,
+              jobId: true,
+              status: true,
+              stage: true,
+              createdAt: true,
+              screeningRuns: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: { totalResult: true, effectiveResult: true },
+              },
+            },
+          },
+        },
+      });
+      hasSavedResume = Boolean(cand?.profileResumeRef);
+      myApplications = Object.fromEntries(
+        (cand?.applications ?? []).map((a) => {
+          const run = a.screeningRuns[0];
+          const raw = run?.effectiveResult ?? run?.totalResult ?? null;
+          const score = raw === null ? null : Number(raw);
+          return [
+            a.jobId,
+            {
+              applicationId: a.id,
+              status: a.status,
+              stage: a.stage,
+              score: score !== null && Number.isFinite(score) ? score : null,
+              appliedAt: a.createdAt.toISOString(),
+            },
+          ];
+        })
+      );
+    }
+  }
+
   return (
     <JobsClient
       initialJobs={JSON.parse(JSON.stringify(jobsWithCounts))}
       userRole={userRole}
       pagination={toPageInfo(page, pageSize, total)}
+      myApplications={myApplications}
+      hasSavedResume={hasSavedResume}
       filters={{
         q: q ?? '',
         status: status ?? 'ALL',
