@@ -17,6 +17,17 @@ export interface KnowledgeMatch {
 const MAX_HISTORY_MESSAGES = 12;
 const MAX_MESSAGE_LENGTH = 2000;
 
+// Single-word replies that carry no topic on their own ("more", "yes", "and…").
+const VAGUE_SINGLE_WORDS = new Set([
+  'more', 'and', 'why', 'how', 'yes', 'yeah', 'yep', 'ok', 'okay', 'sure',
+  'no', 'nope', 'details', 'detail', 'example', 'examples', 'continue',
+  'elaborate', 'anything', 'please',
+]);
+
+// Short conversational phrases that ask to expand on the previous answer.
+const FOLLOW_UP_PHRASES =
+  /^(tell me more|tell me everything|go on|go ahead|keep going|what else|anything else|explain more|more info|more information|more details|expand on that|and then|how so|why is that)\b/;
+
 export function normalizeSupportText(value: string): string {
   return value
     .normalize('NFKD')
@@ -68,6 +79,55 @@ export function findKnowledgeMatch(query: string): KnowledgeMatch | null {
   return bestMatch && bestMatch.score >= 3 ? bestMatch : null;
 }
 
+/**
+ * Detects short conversational follow-ups ("more", "tell me more", "why?")
+ * and returns the previous user query that carries the actual topic, so the
+ * knowledge matcher can answer in context instead of falling back.
+ */
+export function resolveFollowUpQuery(messages: SupportMessage[]): string | null {
+  const last = messages[messages.length - 1];
+  if (!last || last.role !== 'user') return null;
+
+  const normalized = normalizeSupportText(last.content);
+  if (!normalized) return null;
+
+  const tokens = normalized.split(' ').filter(Boolean);
+  const isVague =
+    (tokens.length === 1 && VAGUE_SINGLE_WORDS.has(tokens[0])) ||
+    FOLLOW_UP_PHRASES.test(normalized);
+  if (!isVague) return null;
+
+  for (let i = messages.length - 2; i >= 0; i -= 1) {
+    if (messages[i].role === 'user' && messages[i].content.trim()) {
+      return messages[i].content;
+    }
+  }
+  return null;
+}
+
+/**
+ * True when the exact reply was already given in this conversation, so a
+ * vague follow-up does not just repeat the same paragraph verbatim.
+ */
+export function conversationAlreadyContains(messages: SupportMessage[], reply: string): boolean {
+  const normalizedReply = normalizeSupportText(reply);
+  if (!normalizedReply) return false;
+  return messages
+    .filter((message) => message.role === 'assistant')
+    .some((message) => normalizeSupportText(message.content).includes(normalizedReply));
+}
+
+export function getFollowUpAck(language: LangCode): string {
+  const ack: Record<LangCode, string> = {
+    en: 'Happy to keep going! Ask me a specific question about this topic — or about any other RecruitAI feature — and I will walk you through it step by step.',
+    fr: 'Avec plaisir ! Posez-moi une question précise sur ce sujet — ou sur une autre fonctionnalité de RecruitAI — et je vous guiderai pas à pas.',
+    es: '¡Con gusto! Hazme una pregunta concreta sobre este tema — o sobre cualquier otra función de RecruitAI — y te lo explico paso a paso.',
+    de: 'Sehr gern! Stellen Sie mir eine konkrete Frage zu diesem Thema — oder zu einer anderen RecruitAI-Funktion — und ich erkläre Ihnen alles Schritt für Schritt.',
+    rw: 'Ni byiza! Mumbaze ikibazo gihariye kuri iyi ngingo — cyangwa ku kindi gice cya RecruitAI — nzakubigishaho intambwe ku yandi.',
+  };
+  return ack[language] || ack.en;
+}
+
 export function getGroundedKnowledgeContext(language: LangCode): string {
   const knowledge = RECRUIT_AI_MULTILINGUAL_KNOWLEDGE
     .map((item) => {
@@ -102,17 +162,18 @@ export function renderSkillKnowledge(): string {
 
   return [
     'Topic keywords: skills, skill list, skill matching, skill normalization, abbreviations, skill taxonomy',
-    `Verified answer: RecruitAI screening recognizes ${CANONICAL_SKILL_NAMES.length} canonical skills and normalizes common abbreviations and variations (for example "JS" and "javascript" both map to JavaScript). The recognized skills and their aliases are:\n${aliasLines}`,]
+    `Verified answer: RecruitAI screening recognizes ${CANONICAL_SKILL_NAMES.length} canonical skills and normalizes common abbreviations and variations (for example "JS" and "javascript" both map to JavaScript). The recognized skills and their aliases are:\n${aliasLines}`,
+  ]
     .join('\n');
 }
 
 export function getSafeFallback(language: LangCode): string {
   const fallback: Record<LangCode, string> = {
-    en: 'I can help with RecruitAI jobs, applications, candidate review, rubrics, screening, interviews, notifications, and privacy. Please ask about one of those areas.',
-    fr: 'Je peux vous aider avec les offres, les candidatures, les candidats, les grilles, le criblage, les entretiens, les notifications et la confidentialité dans RecruitAI. Posez une question sur l’un de ces sujets.',
-    es: 'Puedo ayudarte con empleos, solicitudes, candidatos, rúbricas, selección, entrevistas, notificaciones y privacidad en RecruitAI. Pregunta por uno de esos temas.',
-    de: 'Ich kann bei RecruitAI zu Stellen, Bewerbungen, Kandidaten, Bewertungsrubriken, Screening, Interviews, Benachrichtigungen und Datenschutz helfen. Fragen Sie bitte zu einem dieser Themen.',
-    rw: 'Nshobora kubafasha ku myanya y’akazi, ubusabe, abakandida, bipimo ngenderwaho, isuzuma, ibibazo by’akazi, ubutumwa n’umutekano w’amakuru muri RecruitAI. Mumbaze kuri kimwe muri ibyo.',
+    en: 'I can help every RecruitAI user — applicants (applying, tracking, profile & resume), recruiters (pipeline, rubrics, offers), hiring managers (departments, compare), interviewers (scorecards, scheduling), auditors (audit trail), and admins (team, settings, analytics). Ask me about any of those areas. For topics beyond the platform, our human support team is happy to help.',
+    fr: 'J’aide tous les utilisateurs de RecruitAI — candidats (postuler, suivi, profil & CV), recruteurs (pipeline, grilles, offres), managers recruteurs (départements, comparaison), évaluateurs (fiches d’entretien, planification), auditeurs (journal d’audit) et administrateurs (équipe, paramètres, analytique). Posez une question sur l’un de ces sujets. Pour tout ce qui dépasse la plateforme, notre équipe humaine se fera un plaisir de vous aider.',
+    es: 'Puedo ayudar a todos los usuarios de RecruitAI — postulantes (postularse, seguimiento, perfil y CV), reclutadores (pipeline, rúbricas, ofertas), gerentes de contratación (departamentos, comparación), entrevistadores (evaluaciones, programación), auditores (registro de auditoría) y administradores (equipo, ajustes, analítica). Pregunta por uno de esos temas. Para temas fuera de la plataforma, nuestro equipo humano estará encantado de ayudarte.',
+    de: 'Ich helfe allen RecruitAI-Nutzern — Bewerbern (Bewerbung, Status, Profil & Lebenslauf), Recruitern (Pipeline, Rubriken, Angebote), Hiring Managern (Abteilungen, Vergleich), Interviewern (Bewertungsbögen, Planung), Auditoren (Audit-Protokoll) und Admins (Team, Einstellungen, Analytik). Fragen Sie zu einem dieser Themen. Für Themen außerhalb der Plattform hilft Ihnen unser menschliches Support-Team gerne weiter.',
+    rw: 'Nshobora gufasha abakoresha bose ba RecruitAI — abasaba akazi (gusaba, kurikirana, umwirondoro na CV), abashakisha abakozi (pipeline, ibipimo, itangazo), abayobozi b’ishami (impanya, kugereranya), abakora ibizamini (urupapuro rw’ikizamini), abagenzuzi (igenzura) n’abayobozi (abakozi, igenamiterere, imibare). Mumbaze kuri kimwe muri ibyo. Ku bindi bidakora na RecruitAI, itsinda ryacu ry’abantu rirashobora kubafasha.',
   };
   return fallback[language] || fallback.en;
 }
