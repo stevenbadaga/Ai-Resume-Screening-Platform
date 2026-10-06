@@ -4,10 +4,16 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  outOfScope?: boolean;
+}
+
 export default function SupportWidget() {
   const { language, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
       content: t('copilot_welcome')
@@ -30,9 +36,10 @@ export default function SupportWidget() {
     if (isOpen) {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, loading]);
 
   const quickPrompts = [
+    { label: t('qp_apply_track'), prompt: 'How do I apply for a job and track my application status?' },
     { label: t('qp_match_score'), prompt: 'How does AI calculate rubric match scores and percentages?' },
     { label: t('qp_roles'), prompt: 'What are the exact permissions for each user role in the platform?' },
     { label: t('qp_blind_screening'), prompt: 'How does Blind Screening and PII Anonymization eliminate bias?' },
@@ -40,35 +47,55 @@ export default function SupportWidget() {
     { label: t('qp_questions'), prompt: 'How does the AI generate tailored interview questions from skill gaps?' }
   ];
 
+  // Conversational follow-up chips offered after each answer.
+  const followUpChips = [
+    { label: t('copilot_chip_more'), prompt: 'tell me more' },
+    { label: t('copilot_chip_apply'), prompt: 'How do I apply for a job?' },
+    { label: t('copilot_chip_track'), prompt: 'Where can I track my applications?' },
+    { label: t('copilot_chip_permissions'), prompt: 'What are the exact permissions for each user role?' }
+  ];
+
   const sendQuery = async (queryText: string) => {
     if (!queryText.trim() || loading) return;
 
     const userMessage = queryText.trim();
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+
+    // Send recent conversation context so the copilot stays aware of the
+    // thread. The API accepts at most 50 messages and grounds its answer on
+    // the last 12, so the newest 20 are always enough.
+    const history: ChatMessage[] = [...messages, { role: 'user', content: userMessage }];
+    setMessages(history);
+    const recentHistory = history.slice(-20);
     setLoading(true);
 
     try {
       const res = await fetch('/api/support', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, language })
+        body: JSON.stringify({
+          messages: recentHistory.map(({ role, content }) => ({ role, content })),
+          language
+        })
       });
 
       if (res.ok) {
         const data = await res.json();
-        const responseText = data.reply || data.message || 'I am here to assist you with RecruitAI.';
-        setMessages((prev) => [...prev, { role: 'assistant', content: responseText }]);
+        const responseText = data.reply || data.message || t('copilot_acknowledge');
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: responseText, outOfScope: Boolean(data.outOfScope) }
+        ]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', content: 'Unable to reach support service. Please try again.' }
+          { role: 'assistant', content: t('copilot_error_service') }
         ]);
       }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Network error. Please verify your connection.' }
+        { role: 'assistant', content: t('copilot_error_network') }
       ]);
     } finally {
       setLoading(false);
@@ -87,6 +114,12 @@ export default function SupportWidget() {
         content: t('copilot_welcome')
       }
     ]);
+  };
+
+  const dismissHandoff = () => {
+    setMessages((prev) =>
+      prev.map((m, i) => (i === prev.length - 1 ? { ...m, outOfScope: false } : m))
+    );
   };
 
   // Helper to extract quick navigation actions if the message mentions sections
@@ -116,6 +149,10 @@ export default function SupportWidget() {
     return actions;
   };
 
+  const lastMessage = messages[messages.length - 1];
+  const showFollowUpChips =
+    !loading && lastMessage?.role === 'assistant' && messages.length > 1;
+
   return (
     <div className="fixed bottom-4 right-4 z-40">
       {!isOpen && (
@@ -144,7 +181,7 @@ export default function SupportWidget() {
               <button
                 onClick={handleClearChat}
                 className="text-[10px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white/90 transition font-mono"
-                title="Reset Conversation"
+                title={t('copilot_reset_title')}
               >
                 {t('copilot_clear_btn')}
               </button>
@@ -190,6 +227,21 @@ export default function SupportWidget() {
                   >
                     {m.content}
 
+                    {/* Out-of-scope handoff note */}
+                    {m.role === 'assistant' && m.outOfScope && (
+                      <div className="mt-2.5 pt-2 border-t dark:border-slate-800 border-slate-200/80">
+                        <p className="text-[10px] italic dark:text-slate-400 text-slate-500">
+                          {t('copilot_handoff_note')}
+                        </p>
+                        <button
+                          onClick={dismissHandoff}
+                          className="mt-1.5 px-2 py-0.5 rounded-md border dark:border-slate-700 border-slate-300 dark:text-slate-300 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-[10px] font-medium"
+                        >
+                          {t('copilot_acknowledge')}
+                        </button>
+                      </div>
+                    )}
+
                     {/* Render Helpful 1-Click Navigation Buttons */}
                     {actionLinks.length > 0 && (
                       <div className="mt-2.5 pt-2 border-t dark:border-slate-800 border-slate-200/80 flex flex-wrap gap-1.5">
@@ -207,6 +259,21 @@ export default function SupportWidget() {
                       </div>
                     )}
                   </div>
+
+                  {/* Follow-up suggestion chips after the latest reply */}
+                  {i === messages.length - 1 && showFollowUpChips && (
+                    <div className="mt-1.5 flex flex-wrap gap-1.5 max-w-[90%]">
+                      {followUpChips.map((chip, chipIdx) => (
+                        <button
+                          key={chipIdx}
+                          onClick={() => sendQuery(chip.prompt)}
+                          className="px-2 py-1 rounded-full border dark:border-slate-700 border-slate-300 dark:text-slate-300 text-slate-600 dark:hover:bg-slate-800 hover:bg-slate-100 text-[10px] font-medium transition whitespace-nowrap"
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -216,7 +283,7 @@ export default function SupportWidget() {
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"></span>
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce delay-100"></span>
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce delay-200"></span>
-                <span className="ml-1 font-mono text-[10px]">...</span>
+                <span className="ml-1 font-mono text-[10px]">{t('copilot_thinking')}</span>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -229,6 +296,7 @@ export default function SupportWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('copilot_input_placeholder')}
+              aria-label={t('copilot_input_label')}
               className="flex-1 dark:bg-slate-900 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-xs"
             />
             <button
