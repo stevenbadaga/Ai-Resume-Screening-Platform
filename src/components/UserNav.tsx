@@ -61,59 +61,62 @@ export default function UserNav() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 rounded-lg dark:hover:bg-slate-800 hover:bg-slate-100 transition"
+        className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-[var(--surface-muted)] transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
       >
-        <div className="w-7 h-7 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-500 dark:text-indigo-300 flex items-center justify-center text-xs font-bold font-mono">
+        <div className="w-8 h-8 rounded-xl bg-[var(--grad-accent)] text-white shadow-md shadow-indigo-500/20 flex items-center justify-center text-xs font-extrabold font-mono group-hover:scale-105 transition-transform">
           {initials}
         </div>
         <div className="hidden sm:block text-left text-xs">
-          <p className="font-semibold dark:text-white text-slate-900 leading-tight truncate max-w-[100px]">
+          <p className="font-bold text-[var(--foreground)] leading-tight truncate max-w-[110px] group-hover:text-[var(--accent)] transition-colors">
             {user.name?.split(' ')[0] || 'User'}
           </p>
-          <p className="text-[10px] dark:text-slate-400 text-slate-500 font-mono leading-none">
+          <p className="text-[10px] text-[var(--muted)] font-mono leading-none mt-0.5">
             {userRole}
           </p>
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-xl shadow-xl p-3.5 space-y-3 z-50 animate-in fade-in zoom-in-95 duration-150">
-          <div className="space-y-1 pb-2 dark:border-slate-800 border-slate-100 border-b">
+        <div className="absolute right-0 mt-2.5 w-76 glass-card rounded-2xl border border-[var(--border)] p-4 space-y-3.5 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-2xl">
+          <div className="space-y-1.5 pb-3 border-b border-[var(--border)]">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-bold dark:text-white text-slate-900">{user.name}</p>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold dark:bg-indigo-950/80 bg-indigo-50 dark:text-indigo-300 text-indigo-700 border dark:border-indigo-800/80 border-indigo-200">
+              <p className="text-xs font-bold text-[var(--foreground)]">{user.name}</p>
+              <span className="chip chip-accent">
                 {userRole}
               </span>
             </div>
-            <p className="text-[11px] dark:text-slate-400 text-slate-500 font-mono truncate">{user.email}</p>
-            <div className="p-2 rounded-lg dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border text-[10px] dark:text-slate-400 text-slate-600 leading-relaxed">
+            <p className="text-[11px] text-[var(--muted)] font-mono truncate">{user.email}</p>
+            <div className="p-2.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[10.5px] text-[var(--muted)] leading-relaxed mt-2">
               {getRoleDescription(userRole)}
             </div>
           </div>
 
           {/* Session Security Indicator */}
-          <div className="p-2 rounded-lg dark:bg-slate-950 bg-emerald-50/50 dark:border-slate-800 border-emerald-200 border space-y-0.5">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-0.5">
+            <div className="flex items-center gap-2 text-[10.5px] font-bold text-emerald-500">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
               <span>{t('active_session')}</span>
             </div>
-            <p className="text-[10px] dark:text-slate-500 text-slate-500">
+            <p className="text-[10px] text-[var(--muted)] pl-4">
               {t('session_enforced')}
             </p>
           </div>
 
           {/* Links and Sign Out */}
-          <div className="pt-2 dark:border-slate-800 border-slate-100 border-t flex items-center justify-between">
+          <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between">
             <Link
               href="/privacy"
               onClick={() => setIsOpen(false)}
-              className="text-xs dark:text-slate-400 text-slate-500 dark:hover:text-white hover:text-slate-900 font-medium"
+              className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] font-semibold transition-colors"
             >
               {t('nav_privacy')}
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-              className="px-2.5 py-1 rounded-md dark:bg-rose-950/40 bg-rose-50 dark:hover:bg-rose-900/60 hover:bg-rose-100 dark:text-rose-300 text-rose-700 border dark:border-rose-800/50 border-rose-200 text-xs font-semibold transition"
+              className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 text-xs font-bold transition-all hover:scale-105 active:scale-95"
             >
               {t('sign_out')}
             </button>

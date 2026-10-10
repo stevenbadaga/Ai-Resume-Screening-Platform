@@ -35,15 +35,15 @@ export default function LanguageSelector() {
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        className="flex items-center gap-1.5 px-2 py-1 rounded-lg dark:hover:bg-slate-800 hover:bg-slate-100 border dark:border-slate-800 border-slate-200 text-xs font-mono dark:text-slate-300 text-slate-700 transition"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[var(--surface-muted)] hover:bg-[var(--border)] border border-[var(--border)] text-xs font-mono text-[var(--foreground)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
         title="Switch Language"
       >
-        <span>{currentLang.flag}</span>
-        <span className="font-semibold uppercase text-[10px]">{currentLang.code}</span>
+        <span className="text-sm">{currentLang.flag}</span>
+        <span className="font-bold uppercase text-[10.5px] tracking-wider">{currentLang.code}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-40 dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100 p-1 text-xs">
+        <div className="absolute right-0 mt-2 w-44 glass-card rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 p-1.5 text-xs">
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
@@ -52,17 +52,17 @@ export default function LanguageSelector() {
                 setLanguage(lang.code);
                 setIsOpen(false);
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all ${
                 language === lang.code
-                  ? 'bg-indigo-600 text-white font-semibold'
-                  : 'dark:hover:bg-slate-900 hover:bg-slate-100 dark:text-slate-300 text-slate-700'
+                  ? 'bg-[var(--grad-accent)] text-white font-bold shadow-md shadow-indigo-500/20'
+                  : 'hover:bg-[var(--surface-muted)] text-[var(--foreground)]'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <span>{lang.flag}</span>
-                <span>{lang.label}</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm">{lang.flag}</span>
+                <span className="font-medium">{lang.label}</span>
               </div>
-              {language === lang.code && <span className="text-[10px]">✓</span>}
+              {language === lang.code && <span className="text-[11px] font-bold">✓</span>}
             </button>
           ))}
         </div>

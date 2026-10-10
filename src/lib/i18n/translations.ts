@@ -4329,7 +4329,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     decision_action_shortlist: 'Toranya Umukandida',
     decision_action_advance: 'Muhe Ikizamini',
     decision_action_hold: 'Mubike ku Ruhande',
-    decision_action_reject: 'Muheteze Ubusabe',
+    decision_action_reject: 'Mukure mu bakomeza',
     decision_action_withdraw: 'Yikuye mu Busabe',
     decision_action_review: 'Kugenzura Byimbitse',
     decision_history_title: 'Ibyemezo Byose Byafashwe',
