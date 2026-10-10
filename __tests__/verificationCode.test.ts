@@ -29,6 +29,11 @@ const activeCode = (over: Record<string, unknown> = {}) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // The idempotent re-verify fallback queries already-solved rows; default
+  // to "none found" so every existing expectation is unchanged.
+  const vc = prismaMock.verificationCode as unknown as Record<string, ReturnType<typeof vi.fn>>;
+  if (!vc.findMany) vc.findMany = vi.fn();
+  vc.findMany.mockResolvedValue([] as never);
 });
 
 describe('generateNumericCode', () => {
@@ -194,6 +199,33 @@ describe('verifyVerificationCode', () => {
 
     expect(result).toEqual({ ok: false, reason: 'INVALID_CODE' });
   });
+
+  it('re-verifies an already-solved, unexpired code with the same digits (idempotent step 2)', async () => {
+    const { verifyVerificationCode } = await import('@/lib/verificationCode');
+    // No unused code remains (it was consumed on first solve) …
+    prismaMock.verificationCode.findFirst.mockResolvedValue(null);
+    // … but the solved row for the SAME code is still unexpired.
+    prismaMock.verificationCode.findMany.mockResolvedValue([
+      { id: 'code-solved', codeHash: sha256('123456') },
+    ]);
+
+    const result = await verifyVerificationCode('user-1', 'LOGIN_MFA', '123456');
+
+    expect(result).toEqual({ ok: true, codeId: 'code-solved' });
+  });
+
+  it('never accepts wrong digits through the solved-code fallback', async () => {
+    const { verifyVerificationCode } = await import('@/lib/verificationCode');
+    prismaMock.verificationCode.findFirst.mockResolvedValue(null);
+    // A solved row exists, but for a DIFFERENT code.
+    prismaMock.verificationCode.findMany.mockResolvedValue([
+      { id: 'code-solved', codeHash: sha256('654321') },
+    ]);
+
+    const result = await verifyVerificationCode('user-1', 'LOGIN_MFA', '123456');
+
+    expect(result).toEqual({ ok: false, reason: 'NOT_FOUND' });
+  });
 });
 
 describe('hasRecentSolvedLoginCode', () => {
@@ -204,11 +236,14 @@ describe('hasRecentSolvedLoginCode', () => {
     await expect(hasRecentSolvedLoginCode('user-1')).resolves.toBe(true);
     const countArg = prismaMock.verificationCode.count.mock.calls[0][0];
     expect(countArg.where.purpose).toBe('LOGIN_MFA');
-    expect(countArg.where.verifiedAt).toEqual({ not: null, gte: expect.any(Date) });
-    // The proof window is 5 minutes — long enough to finish sign-in, short
-    // enough to expire an abandoned half-login.
-    const cutoff = countArg.where.verifiedAt.gte as Date;
+    expect(countArg.where.verifiedAt).toEqual({ not: null });
+    // Proof window: solved within the last 5 minutes OR still unexpired —
+    // long enough to finish sign-in, bounded by the code's own TTL.
+    const or = countArg.where.OR as Array<Record<string, any>>;
+    expect(or).toHaveLength(2);
+    const cutoff = or[0].verifiedAt.gte as Date;
     expect(Date.now() - cutoff.getTime()).toBeCloseTo(5 * 60_000, -3);
+    expect(or[1].expiresAt.gt).toBeInstanceOf(Date);
   });
 
   it('is false when nothing was solved', async () => {

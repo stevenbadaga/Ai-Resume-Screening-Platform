@@ -1,5 +1,52 @@
 import { describe, it, expect } from 'vitest';
-import { calculateTotalScore } from '@/lib/scoringEngine';
+import { buildAssessmentCriteria, calculateTotalScore } from '@/lib/scoringEngine';
+
+describe('rubric criteria prompt contract (spec §6.2/§6.5)', () => {
+  it('hands the assessor every approved criterion field — required flag, threshold, evidence rules, category', () => {
+    const input = buildAssessmentCriteria([
+      {
+        id: 'c1',
+        category: 'Skill',
+        description: '5+ years of TypeScript',
+        isRequired: true,
+        weight: 4,
+        threshold: '5 years',
+        evidenceRules: 'Dated employment entries naming TypeScript work',
+      },
+      { id: 'c2', category: null, description: 'Nice to have', isRequired: false, weight: 1, threshold: null, evidenceRules: null },
+    ]);
+
+    expect(input).toEqual([
+      {
+        id: 'c1',
+        category: 'Skill',
+        description: '5+ years of TypeScript',
+        isRequired: true,
+        weight: 4,
+        threshold: '5 years',
+        acceptableEvidence: 'Dated employment entries naming TypeScript work',
+      },
+      {
+        id: 'c2',
+        category: 'General',
+        description: 'Nice to have',
+        isRequired: false,
+        weight: 1,
+        threshold: null,
+        acceptableEvidence: null,
+      },
+    ]);
+  });
+
+  it('never sends database relations or unrelated fields to the model', () => {
+    const [only] = buildAssessmentCriteria([
+      { id: 'c1', category: 'Skill', description: 'X', isRequired: false, weight: 1, rubricId: 'secret', assessments: [] },
+    ]);
+    expect(Object.keys(only).sort()).toEqual(
+      ['acceptableEvidence', 'category', 'description', 'id', 'isRequired', 'threshold', 'weight'].sort()
+    );
+  });
+});
 
 describe('AI Scoring Logic (calculateTotalScore)', () => {
   it('calculates 100% when all criteria are MATCH', () => {
