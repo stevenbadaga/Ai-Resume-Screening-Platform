@@ -59,6 +59,19 @@ export async function PATCH(
       );
     }
 
+    // §6.2: "A job description must be converted into structured screening
+    // criteria before candidate ranking is permitted." Never approve an empty
+    // rubric — screening against zero criteria would produce meaningless 0%.
+    if (newStatus === 'APPROVED') {
+      const criteriaCount = await prisma.criterion.count({ where: { rubricId } });
+      if (criteriaCount === 0) {
+        return NextResponse.json(
+          { error: 'Cannot approve a rubric with no criteria — structure the screening criteria first (spec §6.2).' },
+          { status: 400 }
+        );
+      }
+    }
+
     const updated = await prisma.$transaction(async (tx) => {
       const nextRubric = await tx.rubric.update({
         where: { id: rubricId },

@@ -142,10 +142,14 @@ export async function POST(req: Request) {
             status: 'DRAFT',
             criteria: {
               create: criteria.map((c) => ({
-                category: c.category || 'General Requirement',
+                // §6.2: every criterion carries a category; empty input falls
+                // back to a sensible default instead of a blank category.
+                category: c.category?.trim() || 'General Requirement',
                 description: c.description || c.name || 'General requirement',
                 isRequired: c.isRequired ?? false,
-                weight: c.weight || 3
+                weight: c.weight || 3,
+                threshold: c.threshold?.trim() || null,
+                evidenceRules: c.evidenceRules?.trim() || null
               }))
             }
           }

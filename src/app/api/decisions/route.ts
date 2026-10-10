@@ -6,6 +6,7 @@ import { requirePermission } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { decisionSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { stageForDecision, statusForStage } from '@/lib/applicationStages';
+import { validateDecisionRationale, validateDecisionReasonCode } from '@/lib/decisionReasons';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,6 +30,24 @@ export async function POST(req: NextRequest) {
     if (!existingApplication || existingApplication.job.organizationId !== auth.user.organizationId) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
+
+    // §6.7: decision reasons come from the org's configured catalog, and
+    // neither the category nor the free-text justification may cite protected
+    // or sensitive characteristics (spec §6.7 / §7 job relevance).
+    const org = await prisma.organization.findUnique({
+      where: { id: auth.user.organizationId },
+      select: { workflowConfig: true },
+    });
+    let configuredReasons: unknown;
+    try {
+      configuredReasons = org?.workflowConfig ? JSON.parse(org.workflowConfig)?.decisionReasons : undefined;
+    } catch {
+      configuredReasons = undefined;
+    }
+    const reasonCheck = validateDecisionReasonCode(reasonCode, configuredReasons);
+    if (!reasonCheck.ok) return NextResponse.json({ error: reasonCheck.error }, { status: 400 });
+    const rationaleCheck = validateDecisionRationale(rationale);
+    if (!rationaleCheck.ok) return NextResponse.json({ error: rationaleCheck.error }, { status: 400 });
 
     // Determine the new stage from the single canonical decision map; status
     // is always derived from stage (§6.7 vocabulary cannot drift).

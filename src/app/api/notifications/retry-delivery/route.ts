@@ -113,23 +113,32 @@ export async function POST(req: NextRequest) {
         payload = {};
       }
     }
-    const result = await sendTransactionalEmail({
-      to: comm.recipient,
-      template,
-      data: {
-        candidateName: (payload.candidateName as string) || candidateName,
-        jobTitle: (payload.jobTitle as string) || jobTitle,
-        schedule: payload.schedule as string | undefined,
-        timezone: payload.timezone as string | undefined,
-        meetingLink: payload.meetingLink as string | undefined,
-        joinLink: payload.joinLink as string | undefined,
-        offerDetails: payload.offerDetails as
-          | { salary: string; startDate: string; equity?: string }
-          | undefined,
-        feedback: payload.feedback as string | undefined,
+    const result = await sendTransactionalEmail(
+      {
+        to: comm.recipient,
+        template,
+        data: {
+          candidateName: (payload.candidateName as string) || candidateName,
+          jobTitle: (payload.jobTitle as string) || jobTitle,
+          schedule: payload.schedule as string | undefined,
+          timezone: payload.timezone as string | undefined,
+          meetingLink: payload.meetingLink as string | undefined,
+          joinLink: payload.joinLink as string | undefined,
+          offerDetails: payload.offerDetails as
+            | { salary: string; startDate: string; equity?: string }
+            | undefined,
+          feedback: payload.feedback as string | undefined,
+          subject: payload.subject as string | undefined,
+          body: payload.body as string | undefined,
+        },
+        applicationId: comm.applicationId ?? undefined,
       },
-      applicationId: comm.applicationId ?? undefined,
-    });
+      // §6.9: manually composed messages (RECRUITER_MESSAGE) are snapshotted
+      // with their reviewed body — retry the exact reviewed content.
+      typeof payload.body === 'string' && payload.body.length > 0
+        ? payload.body
+        : undefined
+    );
 
     // Record the retry as its own Communication row (immutable history).
     const retryComm = await prisma.communication.create({

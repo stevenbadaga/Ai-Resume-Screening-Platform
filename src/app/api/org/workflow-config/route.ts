@@ -4,6 +4,7 @@ import { requirePermission } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { safeErrorResponse, validateBody } from '@/lib/validation';
+import { findProhibitedReasonTerm } from '@/lib/decisionReasons';
 import { z } from 'zod/v4';
 
 /**
@@ -95,6 +96,20 @@ export async function PUT(req: NextRequest) {
 
     const previousConfig = parseConfig(org?.workflowConfig);
     const previousBranding = parseConfig(org?.branding);
+
+    // §6.7: the configured decision-reason catalog must never contain
+    // discriminatory or irrelevant (protected-characteristic) categories.
+    if (data.decisionReasons) {
+      for (const reason of data.decisionReasons) {
+        const prohibited = findProhibitedReasonTerm(reason.code) ?? findProhibitedReasonTerm(reason.label);
+        if (prohibited) {
+          return NextResponse.json(
+            { error: `Decision reason "${reason.code}" contains the protected-characteristic term "${prohibited}" and cannot be configured (spec §6.7).` },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
     const nextConfig = {
       ...previousConfig,

@@ -5,6 +5,7 @@ import { Permission } from '@/lib/roleAccess';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { safeErrorResponse, validateBody } from '@/lib/validation';
 import { stageForDecision, statusForStage } from '@/lib/applicationStages';
+import { validateDecisionRationale } from '@/lib/decisionReasons';
 import { z } from 'zod/v4';
 
 const bulkActionSchema = z.object({
@@ -26,6 +27,10 @@ export async function POST(req: Request) {
     if (error) return error;
 
     const { applicationIds, action, reason } = data;
+
+    // §6.7: bulk decisions may not cite protected/sensitive characteristics.
+    const reasonCheck = validateDecisionRationale(reason);
+    if (!reasonCheck.ok) return NextResponse.json({ error: reasonCheck.error }, { status: 400 });
 
     // Verify all applications belong to the user's organization (spec §6.1 tenant boundary)
     const applications = await prisma.application.findMany({
