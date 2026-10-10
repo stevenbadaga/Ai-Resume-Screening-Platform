@@ -16,6 +16,7 @@ export type EmailTemplateType =
   | 'INTERVIEW_CANCELLED'
   | 'OFFER_LETTER'
   | 'REJECTION_FEEDBACK'
+  | 'RECRUITER_MESSAGE'
   | 'TEAM_INVITATION'
   | 'PASSWORD_RESET'
   | 'EMAIL_VERIFICATION'
@@ -39,6 +40,9 @@ export interface EmailPayload {
       equity?: string;
     };
     feedback?: string;
+    /** Manually composed candidate message (§6.9) — previewed and edited before send. */
+    subject?: string;
+    body?: string;
   };
   applicationId?: string;
 }
@@ -50,6 +54,7 @@ const SUBJECT_MAP: Record<EmailTemplateType, (data: EmailPayload['data']) => str
   INTERVIEW_CANCELLED: (d) => `Interview Cancelled: ${d.jobTitle ?? ''} — RecruitAI`,
   OFFER_LETTER: (d) => `Official Job Offer: ${d.jobTitle ?? ''} — RecruitAI 🎉`,
   REJECTION_FEEDBACK: (d) => `Update regarding your application for ${d.jobTitle ?? ''} — RecruitAI`,
+  RECRUITER_MESSAGE: (d) => `${d.subject ?? 'A message about your application'} — RecruitAI`,
   TEAM_INVITATION: () => `You have been invited to join a team on RecruitAI`,
   PASSWORD_RESET: () => `Reset your RecruitAI password`,
   EMAIL_VERIFICATION: () => `Verify your email address — RecruitAI`,
@@ -98,6 +103,11 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
     case 'REJECTION_FEEDBACK':
       body += `<p>Thank you for applying for <strong>${jobTitle}</strong>. After careful review, we have decided not to move forward with your application at this time.</p>
         <p>We wish you the best in your job search.</p>`;
+      break;
+    case 'RECRUITER_MESSAGE':
+      // Manually composed message: the reviewed, edited content from the
+      // recruiter's preview is used verbatim (sent via customHtmlBody).
+      body += `${data.body ?? ''}`;
       break;
     case 'TEAM_INVITATION':
       body += `<p>You have been invited to join a recruitment workspace on RecruitAI.</p>

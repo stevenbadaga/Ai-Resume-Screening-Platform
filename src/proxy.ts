@@ -13,12 +13,12 @@ import { getToken } from 'next-auth/jwt';
  * same nonce), and the policy is set here so it applies to every page.
  * Dev keeps a relaxed policy to avoid breaking the dev overlay/HMR.
  */
-function withCsp(request: NextRequest, response: NextResponse) {
+/** Builds the per-request nonce + CSP string (prod only; dev returns null). */
+function buildCsp(request: NextRequest): { nonce: string; csp: string } | null {
   const isProd = process.env.NODE_ENV === 'production';
-  if (!isProd) return response; // next.config.ts static headers cover dev
+  if (!isProd) return null; // next.config.ts static headers cover dev
 
   const nonce = crypto.randomUUID().replace(/-/g, '');
-  request.headers.set('x-nonce', nonce);
 
   const csp = [
     `default-src 'self'`,
@@ -34,7 +34,41 @@ function withCsp(request: NextRequest, response: NextResponse) {
     `object-src 'none'`,
   ].join('; ');
 
-  response.headers.set('Content-Security-Policy', csp);
+  return { nonce, csp };
+}
+
+/**
+ * For redirects (no body) — just attach the policy as a response header.
+ */
+function withCsp(request: NextRequest, response: NextResponse) {
+  const built = buildCsp(request);
+  if (!built) return response;
+  response.headers.set('Content-Security-Policy', built.csp);
+  return response;
+}
+
+/**
+ * For rendered pages — the CSP must ALSO be forwarded on the REQUEST headers:
+ * Next.js reads the request's Content-Security-Policy to discover the nonce
+ * and stamps it onto its own <script> tags. Setting only the response header
+ * makes the browser reject every script under 'strict-dynamic', leaving the
+ * page stuck on its SSR shell (no hydration, no sign-in form).
+ */
+function nextWithCsp(request: NextRequest): NextResponse {
+  const built = buildCsp(request);
+  if (!built) return NextResponse.next();
+
+  // Belt and braces: mutate the original request (some proxy runtimes only
+  // forward those) AND pass an explicit request override.
+  request.headers.set('x-nonce', built.nonce);
+  request.headers.set('Content-Security-Policy', built.csp);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', built.nonce);
+  requestHeaders.set('Content-Security-Policy', built.csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set('Content-Security-Policy', built.csp);
   return response;
 }
 
@@ -57,7 +91,7 @@ export async function proxy(request: NextRequest) {
   // redirecting /auth/signin to /auth/signin would loop forever and make the
   // whole application unreachable without an existing session.
   if (!token && pathname.startsWith('/auth/')) {
-    return withCsp(request, NextResponse.next());
+    return nextWithCsp(request);
   }
 
   // If no token and accessing a protected route, redirect to sign-in
@@ -92,7 +126,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return withCsp(request, NextResponse.next());
+  return nextWithCsp(request);
 }
 
 export const config = {

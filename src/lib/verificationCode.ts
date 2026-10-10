@@ -127,10 +127,38 @@ export async function hasRecentSolvedLoginCode(userId: string): Promise<boolean>
     where: {
       userId,
       purpose: 'LOGIN_MFA',
-      verifiedAt: { not: null, gte: cutoff },
+      verifiedAt: { not: null },
+      // Proven within the last 5 minutes OR still unexpired: a solved code
+      // stays the proof-of-solve for as long as the code itself is live.
+      OR: [{ verifiedAt: { gte: cutoff } }, { expiresAt: { gt: new Date() } }],
     },
   });
   return count > 0;
+}
+
+/**
+ * Idempotent re-verification of an ALREADY SOLVED, unexpired code.
+ *
+ * A correct entry consumes the code (single-use against guessing), but the
+ * solve itself proves the second factor until the code expires — authorize()
+ * honors that same window (hasRecentSolvedLoginCode). Re-submitting the SAME
+ * 6 digits therefore re-issues an MFA ticket instead of failing, which is
+ * what lets a login interrupted between step 1 and step 2 resume (and what
+ * the E2E pre-staged code relies on). A wrong guess never matches here.
+ */
+async function findSolvedEquivalent(
+  userId: string,
+  purpose: VerificationCodePurpose,
+  submittedCode: string
+): Promise<{ id: string } | null> {
+  const solved = await prisma.verificationCode.findMany({
+    where: { userId, purpose, verifiedAt: { not: null }, expiresAt: { gt: new Date() } },
+    orderBy: { verifiedAt: 'desc' },
+    take: 5,
+    select: { id: true, codeHash: true },
+  });
+  const match = solved.find((row) => codesMatch(submittedCode, row.codeHash));
+  return match ? { id: match.id } : null;
 }
 
 export type CodeVerificationResult =
@@ -158,11 +186,19 @@ export async function verifyVerificationCode(
     orderBy: { createdAt: 'desc' },
   });
 
-  if (!record) return { ok: false, reason: 'NOT_FOUND' };
+  if (!record) {
+    const equivalent = await findSolvedEquivalent(userId, purpose, normalized);
+    if (equivalent) return { ok: true, codeId: equivalent.id };
+    return { ok: false, reason: 'NOT_FOUND' };
+  }
   if (record.expiresAt < new Date()) return { ok: false, reason: 'EXPIRED' };
   if (record.attempts >= record.maxAttempts) return { ok: false, reason: 'MAX_ATTEMPTS' };
 
   if (!codesMatch(normalized, record.codeHash)) {
+    // The submitted code may be one that was already solved moments ago
+    // (re-login / interrupted step 2) — accept it before counting a miss.
+    const equivalent = await findSolvedEquivalent(userId, purpose, normalized);
+    if (equivalent) return { ok: true, codeId: equivalent.id };
     const attempts = record.attempts + 1;
     await prisma.verificationCode.update({
       where: { id: record.id },

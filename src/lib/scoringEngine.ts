@@ -2,6 +2,26 @@
 import prisma from '@/lib/prisma';
 import { getOpenAI, isOpenAIConfigured } from '@/lib/aiConfig';
 import { CANONICAL_SKILL_NAMES, normalizeSkillList } from '@/lib/skillNormalization';
+import { calculateExperienceSummary } from '@/lib/experienceCalc';
+
+/**
+ * §6.2/§6.5 — the full criterion definition handed to the assessor. Category,
+ * required flag, acceptable-evidence rules, and the minimum threshold must all
+ * reach the model: results are calculated "using the approved weighting and
+ * threshold rules", and required criteria must be recognised as required.
+ * Pure function so the exact prompt contract is unit-testable.
+ */
+export function buildAssessmentCriteria(criteria: any[]) {
+  return (criteria ?? []).map((c: any) => ({
+    id: c.id,
+    category: c.category || 'General',
+    description: c.description,
+    isRequired: Boolean(c.isRequired),
+    weight: c.weight,
+    threshold: c.threshold ?? null,
+    acceptableEvidence: c.evidenceRules ?? null,
+  }));
+}
 
 /**
  * Deterministic rubric scoring.
@@ -81,11 +101,12 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
       model: 'gpt-4o-2024-08-06',
       scoringRules: { MATCH: 'full weight', PARTIAL: 'half weight', MISSING: 0 },
       requiredCriterionPolicy: 'MISSING required criterion fails the run at 0%',
-      criteria: rubric.criteria.map((c: { id: string; weight: number; isRequired: boolean; threshold: string | null }) => ({
+      criteria: rubric.criteria.map((c: { id: string; weight: number; isRequired: boolean; threshold: string | null; evidenceRules: string | null }) => ({
         id: c.id,
         weight: c.weight,
         isRequired: c.isRequired,
         threshold: c.threshold,
+        evidenceRules: c.evidenceRules,
       })),
     };
 
@@ -108,10 +129,16 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
     // name goes to the assessor while each entry keeps the candidate's
     // original wording in `original` for evidence traceability.
     const rawSkills: string[] = profile.skills ? JSON.parse(profile.skills) : [];
+    const rawEmployment: any[] = profile.employment ? JSON.parse(profile.employment) : [];
+    // §6.6: deterministic experience summary — overlapping dates merged,
+    // gaps excluded, partial dates flagged — so the assessor never invents
+    // experience precision the resume does not support.
+    const experienceSummary = calculateExperienceSummary(rawEmployment);
     const safeProfile = {
       skills: normalizeSkillList(rawSkills),
       recognizedSkills: CANONICAL_SKILL_NAMES,
-      employment: profile.employment ? JSON.parse(profile.employment) : [],
+      employment: rawEmployment,
+      experienceSummary,
       education: profile.education ? JSON.parse(profile.education) : [],
       certifications: profile.certifications ? JSON.parse(profile.certifications) : [],
       languages: profile.languages ? JSON.parse(profile.languages) : [],
@@ -129,11 +156,11 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
       messages: [
         {
           role: 'system',
-          content: "You are a strict, unbiased AI recruitment assessor. Evaluate the candidate's profile strictly against the provided rubric criteria. Do not infer or guess. If evidence is missing, mark it MISSING. Provide verbatim 'supportingEvidence' from the profile."
+          content: "You are a strict, unbiased AI recruitment assessor. Evaluate the candidate's profile strictly against the provided rubric criteria — including each criterion's required flag, minimum threshold, and acceptable-evidence rules. Do not infer or guess. If evidence is missing, mark it MISSING (absence of evidence is NOT evidence of absence). Cite sourceLocation as the profile section the evidence came from (e.g. employment[0], skills[2], education[1]). Never use personal characteristics unrelated to the work."
         },
         {
           role: 'user',
-          content: `Candidate Profile:\n${JSON.stringify(safeProfile)}\n\nRubric Criteria:\n${JSON.stringify(rubric.criteria.map((c: { id: string; description: string; weight: number }) => ({ id: c.id, description: c.description, weight: c.weight })))}`
+          content: `Candidate Profile:\n${JSON.stringify(safeProfile)}\n\nRubric Criteria:\n${JSON.stringify(buildAssessmentCriteria(rubric.criteria))}`
         }
       ],
       response_format: {
@@ -148,13 +175,15 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
                 type: 'array',
                 items: {
                   type: 'object',
-                  properties: {
-                    criterionId: { type: 'string' },
-                    result: { type: 'string', enum: ['MATCH', 'PARTIAL', 'MISSING'] },
-                    supportingEvidence: { type: 'string', description: 'Direct quote from profile justifying the result.' },
-                    uncertainty: { type: 'boolean' }
-                  },
-                  required: ['criterionId', 'result', 'supportingEvidence', 'uncertainty'],
+                properties: {
+                  criterionId: { type: 'string' },
+                  result: { type: 'string', enum: ['MATCH', 'PARTIAL', 'MISSING'] },
+                  supportingEvidence: { type: 'string', description: 'Direct quote from profile justifying the result.' },
+                  sourceLocation: { type: 'string', description: 'Profile section the evidence came from, e.g. employment[0], skills[2].' },
+                  interpretation: { type: 'string', description: 'Plain-language interpretation of how the evidence meets or misses the criterion (incl. threshold assessment).' },
+                  uncertainty: { type: 'boolean' }
+                },
+                required: ['criterionId', 'result', 'supportingEvidence', 'sourceLocation', 'interpretation', 'uncertainty'],
                   additionalProperties: false
                 }
               }
@@ -196,6 +225,8 @@ export async function scoreCandidateProfile(applicationId: string, rubricId: str
           criterionId: assessment.criterionId,
           result: assessment.result,
           supportingEvidence: assessment.supportingEvidence,
+          sourceLocation: assessment.sourceLocation,
+          interpretation: assessment.interpretation,
           uncertainty: assessment.uncertainty,
           scoreContribution
         }

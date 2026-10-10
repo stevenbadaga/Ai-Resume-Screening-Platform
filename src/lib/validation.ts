@@ -49,6 +49,7 @@ export const createJobSchema = z.object({
     name: z.string().max(2000).optional(),
     isRequired: z.boolean().optional(),
     threshold: z.string().max(500).optional(),
+    evidenceRules: z.string().max(2000).optional(),
     weight: z.coerce.number().int().min(1).max(10).optional(),
   })).max(50).optional().default([]),
 });
@@ -183,6 +184,14 @@ export const teamRoleSchema = z.object({
 
 export const teamDeleteSchema = z.object({
   targetUserId: uuidSchema,
+});
+
+// §6.1: administrators must be able to suspend and reactivate accounts
+// (immediate access revocation without destroying the audit trail).
+export const teamStatusSchema = z.object({
+  targetUserId: uuidSchema,
+  action: z.enum(['SUSPEND', 'REACTIVATE']),
+  reason: z.string().max(500).optional(),
 });
 
 export const interviewScheduleSchema = z.object({

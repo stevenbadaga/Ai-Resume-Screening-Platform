@@ -42,6 +42,11 @@ export const Permission = {
   MergeDuplicates: 'candidates:merge-duplicates',
   EditParsedProfile: 'candidates:edit-profile',
   OfferJob: 'candidates:offer',
+  // Spec §6.5: rerun AI screening after an approved rubric change, retaining
+  // earlier runs for comparison. Staff-only (never Interviewer/Auditor).
+  RunScreening: 'candidates:screening-run',
+  // Spec §6.9: manually compose/preview/send a candidate communication.
+  ContactCandidates: 'candidates:contact',
 
   // Interviews & scorecards
   ScheduleInterviews: 'interviews:schedule',
@@ -83,6 +88,8 @@ export const ROLE_PERMISSIONS: Record<ApplicationRole, readonly Permission[]> = 
     Permission.MergeDuplicates,
     Permission.EditParsedProfile,
     Permission.OfferJob,
+    Permission.RunScreening,
+    Permission.ContactCandidates,
     Permission.ScheduleInterviews,
     Permission.GenerateInterviewQuestions,
     Permission.ViewScorecards,
@@ -98,6 +105,8 @@ export const ROLE_PERMISSIONS: Record<ApplicationRole, readonly Permission[]> = 
     Permission.MakeHiringDecisions,
     Permission.OverrideScores,
     Permission.EditParsedProfile,
+    Permission.RunScreening,
+    Permission.ContactCandidates,
     Permission.ScheduleInterviews,
     Permission.GenerateInterviewQuestions,
     Permission.ViewScorecards,

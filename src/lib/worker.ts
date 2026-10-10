@@ -17,6 +17,27 @@ const connection = buildQueueConnection('worker');
 
 const worker = new Worker('ResumeProcessingQueue', async job => {
   console.log(`Processing job ${job.id} for application ${job.data.applicationId}`);
+
+  // §6.5 rerun: a screen-only job re-runs AI screening against the current
+  // APPROVED rubric WITHOUT re-reading or re-extracting the resume. Earlier
+  // screening runs are left untouched so results stay comparable.
+  if (job.data.screenOnly) {
+    const application = await prisma.application.findUnique({
+      where: { id: job.data.applicationId },
+      include: { job: { include: { rubrics: true } }, resumeDocument: true },
+    });
+    if (!application?.resumeDocument) throw new Error('Application or resume document not found');
+    if (application.resumeDocument.processingStatus !== 'COMPLETED') {
+      throw new Error('Resume is not in COMPLETED state — reprocess it before rerunning screening');
+    }
+    const rubricId =
+      job.data.rubricId || application.job.rubrics.find((r) => r.status === 'APPROVED')?.id;
+    if (!rubricId) throw new Error('No APPROVED rubric exists for this job (spec §6.2)');
+    await scoreCandidateProfile(job.data.applicationId, rubricId);
+    console.log(`Screening-only job ${job.id} completed successfully`);
+    return;
+  }
+
   const resume = await prisma.resumeDocument.findUnique({
     where: { id: job.data.resumeDocumentId },
     include: { application: { include: { job: { include: { rubrics: true } } } } }
