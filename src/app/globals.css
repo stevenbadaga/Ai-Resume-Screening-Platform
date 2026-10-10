@@ -12,64 +12,64 @@
    ambient light instead of heavy borders.
    ──────────────────────────────────────────────────────────────── */
 :root {
-  --background: #F5F5FC;
-  --foreground: #1A1B33;
-  --muted: #63668C;
+  --background: #F8F9FD;
+  --foreground: #0F172A;
+  --muted: #64748B;
 
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-muted: #F2F2FB;
+  --surface-muted: #F1F5F9;
 
-  --border: #E7E7F4;
-  --border-strong: #D7D7EC;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
 
-  --accent: #5A50E8;
-  --accent-strong: #4840D4;
-  --accent-2: #9333EA;
-  --accent-soft: rgba(90, 80, 232, 0.08);
-  --accent-ring: rgba(90, 80, 232, 0.18);
+  --accent: #6366F1;
+  --accent-strong: #4F46E5;
+  --accent-2: #06B6D4;
+  --accent-soft: rgba(99, 102, 241, 0.08);
+  --accent-ring: rgba(99, 102, 241, 0.2);
 
-  /* The brand gradient — buttons, marks, active states. */
-  --grad-accent: linear-gradient(135deg, #5A50E8 0%, #7C5CF0 52%, #A855F7 100%);
+  /* Aurora Cyber Luxe Brand Gradient */
+  --grad-accent: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #06B6D4 100%);
+  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.12));
 
-  --success: #0C9B6C;
-  --warning: #D97706;
-  --danger: #E11D48;
-  --info: #2563EB;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #06B6D4;
 
-  /* Legacy aliases kept so existing pages keep working. */
+  /* Legacy aliases */
   --coral: var(--danger);
   --amber: var(--warning);
 
-  /* Violet-tinted shadow ink for warm, premium depth. */
-  --shadow-color: 56 54 120;
+  --shadow-color: 99 102 241;
 }
 
 html.dark {
-  --background: #0B0C16;
-  --foreground: #EBEBF7;
-  --muted: #999CC4;
+  --background: #090A15;
+  --foreground: #F8FAFC;
+  --muted: #94A3B8;
 
-  --surface: #11121E;
-  --surface-raised: #16182A;
-  --surface-muted: #1C1E33;
+  --surface: #121324;
+  --surface-raised: #1A1C33;
+  --surface-muted: #222544;
 
-  --border: #262844;
-  --border-strong: #353861;
+  --border: #232742;
+  --border-strong: #33395E;
 
-  --accent: #A39DFB;
-  --accent-strong: #BDB8FF;
-  --accent-2: #C084FC;
-  --accent-soft: rgba(163, 157, 251, 0.11);
-  --accent-ring: rgba(163, 157, 251, 0.22);
+  --accent: #818CF8;
+  --accent-strong: #A5B4FC;
+  --accent-2: #22D3EE;
+  --accent-soft: rgba(129, 140, 248, 0.14);
+  --accent-ring: rgba(129, 140, 248, 0.28);
 
-  /* Slightly deeper fill so white label text stays crisp on dark. */
-  --grad-accent: linear-gradient(135deg, #6D5CF0 0%, #8B5CF6 52%, #B06CF5 100%);
+  --grad-accent: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #06B6D4 100%);
+  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.2));
 
   --success: #34D399;
   --warning: #FBBF24;
-  --danger: #FB7185;
-  --info: #7DA9FA;
+  --danger: #F87171;
+  --info: #38BDF8;
 
   --shadow-color: 0 0 0;
 }
@@ -696,6 +696,74 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* ── Cyber Aurora Utilities ─────────────────────────────────── */
+.glass-card {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+}
+
+html.dark .glass-card {
+  background: rgba(18, 19, 36, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.text-gradient-aurora {
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-aurora {
+  background: var(--grad-accent);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.btn-aurora:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 color-mix(in srgb, var(--accent) 55%, transparent);
+  filter: brightness(1.08);
+}
+
+.btn-aurora:active {
+  transform: translateY(0);
+}
+
+.score-badge-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+}
+
+html.dark .score-badge-high {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.3);
+}
+
+.score-badge-med {
+  background: rgba(6, 182, 212, 0.15);
+  color: #06B6D4;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+}
+
+html.dark .score-badge-med {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
 }
 
 /* Scrollbars tuned to each theme */

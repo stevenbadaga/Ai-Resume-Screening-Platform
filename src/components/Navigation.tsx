@@ -85,18 +85,18 @@ export default function Navigation() {
 
   return (
     <>
-      <aside className="w-52 shrink-0 bg-[var(--surface)] border-r border-[var(--border)] flex-col justify-between hidden md:flex z-30">
-        <div className="p-3 space-y-3">
+      <aside className="w-56 shrink-0 bg-[var(--surface)]/90 backdrop-blur-xl border-r border-[var(--border)] flex-col justify-between hidden md:flex z-30 transition-all duration-300">
+        <div className="p-3.5 space-y-4">
           {/* Brand Logo & Name */}
-          <Link href="/dashboard" className="flex items-center gap-2 px-1.5 pt-1 pb-2 group">
-            <div className="brand-mark w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-bold">
+          <Link href="/dashboard" className="flex items-center gap-2.5 px-2 pt-1 pb-2 group">
+            <div className="w-8 h-8 rounded-xl bg-[var(--grad-accent)] flex items-center justify-center text-[14px] font-extrabold text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 group-hover:shadow-indigo-500/40 transition-all duration-300">
               R
             </div>
             <div className="leading-none">
-              <span className="font-bold text-[13px] tracking-tight text-[var(--foreground)] block">
-                RecruitAI
+              <span className="font-extrabold text-sm tracking-tight text-[var(--foreground)] block group-hover:text-[var(--accent)] transition-colors">
+                Recruit<span className="text-gradient-aurora">AI</span>
               </span>
-              <span className="text-[8.5px] font-mono text-[var(--muted)] font-semibold tracking-[0.14em] uppercase mt-0.5 block">
+              <span className="text-[9px] font-mono text-[var(--muted)] font-semibold tracking-[0.14em] uppercase mt-1 block">
                 {t('brand_tagline')}
               </span>
             </div>
