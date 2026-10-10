@@ -525,6 +525,14 @@ export interface TranslationDictionary {
   match_band_strong: string;
   match_band_good: string;
   match_band_building: string;
+  personalized_welcome: string;
+  personalized_shortlisted: string;
+  personalized_interviewing: string;
+  apply_personalized_title: string;
+  apply_personalized_desc: string;
+  apply_personalized_email_note: string;
+  apply_personalized_saved_cv: string;
+  apply_personalized_using_saved_cv: string;
 
   // Profile extras
   profile_workspace_candidate: string;
@@ -548,6 +556,9 @@ export interface TranslationDictionary {
   profile_cv_remove_failed: string;
   profile_cv_saved_on: string;
   aria_upload_cv: string;
+  profile_personalized_greeting: string;
+  profile_completion_status: string;
+  profile_completion_hint: string;
 
   // Audit extras
   audit_search_actor: string;
@@ -763,8 +774,7 @@ export interface TranslationDictionary {
 
   // Errors & misc
   error_generic_title: string;
-  btn_try_again: string;
-  apply_legacy_title: string;
+  btn_try_again: string; apply_legacy_title: string;
   apply_legacy_desc: string;
   apply_legacy_select: string;
   apply_legacy_first_name: string;
@@ -777,6 +787,7 @@ export interface TranslationDictionary {
   apply_legacy_status_uploading: string;
   apply_legacy_status_success: string;
   apply_legacy_upload_failed: string;
+
   interview_badge: string;
   interview_title: string;
   interview_subtitle: string;
@@ -818,6 +829,51 @@ export interface TranslationDictionary {
   feedback_no: string;
   toast_telemetry_refreshed: string;
   toast_telemetry_title: string;
+
+  // Screening re-run + run history (§6.5)
+  btn_rerun_screening: string;
+  btn_screening_queued: string;
+  toast_screening_queued: string;
+  toast_screening_failed: string;
+  screening_history_title: string;
+  screening_history_empty: string;
+  screening_history_latest: string;
+  screening_history_col_rubric: string;
+
+  // Candidate messaging: preview & edit before send (§6.9)
+  btn_message_candidate: string;
+  message_modal_title: string;
+  message_modal_hint: string;
+  message_template_label: string;
+  message_template_general: string;
+  message_template_ack: string;
+  message_template_invite: string;
+  message_template_reschedule: string;
+  message_template_rejection: string;
+  message_subject_label: string;
+  message_subject_placeholder: string;
+  message_body_label: string;
+  message_body_placeholder: string;
+  message_placeholders_hint: string;
+  message_preview_label: string;
+  message_preview_btn: string;
+  message_send_btn: string;
+  toast_message_sent: string;
+  toast_message_failed: string;
+
+  // Account suspension / reactivation (§6.1)
+  team_badge_suspended: string;
+  team_suspend: string;
+  team_reactivate: string;
+  team_suspend_confirm: string;
+  team_reactivate_confirm: string;
+  toast_status_updated: string;
+  toast_status_failed: string;
+
+  // Rubric criterion editor: category, threshold, evidence (§6.2)
+  criterion_category: string;
+  criterion_threshold: string;
+  criterion_evidence: string;
 }
 
 export const translations: Record<SupportedLanguage, TranslationDictionary> = {
@@ -1051,6 +1107,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     my_apps_submissions: 'SUBMISSIONS',
     my_apps_applied_on: 'Applied on',
     my_apps_general_app: 'General Application',
+    personalized_welcome: '👋 Welcome back, {name}!',
+    personalized_shortlisted: 'Shortlisted',
+    personalized_interviewing: 'Interviewing',
 
     team_title: 'User & Access Governance',
     team_subtitle: 'Strictly segregated directory distinguishing internal workspace staff from external job seekers.',
@@ -1343,6 +1402,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_remove_failed: 'Failed to remove CV',
     profile_cv_saved_on: 'saved {date}',
     aria_upload_cv: 'Upload CV',
+    profile_personalized_greeting: '👋 Keep building your profile, {firstName}! Your saved details make applying faster.',
+    profile_completion_status: '{completed}/{total} complete — add a CV and skills to unlock one-click applications',
+    profile_completion_hint: 'Complete your profile to unlock a smoother application experience across all open positions.',
 
     audit_search_actor: 'Search by actor email…',
     audit_search_actor_aria: 'Search audit log by actor email',
@@ -1564,6 +1626,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_legacy_status_uploading: 'Uploading resume...',
     apply_legacy_status_success: 'Success! Your application has been submitted and is processing.',
     apply_legacy_upload_failed: 'Upload failed',
+    apply_personalized_title: 'Welcome back! Apply for Jobs',
+    apply_personalized_desc: 'We have pre-filled your details to make applying faster. Choose a position, review your information, and submit your application.',
+    apply_personalized_email_note: 'We have pre-filled your email from your account. Change it if needed.',
+    apply_personalized_saved_cv: 'We have saved your CV. You can use it for this application or upload a different one.',
+    apply_personalized_using_saved_cv: 'Using your saved CV — no upload needed',
     interview_badge: 'INTERVIEW SCHEDULING',
     interview_title: 'Schedule Structured Interview',
     interview_subtitle: 'Dispatch calendar invitations, prepare technical scorecards, and reserve interview panelists.',
@@ -1602,7 +1669,44 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     feedback_yes: 'Yes, Accurate',
     feedback_no: 'No, Override Decision',
     toast_telemetry_refreshed: 'Pipeline telemetry refreshed from the database',
-    toast_telemetry_title: 'Telemetry Updated'
+    toast_telemetry_title: 'Telemetry Updated',
+    btn_rerun_screening: 'Re-run Screening',
+    btn_screening_queued: 'Queued…',
+    toast_screening_queued: 'Screening re-run queued — earlier results are kept for comparison.',
+    toast_screening_failed: 'Could not queue the screening run.',
+    screening_history_title: 'Screening History',
+    screening_history_empty: 'No screening runs yet.',
+    screening_history_latest: 'LATEST',
+    screening_history_col_rubric: 'Rubric',
+    btn_message_candidate: 'Message',
+    message_modal_title: 'Message candidate',
+    message_modal_hint: 'Preview your message before sending. Internal notes and AI details are never sent to candidates.',
+    message_template_label: 'Template',
+    message_template_general: 'General update',
+    message_template_ack: 'Application acknowledgement',
+    message_template_invite: 'Interview invitation',
+    message_template_reschedule: 'Interview rescheduled',
+    message_template_rejection: 'Rejection',
+    message_subject_label: 'Subject',
+    message_subject_placeholder: 'Subject line',
+    message_body_label: 'Message',
+    message_body_placeholder: 'Write your message…',
+    message_placeholders_hint: 'Placeholders: {{candidateName}}, {{jobTitle}}',
+    message_preview_label: 'Preview',
+    message_preview_btn: 'Preview',
+    message_send_btn: 'Send',
+    toast_message_sent: 'Message sent — delivery status recorded.',
+    toast_message_failed: 'Message could not be sent.',
+    team_badge_suspended: 'Suspended',
+    team_suspend: 'Suspend',
+    team_reactivate: 'Reactivate',
+    team_suspend_confirm: 'Suspend {name}? Their access is revoked immediately.',
+    team_reactivate_confirm: 'Reactivate {name}?',
+    toast_status_updated: 'Account status updated for {name}.',
+    toast_status_failed: 'Could not update the account status.',
+    criterion_category: 'Category',
+    criterion_threshold: 'Minimum threshold (e.g. 5 years)',
+    criterion_evidence: 'Acceptable evidence (what counts as proof)'
   },
   fr: {
     nav_dashboard: 'Tableau de bord',
@@ -1834,6 +1938,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     my_apps_submissions: 'SOUMISSIONS',
     my_apps_applied_on: 'Postulé le',
     my_apps_general_app: 'Candidature Générale',
+    personalized_welcome: '👋 Bon retour, {name} !',
+    personalized_shortlisted: 'Sélectionné',
+    personalized_interviewing: 'En entretien',
 
     team_title: 'Gestion des Rôles & Utilisateurs',
     team_subtitle: 'Annuaire strictement séparé distinguant les collaborateurs internes des candidats externes.',
@@ -2125,6 +2232,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_save_failed: 'Échec de l’enregistrement du CV',
     profile_cv_remove_failed: 'Échec de la suppression du CV',
     profile_cv_saved_on: 'enregistré le {date}',
+    profile_personalized_greeting: '👋 Continue de développer ton profil, {firstName} ! Tes informations enregistrées rendent la candidature plus rapide.',
+    profile_completion_status: '{completed}/{total} complet — ajoute un CV et des compétences pour débloquer les candidatures en un clic',
+    profile_completion_hint: 'Complète ton profil pour une expérience de candidature plus fluide sur toutes les offres ouvertes.',
     aria_upload_cv: 'Importer le CV',
 
     audit_search_actor: 'Rechercher par e-mail de l’acteur…',
@@ -2347,7 +2457,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_legacy_status_uploading: 'Téléversement du CV en cours...',
     apply_legacy_status_success: 'Succès ! Votre candidature a été envoyée et est en cours de traitement.',
     apply_legacy_upload_failed: 'Échec du téléversement',
-    interview_badge: 'PLANIFICATION D’ENTRETIEN',
+    apply_personalized_title: 'Bon retour ! Postule aux offres',
+    apply_personalized_desc: 'Nous avons pré-rempli tes informations pour accélérer la candidature. Choisis une offre, vérifie tes informations et soumets ta candidature.',
+    apply_personalized_email_note: 'Nous avons pré-rempli ton e-mail depuis ton compte. Modifie-le si nécessaire.',
+    apply_personalized_saved_cv: 'Nous avons enregistré ton CV. Tu peux l utiliser pour cette candidature ou téléverser un CV différent.',
+    apply_personalized_using_saved_cv: 'Utilisation de ton CV enregistré — aucun téléversement nécessaire',
+    interview_badge: 'PLANIFICATION D ENTRETIEN',
     interview_title: 'Planifier un entretien structuré',
     interview_subtitle: 'Envoyez les invitations calendrier, préparez les fiches techniques et réservez les membres du jury.',
     interview_success_title: 'Entretien planifié avec succès !',
@@ -2385,7 +2500,44 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     feedback_yes: 'Oui, exact',
     feedback_no: 'Non, remplacer la décision',
     toast_telemetry_refreshed: 'Télémétrie du pipeline actualisée depuis la base de données',
-    toast_telemetry_title: 'Télémétrie mise à jour'
+    toast_telemetry_title: 'Télémétrie mise à jour',
+    btn_rerun_screening: 'Relancer le tri',
+    btn_screening_queued: 'En file…',
+    toast_screening_queued: 'Nouveau tri en file d’attente — les résultats antérieurs sont conservés pour comparaison.',
+    toast_screening_failed: 'Impossible de mettre le tri en file.',
+    screening_history_title: 'Historique du tri',
+    screening_history_empty: 'Aucun tri pour le moment.',
+    screening_history_latest: 'ACTUEL',
+    screening_history_col_rubric: 'Grille',
+    btn_message_candidate: 'Message',
+    message_modal_title: 'Message au candidat',
+    message_modal_hint: 'Prévisualisez votre message avant envoi. Les notes internes et détails de l’IA ne sont jamais envoyés aux candidats.',
+    message_template_label: 'Modèle',
+    message_template_general: 'Mise à jour générale',
+    message_template_ack: 'Accusé de réception de candidature',
+    message_template_invite: 'Invitation à un entretien',
+    message_template_reschedule: 'Entretien reprogrammé',
+    message_template_rejection: 'Refus',
+    message_subject_label: 'Objet',
+    message_subject_placeholder: 'Ligne d’objet',
+    message_body_label: 'Message',
+    message_body_placeholder: 'Rédigez votre message…',
+    message_placeholders_hint: 'Variables : {{candidateName}}, {{jobTitle}}',
+    message_preview_label: 'Aperçu',
+    message_preview_btn: 'Aperçu',
+    message_send_btn: 'Envoyer',
+    toast_message_sent: 'Message envoyé — statut de livraison enregistré.',
+    toast_message_failed: 'Le message n’a pas pu être envoyé.',
+    team_badge_suspended: 'Suspendu',
+    team_suspend: 'Suspendre',
+    team_reactivate: 'Réactiver',
+    team_suspend_confirm: 'Suspendre {name} ? L’accès est révoqué immédiatement.',
+    team_reactivate_confirm: 'Réactiver {name} ?',
+    toast_status_updated: 'Statut du compte mis à jour pour {name}.',
+    toast_status_failed: 'Impossible de mettre à jour le statut du compte.',
+    criterion_category: 'Catégorie',
+    criterion_threshold: 'Seuil minimum (ex. 5 ans)',
+    criterion_evidence: 'Preuve acceptable (ce qui compte comme preuve)'
   },
   es: {
     nav_dashboard: 'Panel de Control',
@@ -2617,6 +2769,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     my_apps_submissions: 'SOLICITUDES',
     my_apps_applied_on: 'Postulado el',
     my_apps_general_app: 'Solicitud General',
+    personalized_welcome: '👋 Bienvenido de nuevo, {name} !',
+    personalized_shortlisted: 'Seleccionado',
+    personalized_interviewing: 'En entrevista',
 
     team_title: 'Gestión de Usuarios y Accesos',
     team_subtitle: 'Directorio estructurado que separa el personal interno de los candidatos externos.',
@@ -2909,6 +3064,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_remove_failed: 'Error al eliminar el CV',
     profile_cv_saved_on: 'guardado el {date}',
     aria_upload_cv: 'Subir CV',
+    profile_personalized_greeting: '👋 Sigue desarrollando tu perfil, {firstName} ! Tus datos guardados hacen la postulación más rápida.',
+    profile_completion_status: '{completed}/{total} completado — añade un CV y habilidades para desbloquear postulaciones en un clic',
+    profile_completion_hint: 'Completa tu perfil para una experiencia de postulación más fluida en todas las vacantes abiertas.',
 
     audit_search_actor: 'Buscar por correo del actor…',
     audit_search_actor_aria: 'Buscar en el registro por correo del actor',
@@ -3130,6 +3288,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_legacy_status_uploading: 'Subiendo el CV...',
     apply_legacy_status_success: '¡Éxito! Tu solicitud ha sido enviada y se está procesando.',
     apply_legacy_upload_failed: 'Error al subir',
+    apply_personalized_title: '¡Bienvenido de nuevo! Postúlate a Empleos',
+    apply_personalized_desc: 'Hemos pre-rellenado tus datos para hacer la postulación más rápida. Elige un puesto, revisa tu información y envía tu solicitud.',
+    apply_personalized_email_note: 'Hemos pre-rellenado tu correo desde tu cuenta. Cámbialo si es necesario.',
+    apply_personalized_saved_cv: 'Hemos guardado tu CV. Puedes usarlo para esta solicitud o subir uno diferente.',
+    apply_personalized_using_saved_cv: 'Usando tu CV guardado — no se necesita subir nada',
     interview_badge: 'PROGRAMACIÓN DE ENTREVISTAS',
     interview_title: 'Programar entrevista estructurada',
     interview_subtitle: 'Envía invitaciones de calendario, prepara tarjetas técnicas y reserva al panel de entrevistadores.',
@@ -3168,7 +3331,44 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     feedback_yes: 'Sí, precisa',
     feedback_no: 'No, anular la decisión',
     toast_telemetry_refreshed: 'Telemetría del pipeline actualizada desde la base de datos',
-    toast_telemetry_title: 'Telemetría actualizada'
+    toast_telemetry_title: 'Telemetría actualizada',
+    btn_rerun_screening: 'Re-evaluar',
+    btn_screening_queued: 'En cola…',
+    toast_screening_queued: 'Re-evaluación en cola — los resultados anteriores se conservan para comparación.',
+    toast_screening_failed: 'No se pudo encolar la re-evaluación.',
+    screening_history_title: 'Historial de evaluación',
+    screening_history_empty: 'Aún no hay evaluaciones.',
+    screening_history_latest: 'ACTUAL',
+    screening_history_col_rubric: 'Rúbrica',
+    btn_message_candidate: 'Mensaje',
+    message_modal_title: 'Mensaje al candidato',
+    message_modal_hint: 'Previsualiza tu mensaje antes de enviarlo. Las notas internas y detalles de IA nunca se envían a los candidatos.',
+    message_template_label: 'Plantilla',
+    message_template_general: 'Actualización general',
+    message_template_ack: 'Acuse de recibo de solicitud',
+    message_template_invite: 'Invitación a entrevista',
+    message_template_reschedule: 'Entrevista reprogramada',
+    message_template_rejection: 'Rechazo',
+    message_subject_label: 'Asunto',
+    message_subject_placeholder: 'Línea de asunto',
+    message_body_label: 'Mensaje',
+    message_body_placeholder: 'Escribe tu mensaje…',
+    message_placeholders_hint: 'Variables: {{candidateName}}, {{jobTitle}}',
+    message_preview_label: 'Previsualización',
+    message_preview_btn: 'Previsualizar',
+    message_send_btn: 'Enviar',
+    toast_message_sent: 'Mensaje enviado — estado de entrega registrado.',
+    toast_message_failed: 'No se pudo enviar el mensaje.',
+    team_badge_suspended: 'Suspendido',
+    team_suspend: 'Suspender',
+    team_reactivate: 'Reactivar',
+    team_suspend_confirm: '¿Suspender {name}? El acceso se revoca de inmediato.',
+    team_reactivate_confirm: '¿Reactivar {name}?',
+    toast_status_updated: 'Estado de cuenta actualizado para {name}.',
+    toast_status_failed: 'No se pudo actualizar el estado de la cuenta.',
+    criterion_category: 'Categoría',
+    criterion_threshold: 'Umbral mínimo (p. ej. 5 años)',
+    criterion_evidence: 'Evidencia aceptable (qué cuenta como prueba)'
   },
   de: {
     nav_dashboard: 'Dashboard',
@@ -3400,6 +3600,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     my_apps_submissions: 'BEWERBUNGEN',
     my_apps_applied_on: 'Beworben am',
     my_apps_general_app: 'Initiativbewerbung',
+    personalized_welcome: '👋 Willkommen zurück, {name} !',
+    personalized_shortlisted: 'Kurzliste',
+    personalized_interviewing: 'Im Vorstellungsgespräch',
 
     team_title: 'Benutzer- & Rollenverwaltung',
     team_subtitle: 'Strikt getrenntes Verzeichnis zwischen internen Mitarbeitern und registrierten Bewerbern.',
@@ -3679,6 +3882,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_department_access: 'Abteilungszugriff:',
     profile_applications_count: '{count} Bewerbungen',
     profile_cv_saved_ok: 'Lebenslauf gespeichert — 1-Klick-Bewerbung ist freigeschaltet.',
+    profile_personalized_greeting: '👋 Baue dein Profil weiter aus, {firstName} ! Gespeicherte Daten beschleunigen Bewerbungen.',
+    profile_completion_status: '{completed}/{total} abgeschlossen — CV und Skills hinzufügen für 1-Klick-Bewerbungen',
+    profile_completion_hint: 'Profil vervollständigen für eine reibungslosere Bewerbungserfahrung bei allen offenen Stellen.',
     profile_cv_removed_ok: 'Gespeicherter Lebenslauf entfernt.',
     profile_add: 'Hinzufügen',
     profile_skill_placeholder: 'Skill eingeben und Enter drücken — z. B. React, SQL, Figma',
@@ -3913,6 +4119,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_legacy_status_uploading: 'Lebenslauf wird hochgeladen...',
     apply_legacy_status_success: 'Erfolg! Ihre Bewerbung wurde übermittelt und wird verarbeitet.',
     apply_legacy_upload_failed: 'Upload fehlgeschlagen',
+    apply_personalized_title: 'Willkommen zurück! Stellen bewerben',
+    apply_personalized_desc: 'Wir haben deine Daten vorausgefüllt, um Bewerbung zu beschleunigen. Wähle eine Stelle, überprüfe Informationen und sende Bewerbung.',
+    apply_personalized_email_note: 'E-Mail aus deinem Konto vorausgefüllt. Ändere bei Bedarf.',
+    apply_personalized_saved_cv: 'Lebenslauf gespeichert. Für diese Bewerbung verwenden oder anderen hochladen.',
+    apply_personalized_using_saved_cv: 'Gespeicherter Lebenslauf wird verwendet — kein Upload erforderlich',
     interview_badge: 'INTERVIEWPLANUNG',
     interview_title: 'Strukturiertes Interview planen',
     interview_subtitle: 'Kalendereinladungen versenden, technische Bewertungsbögen vorbereiten und Interviewpanel reservieren.',
@@ -3951,10 +4162,47 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     feedback_yes: 'Ja, genau',
     feedback_no: 'Nein, Entscheidung überstimmen',
     toast_telemetry_refreshed: 'Pipeline-Telemetrie aus der Datenbank aktualisiert',
-    toast_telemetry_title: 'Telemetrie aktualisiert'
+    toast_telemetry_title: 'Telemetrie aktualisiert',
+    btn_rerun_screening: 'Screening neu ausführen',
+    btn_screening_queued: 'In Warteschlange…',
+    toast_screening_queued: 'Screening-Lauf eingereicht — frühere Ergebnisse bleiben zum Vergleich erhalten.',
+    toast_screening_failed: 'Screening-Lauf konnte nicht eingereicht werden.',
+    screening_history_title: 'Screening-Verlauf',
+    screening_history_empty: 'Noch keine Screenings.',
+    screening_history_latest: 'AKTUELL',
+    screening_history_col_rubric: 'Rubrik',
+    btn_message_candidate: 'Nachricht',
+    message_modal_title: 'Kandidat:in anschreiben',
+    message_modal_hint: 'Prüfe deine Nachricht vor dem Senden. Interne Notizen und KI-Details werden nie an Kandidat:innen gesendet.',
+    message_template_label: 'Vorlage',
+    message_template_general: 'Allgemeines Update',
+    message_template_ack: 'Bewerbungseingangsbestätigung',
+    message_template_invite: 'Einladung zum Gespräch',
+    message_template_reschedule: 'Gespräch verschoben',
+    message_template_rejection: 'Absage',
+    message_subject_label: 'Betreff',
+    message_subject_placeholder: 'Betreffzeile',
+    message_body_label: 'Nachricht',
+    message_body_placeholder: 'Nachricht schreiben…',
+    message_placeholders_hint: 'Platzhalter: {{candidateName}}, {{jobTitle}}',
+    message_preview_label: 'Vorschau',
+    message_preview_btn: 'Vorschau',
+    message_send_btn: 'Senden',
+    toast_message_sent: 'Nachricht gesendet — Zustellstatus protokolliert.',
+    toast_message_failed: 'Nachricht konnte nicht gesendet werden.',
+    team_badge_suspended: 'Gesperrt',
+    team_suspend: 'Sperren',
+    team_reactivate: 'Entsperren',
+    team_suspend_confirm: '{name} sperren? Der Zugriff wird sofort entzogen.',
+    team_reactivate_confirm: '{name} entsperren?',
+    toast_status_updated: 'Kontostatus für {name} aktualisiert.',
+    toast_status_failed: 'Kontostatus konnte nicht aktualisiert werden.',
+    criterion_category: 'Kategorie',
+    criterion_threshold: 'Mindestschwellenwert (z. B. 5 Jahre)',
+    criterion_evidence: 'Akzeptierter Nachweis (was als Beleg zählt)'
   },
   rw: {
-    nav_dashboard: 'Ikibaho cy’Ibanze',
+    nav_dashboard: 'Urukuta rw’Ibanze',
     nav_candidates: 'Abakandida',
     nav_compare: 'Kugereranya Abakandida',
     nav_duplicates: 'Gusuzuma Abisubiyemo',
@@ -3969,7 +4217,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_title: 'Umwirondoro wanjye',
     profile_subtitle: 'Konti yawe, CV yawe nuko ujyira abakora akazi',
     profile_saved_cv: 'CV ibitswe',
-    profile_no_cv: 'Nta CV ibitswe na none — shyiramo imwe kugira ngo usabe ukanda rimwe.',
+    profile_no_cv: 'Nta CV ibitswe na none — shyiramo imwe kugira ngo usabe akazi ukanze rimwe.',
     profile_upload_cv: 'Shyiraho CV',
     profile_replace_cv: 'Kora CV nshya',
     profile_remove_cv: 'Kuraho',
@@ -3997,7 +4245,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     qp_blind_screening: '🔒 Gusuzuma Hatagaragajwe Umwirondoro',
     qp_create_rubric: '💼 Gushyiraho Ibipimo',
     qp_questions: '🤖 Ibibazo by’Ibizamini',
-    qp_apply_track: '📋 Gusaba & kurikirana',
+    qp_apply_track: '📋 Gusaba & Gukurikirana',
 
     total_candidates: 'Abakandida Bose',
     avg_match_rate: 'Ikigereranyo cy’Ubumenyi',
@@ -4183,6 +4431,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     my_apps_submissions: 'UBUSABE BWATANZWE',
     my_apps_applied_on: 'Yatanzwe ku wa',
     my_apps_general_app: 'Ubusabe Rusange',
+    personalized_welcome: '👋 Murakaza neza nanone, {name} !',
+    personalized_shortlisted: 'Yagenwa',
+    personalized_interviewing: 'Iri mu bizamini',
 
     team_title: 'Ubuyobozi bw’Abakozi n’Inshingano',
     team_subtitle: 'Urutonde rutandukanya abakozi b’imbere mu kigo n’abakandida basaba akazi.',
@@ -4474,6 +4725,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_save_failed: 'Byanze kubika CV',
     profile_cv_remove_failed: 'Byanze gukuraho CV',
     profile_cv_saved_on: 'kibitswe kuwa {date}',
+    profile_personalized_greeting: '👋 Kora uko bikurikira, {firstName}! Amakuru yabitswe atuma ubusabe bwarakoze vuba.',
+    profile_completion_status: '{completed}/{total} byafatanye — ongeraho CV n’ubushobozi kugira ngo ubusabe bwarakoresha bikande rimwe',
+    profile_completion_hint: 'Kora profil yawe kugira ngo ubusabe burakwira mu buryo bukurikira imyanya yose yasarwa.',
     aria_upload_cv: 'Injiza CV',
 
     audit_search_actor: 'Shakisha kuri imeri y’uwakoze…',
@@ -4696,6 +4950,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_legacy_status_uploading: 'CV irimo koherezwa...',
     apply_legacy_status_success: 'Byagenze neza! Ubusabe bwawe bwoherejwe kandi burimo gukorwa.',
     apply_legacy_upload_failed: 'Kohereza byanze',
+    apply_personalized_title: 'Kuri hejo! Saba imyanya',
+    apply_personalized_desc: 'Dufite amakuru yawe yaguwe kugira ngo ubusabe bwarakoze vuba.',
+    apply_personalized_email_note: 'Imeyili yawe yaguwe ku konti.',
+    apply_personalized_saved_cv: 'Turafite CV yawe yashyirwe.',
+    apply_personalized_using_saved_cv: 'Koresha CV yawe yashyirwe — nta winjire yikenewe',
     interview_badge: 'ITEGANYWA RY’IBIZAMINI',
     interview_title: 'Tegeanya ikizamini cya nyuma',
     interview_subtitle: 'Ohereza amatangazo ya kalendari, tegura ibipimo by’imikorere, hanyuma hita abasuzuma.',
@@ -4734,6 +4993,43 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     feedback_yes: 'Yego, yagaragara',
     feedback_no: 'Oya, hindura icyemezo',
     toast_telemetry_refreshed: 'Ibipimo bya pipeline byavuguruwe muri database',
-    toast_telemetry_title: 'Ibipimo byavuguruwe'
+    toast_telemetry_title: 'Ibipimo byavuguruwe',
+    btn_rerun_screening: 'Subiramo Isuzume',
+    btn_screening_queued: 'Mu rutonde…',
+    toast_screening_queued: 'Isuzume isubirwa mu rutonde — ibyakubye imbere birubahirirwa ku mpandana.',
+    toast_screening_failed: 'Ntibyatanzwe mu rutonde.',
+    screening_history_title: 'Amateka y’Isuzume',
+    screening_history_empty: 'Nta suzume ahari.',
+    screening_history_latest: 'IGIHE KIBANZE',
+    screening_history_col_rubric: 'Rubric',
+    btn_message_candidate: 'Ubutumwa',
+    message_modal_title: 'Ohereza ubutumwa ku nkikandida',
+    message_modal_hint: 'Reba ubutumwa bwawe mbere yo kohereza. Ibyo ngibanga n’ibikorwa bya AI ntuboherejerwa ku bakandida.',
+    message_template_label: 'Modeli y’ubutumwa',
+    message_template_general: 'Amakuru rusange',
+    message_template_ack: 'Ubwemezo bw’akwemera',
+    message_template_invite: 'Kwitonderwa gahunda',
+    message_template_reschedule: 'Guhindura ikigero',
+    message_template_rejection: 'Kanga',
+    message_subject_label: 'Umutwe',
+    message_subject_placeholder: 'Umutwe w’ubutumwa',
+    message_body_label: 'Ubutumwa',
+    message_body_placeholder: 'Andika ubutumwa bwawe…',
+    message_placeholders_hint: 'Imyirwana: {{candidateName}}, {{jobTitle}}',
+    message_preview_label: 'Reba',
+    message_preview_btn: 'Reba',
+    message_send_btn: 'Ohereza',
+    toast_message_sent: 'Ubutumwa bwoherezwe — imimerere y’akwizera yubatswe.',
+    toast_message_failed: 'Ubutumwa nt bwahwejejwe.',
+    team_badge_suspended: 'Byahagaritswe',
+    team_suspend: 'Hagarika',
+    team_reactivate: 'Garura',
+    team_suspend_confirm: 'Hagarika {name}? Ijamba rya we ryanasibwa vuba.',
+    team_reactivate_confirm: 'Garura {name}?',
+    toast_status_updated: 'Imimerere ya konti yavuguruwe kuri {name}.',
+    toast_status_failed: 'Imimerere ya konti nt yavuguruwe.',
+    criterion_category: 'Icyiciro',
+    criterion_threshold: 'Hejuru runini (urugero: imyaka 5)',
+    criterion_evidence: 'Ibyemezwa (ibishobora kuba ubuhati)'
   }
 };
