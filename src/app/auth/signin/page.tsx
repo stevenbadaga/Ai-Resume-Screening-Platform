@@ -42,6 +42,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   backToCredentials: string;
   codeDeliveryFailed: string;
   tooManyAttempts: string;
+  codeCooldownWait: string;
   activate: string;
   activationSuccess: string;
   registeredEmailFailed: string;
@@ -81,6 +82,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     backToCredentials: '← Use a different account',
     codeDeliveryFailed: 'The email could not be sent right now. Please try again shortly.',
     tooManyAttempts: 'Too many attempts. Please try again later.',
+    codeCooldownWait: 'A code was just sent — finishing sign-in…',
     activate: 'Activate ➔',
     activationSuccess: 'Email verified! Continuing to sign-in…',
     registeredEmailFailed: 'Account created, but the verification email could not be sent (email delivery is not working right now).',
@@ -120,6 +122,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     backToCredentials: '← Utiliser un autre compte',
     codeDeliveryFailed: 'L’e-mail n’a pas pu être envoyé pour le moment. Veuillez réessayer sous peu.',
     tooManyAttempts: 'Trop de tentatives. Veuillez réessayer plus tard.',
+    codeCooldownWait: 'Un code vient d’être envoyé — finalisation de la connexion…',
     activate: 'Activer ➔',
     activationSuccess: 'E-mail vérifié ! Continuation de la connexion…',
     registeredEmailFailed: 'Compte créé, mais l’e-mail de vérification n’a pas pu être envoyé (l’envoi d’e-mails ne fonctionne pas pour le moment).',
@@ -159,6 +162,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     backToCredentials: '← Usar otra cuenta',
     codeDeliveryFailed: 'No se pudo enviar el correo ahora mismo. Inténtelo de nuevo en breve.',
     tooManyAttempts: 'Demasiados intentos. Inténtelo más tarde.',
+    codeCooldownWait: 'Se acaba de enviar un código — completando el inicio de sesión…',
     activate: 'Activar ➔',
     activationSuccess: '¡Correo verificado! Continuando con el inicio de sesión…',
     registeredEmailFailed: 'Cuenta creada, pero no se pudo enviar el correo de verificación (el envío de correos no funciona en este momento).',
@@ -198,6 +202,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     backToCredentials: '← Anderes Konto verwenden',
     codeDeliveryFailed: 'Die E-Mail konnte gerade nicht gesendet werden. Bitte gleich erneut versuchen.',
     tooManyAttempts: 'Zu viele Versuche. Bitte später erneut versuchen.',
+    codeCooldownWait: 'Ein Code wurde gerade gesendet — Anmeldung wird abgeschlossen…',
     activate: 'Aktivieren ➔',
     activationSuccess: 'E-Mail bestätigt! Anmeldung wird fortgesetzt…',
     registeredEmailFailed: 'Konto erstellt, aber die Bestätigungs-E-Mail konnte nicht gesendet werden (der E-Mail-Versand funktioniert derzeit nicht).',
@@ -237,6 +242,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     backToCredentials: '← Koresha konti ikomeye',
     codeDeliveryFailed: 'Imeyili ntishobora koherezwa ubu. Ongera ugerageze minyote.',
     tooManyAttempts: 'Ongeraneza bwinshi. Ongera ugerageze nyuma.',
+    codeCooldownWait: 'Kode yoherezwa vuba — baguze gusa…',
     activate: 'Emeza konti ➔',
     activationSuccess: 'Imeyili yemejwe! Birimo gukomeza kwinjira…',
     registeredEmailFailed: 'Konti yafunguwe, ariko imeyili yo kwemeza ntishobora koherezwa (kohereza imeyili ntikora ubu).',
@@ -330,7 +336,7 @@ function SignInForm() {
   };
 
   // Step 1: verify credentials server-side and email the 6-digit code.
-  const runChallenge = async (): Promise<void> => {
+  const runChallenge = async (isRetry = false): Promise<void> => {
     setLoading(true);
     setError('');
     setEmailNotVerified(false);
@@ -352,6 +358,20 @@ function SignInForm() {
       } else if (data.error === 'EMAIL_NOT_VERIFIED') {
         setEmailNotVerified(true);
       } else if (res.status === 429) {
+        // A code was issued moments ago (60s resend cooldown) — wait it out
+        // and ask once more instead of dead-ending the user with a scary
+        // error. The server stays authoritative: a real flood (IP/account
+        // limiter) carries no retryAfterSeconds and still shows the error.
+        if (
+          !isRetry &&
+          typeof data?.retryAfterSeconds === 'number' &&
+          data.retryAfterSeconds > 0 &&
+          data.retryAfterSeconds <= 70
+        ) {
+          setError(copy.codeCooldownWait);
+          await new Promise((resolve) => setTimeout(resolve, Math.min(data.retryAfterSeconds, 60) * 1000));
+          return runChallenge(true);
+        }
         setError(copy.tooManyAttempts);
       } else if (res.status === 503) {
         setStep('code');

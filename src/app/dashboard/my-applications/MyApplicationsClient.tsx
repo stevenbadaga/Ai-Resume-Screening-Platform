@@ -1,14 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
-
-interface MyApplicationsClientProps {
+import { useLanguage } from '@/lib/i18n/LanguageContext';interface MyApplicationsClientProps {
   applications: any[];
+  personalization?: {
+    firstName?: string;
+    applicationsCount?: number;
+    shortlistedCount?: number;
+    interviewingCount?: number;
+    email?: string | null;
+  };
 }
-
-export default function MyApplicationsClient({ applications }: MyApplicationsClientProps) {
+export default function MyApplicationsClient({ applications, personalization = {} }: MyApplicationsClientProps) {
   const { t } = useLanguage();
+  const firstName = personalization.firstName || '';
+  const shortlistedCount = personalization.shortlistedCount || 0;
+  const interviewingCount = personalization.interviewingCount || 0;
 
   // Honest AI-score banding (§6.3/§6.5 — scores are evidence-based, never a
   // hiring promise): how the candidate's latest screening run compares to the
@@ -37,9 +44,16 @@ export default function MyApplicationsClient({ applications }: MyApplicationsCli
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
+      {/* Top Header */}        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
         <div>
+          {/* Personalized Welcome Banner */}
+          {firstName && (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="chip chip-success">
+                {firstName.split(' ')[0] ? t('personalized_welcome').replace('{name}', firstName.split(' ')[0]) : t('personalized_welcome').replace('{name}', firstName)}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <h1 className="h-page">{t('my_apps_title')}</h1>
             <span className="chip chip-accent">
@@ -49,6 +63,21 @@ export default function MyApplicationsClient({ applications }: MyApplicationsCli
           <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)] mt-0.5">
             {t('my_apps_subtitle')}
           </p>
+          {/* Personalized status summary */}
+          {(shortlistedCount > 0 || interviewingCount > 0) && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {shortlistedCount > 0 && (
+                <span className="chip chip-success !text-[10px]">
+                  {shortlistedCount} {t('personalized_shortlisted')}
+                </span>
+              )}
+              {interviewingCount > 0 && (
+                <span className="chip chip-accent !text-[10px]">
+                  {interviewingCount} {t('personalized_interviewing')}
+                </span>
+              )}
+            </div>
+          )}
           <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] mt-1">
             {t('my_apps_score_hint')}
           </p>

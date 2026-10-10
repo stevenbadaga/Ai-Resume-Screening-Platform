@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { roleCapabilities } from '@/lib/roleAccess';
+import { roleCapabilities, roleHasPermission, Permission } from '@/lib/roleAccess';
 
 interface Props {
   application?: any;
@@ -80,6 +80,21 @@ export default function CandidateProfileClient({
   const [decisionRationale, setDecisionRationale] = useState('');
   const [submittingDecision, setSubmittingDecision] = useState(false);
 
+  // §6.7: decision reasons come from the org's approved catalog (fetched from
+  // the server) so the form always matches what the API will accept.
+  const [reasonCatalog, setReasonCatalog] = useState<Array<{ code: string; label: string }>>([]);
+
+  // §6.5: recruiter-triggered screening re-run (earlier runs stay for comparison).
+  const [rerunningScreening, setRerunningScreening] = useState(false);
+
+  // §6.9: compose → preview → send candidate communications.
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageTemplate, setMessageTemplate] = useState('RECRUITER_MESSAGE');
+  const [messageSubject, setMessageSubject] = useState('');
+  const [messageBody, setMessageBody] = useState('');
+  const [messagePreview, setMessagePreview] = useState<{ subject: string; body: string } | null>(null);
+  const [messageBusy, setMessageBusy] = useState(false);
+
   // Active highlighted snippet
   const [highlightedSnippet, setHighlightedSnippet] = useState<string | null>(null);
 
@@ -90,6 +105,29 @@ export default function CandidateProfileClient({
   const canScheduleInterviews = roleCapabilities.canScheduleInterviews(userRole);
   const canGenerateInterviewQuestions = roleCapabilities.canGenerateInterviewQuestions(userRole);
   const canSubmitScorecards = roleCapabilities.canSubmitScorecards(userRole);
+  const canRunScreening = roleHasPermission(userRole, Permission.RunScreening);
+  const canContactCandidates = roleHasPermission(userRole, Permission.ContactCandidates);
+
+  // Load the approved decision-reason catalog once (§6.7). Falls back to the
+  // built-in defaults rendered below if the request fails.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/decisions/reasons')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.reasons) && data.reasons.length > 0) {
+          setReasonCatalog(data.reasons);
+          // Keep the pre-selected default valid for the configured catalog.
+          if (!data.reasons.some((r: { code: string }) => r.code === decisionReasonCode)) {
+            setDecisionReasonCode(data.reasons[0].code);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const latestRun = app.screeningRuns?.[0] || (screeningResults ? { totalResult: screeningResults } : null);
   const storedResult = latestRun?.totalResult;
@@ -307,6 +345,69 @@ export default function CandidateProfileClient({
     showToast(t('toast_question_copied'), 'info');
   };
 
+  // §6.5: queue an AI screening re-run against the current APPROVED rubric.
+  // Earlier runs remain untouched so results stay comparable.
+  const handleRerunScreening = async () => {
+    if (rerunningScreening) return;
+    setRerunningScreening(true);
+    try {
+      const res = await fetch(`/api/candidates/${app.id}/screening`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast(t('toast_screening_queued'), 'success');
+      } else {
+        showToast(data.error || t('toast_screening_failed'), 'error');
+      }
+    } catch {
+      showToast(t('toast_screening_failed'), 'error');
+    } finally {
+      setRerunningScreening(false);
+    }
+  };
+
+  // §6.9: preview has no side effects; send enforces the confidentiality
+  // guards server-side and records honest delivery state.
+  const postMessage = async (mode: 'preview' | 'send') => {
+    setMessageBusy(true);
+    try {
+      const res = await fetch(`/api/candidates/${app.id}/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode,
+          template: messageTemplate,
+          subject: messageSubject,
+          body: messageBody,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (mode === 'preview') {
+        if (res.ok) {
+          setMessagePreview(data.preview);
+          (data.issues || []).forEach((issue: { message: string }) =>
+            showToast(issue.message, 'info')
+          );
+        } else {
+          showToast(data.error || t('toast_message_failed'), 'error');
+        }
+        return data;
+      }
+      if (res.ok && data.delivered) {
+        showToast(t('toast_message_sent'), 'success');
+        setShowMessageModal(false);
+        setMessagePreview(null);
+      } else {
+        showToast(data.error || t('toast_message_failed'), 'error');
+      }
+      return data;
+    } catch {
+      showToast(t('toast_message_failed'), 'error');
+      return null;
+    } finally {
+      setMessageBusy(false);
+    }
+  };
+
   const radius = 28;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
@@ -348,6 +449,30 @@ export default function CandidateProfileClient({
 
         {/* Action Buttons Suite */}
         <div className="flex flex-wrap items-center gap-2">
+          {canRunScreening && (
+            <button
+              onClick={handleRerunScreening}
+              disabled={rerunningScreening}
+              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs disabled:opacity-60"
+            >
+              <span>🔁</span>
+              <span>{rerunningScreening ? t('btn_screening_queued') : t('btn_rerun_screening')}</span>
+            </button>
+          )}
+
+          {canContactCandidates && (
+            <button
+              onClick={() => {
+                setMessagePreview(null);
+                setShowMessageModal(true);
+              }}
+              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+            >
+              <span>✉</span>
+              <span>{t('btn_message_candidate')}</span>
+            </button>
+          )}
+
           {canGenerateInterviewQuestions && (
             <button
               onClick={handleGenerateQuestions}
@@ -511,6 +636,59 @@ export default function CandidateProfileClient({
             <p className="text-[11px] dark:text-slate-400 text-slate-600 leading-relaxed pt-2 border-t dark:border-[#30424A] border-slate-100">
               {totalResult.summary || t('cprofile_summary_fallback')}
             </p>
+          </div>
+
+          {/* §6.5: screening run history — earlier results are retained for
+              comparison and audit after a re-run. */}
+          <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 space-y-2.5">
+            <h3 className="text-[11px] font-semibold dark:text-slate-400 text-slate-500 uppercase tracking-wider">
+              {t('screening_history_title')}
+            </h3>
+            {(app.screeningRuns?.length ?? 0) === 0 ? (
+              <p className="text-[11px] dark:text-slate-400 text-slate-500">{t('screening_history_empty')}</p>
+            ) : (
+              <div className="space-y-1.5">
+                {(app.screeningRuns || []).map((run: any, idx: number) => {
+                  const runScore = Number(run.effectiveResult ?? run.totalResult);
+                  const statusLabel =
+                    run.status === 'COMPLETED'
+                      ? t('processing_completed')
+                      : run.status === 'FAILED'
+                        ? t('processing_failed')
+                        : t('processing_in_progress');
+                  return (
+                    <div
+                      key={run.id || idx}
+                      className="flex items-center justify-between gap-2 text-[11px] dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A]/40 border-slate-200 border rounded-lg px-2.5 py-2"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-mono font-bold dark:text-white text-slate-900 shrink-0">
+                          {Number.isFinite(runScore) ? `${Math.round(runScore)}%` : '—'}
+                        </span>
+                        {idx === 0 && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/30">
+                            {t('screening_history_latest')}
+                          </span>
+                        )}
+                        <span className="dark:text-slate-400 text-slate-500 truncate">
+                          {t('screening_history_col_rubric')} v{run.rubricVersion ?? '?'} &bull;{' '}
+                          {run.createdAt ? new Date(run.createdAt).toLocaleString() : ''}
+                        </span>
+                      </div>
+                      <span className={`shrink-0 font-semibold ${
+                        run.status === 'COMPLETED'
+                          ? 'text-emerald-500'
+                          : run.status === 'FAILED'
+                            ? 'text-rose-500'
+                            : 'text-amber-500'
+                      }`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Criteria Cards */}
@@ -803,14 +981,24 @@ export default function CandidateProfileClient({
                   onChange={(e) => setDecisionReasonCode(e.target.value)}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2 font-medium"
                 >
-                  <option value="QUALIFICATIONS_MATCH">{t('cprofile_reason_qualifications_match')}</option>
-                  <option value="EXCELLENT_TECHNICAL_FIT">{t('cprofile_reason_excellent_technical_fit')}</option>
-                  <option value="EXPERIENCE_GAP">{t('cprofile_reason_experience_gap')}</option>
-                  <option value="COMMUNICATION_FIT">{t('cprofile_reason_communication_fit')}</option>
-                  <option value="COMPENSATION_MISMATCH">{t('cprofile_reason_compensation_mismatch')}</option>
-                  <option value="TALENT_BENCH">{t('cprofile_reason_talent_bench')}</option>
-                  <option value="CANDIDATE_WITHDREW">{t('cprofile_reason_candidate_withdrew')}</option>
-                  <option value="OTHER">{t('cprofile_reason_other')}</option>
+                  {reasonCatalog.length > 0
+                    ? reasonCatalog.map((r) => (
+                        <option key={r.code} value={r.code}>
+                          {r.label}
+                        </option>
+                      ))
+                    : (
+                      <>
+                        <option value="QUALIFICATIONS_MATCH">{t('cprofile_reason_qualifications_match')}</option>
+                        <option value="EXCELLENT_TECHNICAL_FIT">{t('cprofile_reason_excellent_technical_fit')}</option>
+                        <option value="EXPERIENCE_GAP">{t('cprofile_reason_experience_gap')}</option>
+                        <option value="COMMUNICATION_FIT">{t('cprofile_reason_communication_fit')}</option>
+                        <option value="COMPENSATION_MISMATCH">{t('cprofile_reason_compensation_mismatch')}</option>
+                        <option value="TALENT_BENCH">{t('cprofile_reason_talent_bench')}</option>
+                        <option value="CANDIDATE_WITHDREW">{t('cprofile_reason_candidate_withdrew')}</option>
+                        <option value="OTHER">{t('cprofile_reason_other')}</option>
+                      </>
+                    )}
                 </select>
               </div>
 
@@ -845,6 +1033,92 @@ export default function CandidateProfileClient({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MESSAGE CANDIDATE MODAL (§6.9: preview & edit before send) */}
+      {showMessageModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-lg w-full shadow-xl space-y-3 text-xs dark:text-slate-200 text-slate-800">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('message_modal_title')}</h3>
+              <button onClick={() => setShowMessageModal(false)} className="text-slate-400">✕</button>
+            </div>
+
+            <p className="text-[11px] dark:text-slate-400 text-slate-500">{t('message_modal_hint')}</p>
+
+            <div className="space-y-1">
+              <label className="block text-[10px] font-semibold dark:text-slate-400 text-slate-600">{t('message_template_label')}</label>
+              <select
+                value={messageTemplate}
+                onChange={(e) => { setMessageTemplate(e.target.value); setMessagePreview(null); }}
+                className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2 font-medium"
+              >
+                <option value="RECRUITER_MESSAGE">{t('message_template_general')}</option>
+                <option value="APPLICATION_CONFIRMATION">{t('message_template_ack')}</option>
+                <option value="INTERVIEW_INVITATION">{t('message_template_invite')}</option>
+                <option value="INTERVIEW_RESCHEDULED">{t('message_template_reschedule')}</option>
+                <option value="REJECTION_FEEDBACK">{t('message_template_rejection')}</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[10px] font-semibold dark:text-slate-400 text-slate-600">{t('message_subject_label')} *</label>
+              <input
+                type="text"
+                value={messageSubject}
+                onChange={(e) => { setMessageSubject(e.target.value); setMessagePreview(null); }}
+                placeholder={t('message_subject_placeholder')}
+                className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[10px] font-semibold dark:text-slate-400 text-slate-600">{t('message_body_label')} *</label>
+              <textarea
+                rows={6}
+                value={messageBody}
+                onChange={(e) => { setMessageBody(e.target.value); setMessagePreview(null); }}
+                placeholder={t('message_body_placeholder')}
+                className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2"
+              ></textarea>
+              <p className="text-[10px] dark:text-slate-500 text-slate-400">{t('message_placeholders_hint')}</p>
+            </div>
+
+            {messagePreview && (
+              <div className="dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-3 space-y-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-300">{t('message_preview_label')}</span>
+                <p className="font-semibold dark:text-white text-slate-900">{messagePreview.subject}</p>
+                <div className="text-[11px] whitespace-pre-wrap dark:text-slate-300 text-slate-700 max-h-48 overflow-y-auto">{messagePreview.body}</div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowMessageModal(false)}
+                className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                type="button"
+                disabled={messageBusy || !messageSubject.trim() || !messageBody.trim()}
+                onClick={() => postMessage('preview')}
+                className="px-3 py-1.5 dark:bg-slate-700 bg-slate-200 rounded-lg font-medium disabled:opacity-50"
+              >
+                {t('message_preview_btn')}
+              </button>
+              <button
+                type="button"
+                disabled={messageBusy || !messageSubject.trim() || !messageBody.trim()}
+                onClick={() => postMessage('send')}
+                className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg disabled:opacity-50"
+              >
+                {messageBusy ? t('loading') : t('message_send_btn')}
+              </button>
+            </div>
           </div>
         </div>
       )}

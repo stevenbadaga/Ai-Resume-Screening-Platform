@@ -4,10 +4,17 @@
 import { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
-export default function ApplyForm({ jobs }: { jobs: { id: string, title: string }[] }) {
+export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: string, title: string }[]; candidateProfile?: { firstName?: string; lastName?: string; email?: string; savedCv?: { name: string; size: number; uploadedAt: string } | null } | null }) {
   const { t } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
   const [status, setStatus] = useState<{ text: string; error: boolean } | null>(null);
+  const [usingSavedCv, setUsingSavedCv] = useState(false);
+
+  // Personalization: pre-fill form with saved profile data for returning applicants
+  const prefillFirstName = candidateProfile?.firstName || '';
+  const prefillLastName = candidateProfile?.lastName || '';
+  const prefillEmail = candidateProfile?.email || '';
+  const savedCv = candidateProfile?.savedCv;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,12 +46,17 @@ export default function ApplyForm({ jobs }: { jobs: { id: string, title: string 
 
   return (
     <>
-      <h1 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>{t('apply_legacy_title')}</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-        {t('apply_legacy_desc')}
-      </p>
+      {/* Personalized header */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 style={{ marginBottom: '0.5rem', color: 'var(--primary)' }}>
+          {prefillEmail ? t('apply_personalized_title') : t('apply_legacy_title')}
+        </h1>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+          {prefillEmail ? t('apply_personalized_desc') : t('apply_legacy_desc')}
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_select')}</label>
           <select name="jobId" className="input-field" required>
@@ -54,21 +66,87 @@ export default function ApplyForm({ jobs }: { jobs: { id: string, title: string 
             ))}
           </select>
         </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_first_name')}</label>
-          <input name="firstName" className="input-field" required placeholder="Jane" />
+
+        {/* Personalized name fields with pre-filled values */}
+        <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_first_name')}</label>
+            <input 
+              name="firstName" 
+              className="input-field" 
+              required 
+              placeholder="Jane" 
+              defaultValue={prefillFirstName}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_last_name')}</label>
+            <input 
+              name="lastName" 
+              className="input-field" 
+              required 
+              placeholder="Doe" 
+              defaultValue={prefillLastName}
+            />
+          </div>
         </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_last_name')}</label>
-          <input name="lastName" className="input-field" required placeholder="Doe" />
-        </div>
+
+        {/* Personalized email with pre-fill */}
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_email')}</label>
-          <input name="email" type="email" className="input-field" required placeholder="jane.doe@example.com" />
+          <input 
+            name="email" 
+            type="email" 
+            className="input-field" 
+            required 
+            placeholder="jane.doe@example.com" 
+            defaultValue={prefillEmail}
+          />
+          {prefillEmail && (
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+              {t('apply_personalized_email_note')}
+            </p>
+          )}
         </div>
+
+        {/* Resume upload with option to use saved CV */}
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_resume')}</label>
-          <input name="resume" type="file" accept=".pdf,.docx" className="input-field" required style={{ padding: '0.5rem' }} />
+          <div style={{ border: '2px dashed var(--border)', borderRadius: '0.5rem', padding: '1.5rem', textAlign: 'center', backgroundColor: 'var(--surface-muted)', transition: 'border-color 0.2s' }}>
+            {savedCv && !usingSavedCv ? (
+              <>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📄</div>
+                <p style={{ fontWeight: 500, marginBottom: '0.25rem' }}>{savedCv.name}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                  {t('apply_personalized_saved_cv')}
+                </p>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}>
+                  <input 
+                    type="radio" 
+                    name="useSavedCv" 
+                    value="yes" 
+                    checked={usingSavedCv} 
+                    onChange={() => setUsingSavedCv(true)} 
+                    className="sr-only"
+                  />
+                  {t('apply_use_saved_cv')}
+                </label>
+              </>
+            ) : null}
+            <input 
+              name="resume" 
+              type="file" 
+              accept=".pdf,.docx" 
+              className="input-field" 
+              style={{ padding: '0.5rem' }}
+              required={!savedCv || !usingSavedCv}
+            />
+            {savedCv && usingSavedCv && (
+              <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', fontWeight: 500 }}>
+                ✓ {t('apply_personalized_using_saved_cv')}
+              </p>
+            )}
+          </div>
         </div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
@@ -76,13 +154,13 @@ export default function ApplyForm({ jobs }: { jobs: { id: string, title: string 
           {t('apply_legacy_consent')}
         </label>
 
-        <button type="submit" className="btn-primary" disabled={isUploading || jobs.length === 0} style={{ marginTop: '1rem' }}>
-          {isUploading ? t('apply_legacy_uploading') : t('apply_legacy_title')}
+        <button type="submit" className="btn-primary" disabled={isUploading || jobs.length === 0} style={{ marginTop: '0.5rem' }}>
+          {isUploading ? t('apply_legacy_uploading') : t('submit_application')}
         </button>
       </form>
 
       {status && (
-        <div style={{ marginTop: '2rem', padding: '1rem', borderRadius: '0.5rem', backgroundColor: status.error ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: status.error ? 'var(--accent)' : 'var(--secondary)' }}>
+        <div style={{ marginTop: '1.5rem', padding: '1rem', borderRadius: '0.5rem', backgroundColor: status.error ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: status.error ? 'var(--accent)' : 'var(--secondary)' }}>
           {status.text}
         </div>
       )}

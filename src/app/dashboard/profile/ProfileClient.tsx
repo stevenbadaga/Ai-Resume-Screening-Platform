@@ -163,11 +163,17 @@ export default function ProfileClient({ account, candidate }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
-      {/* Header */}
+      {/* Personalized Header */}
       <div className="pb-3 border-b border-[var(--border)]">
         <p className="eyebrow mb-1">{isCandidate ? t('profile_workspace_candidate') : t('profile_workspace_account')}</p>
         <h1 className="h-page">{t('profile_title')}</h1>
-        <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)] mt-0.5">
+        {/* Personalized greeting for candidates */}
+        {isCandidate && candidate?.firstName && (
+          <p className="text-xs text-[color-mix(in_srgb,var(--accent)_70%,transparent)] mt-0.5">
+            {candidate.firstName.split(' ')[0] ? t('profile_personalized_greeting').replace('{firstName}', candidate.firstName.split(' ')[0]) : t('profile_personalized_greeting').replace('{firstName}', candidate.firstName)}
+          </p>
+        )}
+        <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)] mt-1">
           {t('profile_subtitle')}
         </p>
       </div>
@@ -230,7 +236,15 @@ export default function ProfileClient({ account, candidate }: Props) {
                 </p>
               </div>
               {candidate && (
-                <span className="chip">{t('profile_applications_count').replace('{count}', String(candidate._count.applications))}</span>
+                <div className="flex items-center gap-2">
+                  <span className="chip">{t('profile_applications_count').replace('{count}', String(candidate._count.applications))}</span>
+                  {/* Personalized profile completeness indicator */}
+                  {(!savedResume.name || skills.length === 0) && (
+                    <span className="chip chip-warning" title={t('profile_completion_hint')}>
+                      {t('profile_completion_status').replace('{completed}', String([!!savedResume.name, skills.length > 0].filter(Boolean).length)).replace('{total}', '2')}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 

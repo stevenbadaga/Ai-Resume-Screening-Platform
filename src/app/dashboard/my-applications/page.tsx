@@ -27,5 +27,24 @@ export default async function MyApplicationsPage() {
 
   const applications = candidate?.applications || [];
 
-  return <MyApplicationsClient applications={JSON.parse(JSON.stringify(applications))} />;
+  // Personalization data: pass candidate name and application count for
+  // a personalized welcome experience on the dashboard.
+  const personalization = {
+    firstName: candidate?.firstName || candidate?.lastName ?
+      `${candidate.firstName || ''} ${candidate.lastName || ''}`.trim() :
+      userEmail ? userEmail.split('@')[0] : 'Applicant',
+    applicationsCount: applications.length,
+    shortlistedCount: applications.filter((a: any) => a.status === 'SHORTLISTED').length,
+    interviewingCount: applications.filter((a: any) =>
+      ['INTERVIEW_SCHEDULED', 'INTERVIEWING'].includes(a.status)
+    ).length,
+    email: userEmail,
+  };
+
+  return (
+    <MyApplicationsClient
+      applications={JSON.parse(JSON.stringify(applications))}
+      personalization={personalization}
+    />
+  );
 }

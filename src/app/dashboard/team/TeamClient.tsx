@@ -100,6 +100,38 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
     setSelectedRole(user.roles?.[0]?.name || 'Candidate');
   };
 
+  // §6.1: administrators can suspend (revoke access immediately) or
+  // reactivate an account. Critical action → explicit confirmation; the
+  // server audits old/new status.
+  const handleToggleStatus = async (user: any) => {
+    const suspending = user.accessStatus !== 'SUSPENDED';
+    const who = user.name || user.email;
+    const confirmed = window.confirm(
+      suspending
+        ? t('team_suspend_confirm').replace('{name}', who)
+        : t('team_reactivate_confirm').replace('{name}', who)
+    );
+    if (!confirmed) return;
+    try {
+      const res = await fetch('/api/team/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: user.id, action: suspending ? 'SUSPEND' : 'REACTIVATE' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, accessStatus: data.accessStatus } : u))
+        );
+        showToast(t('toast_status_updated').replace('{name}', who), 'success');
+      } else {
+        showToast(data.error || t('toast_status_failed'), 'error');
+      }
+    } catch {
+      showToast(t('toast_status_failed'), 'error');
+    }
+  };
+
   const handleSaveRole = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
@@ -372,12 +404,16 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                     <td className="p-3">
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                          isStaff
+                          user.accessStatus === 'SUSPENDED'
+                            ? 'dark:bg-rose-950/80 bg-rose-50 dark:text-rose-300 text-rose-700 border dark:border-rose-800/80 border-rose-200'
+                            : isStaff
                             ? 'dark:bg-teal-950/80 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/80 border-teal-200'
                             : 'dark:bg-emerald-950/60 bg-emerald-50 dark:text-emerald-300 text-emerald-800 border dark:border-emerald-800/60 border-emerald-200'
                         }`}
                       >
-                        {isStaff ? t('team_badge_internal') : t('team_badge_external')}
+                        {user.accessStatus === 'SUSPENDED'
+                          ? t('team_badge_suspended')
+                          : isStaff ? t('team_badge_internal') : t('team_badge_external')}
                       </span>
                     </td>
                     <td className="p-3">
@@ -392,12 +428,24 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                     </td>
                     <td className="p-3 text-right">
                       {isStaff ? (
-                        <button
-                          onClick={() => handleOpenEdit(user)}
-                          className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
-                        >
-                          {t('btn_edit_role')}
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleOpenEdit(user)}
+                            className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
+                          >
+                            {t('btn_edit_role')}
+                          </button>
+                          <button
+                            onClick={() => handleToggleStatus(user)}
+                            className={`px-2.5 py-1 rounded text-xs font-semibold border transition ${
+                              user.accessStatus === 'SUSPENDED'
+                                ? 'dark:bg-emerald-950/60 bg-emerald-50 hover:bg-emerald-600 hover:text-white dark:border-emerald-800 border-emerald-200 dark:text-emerald-300 text-emerald-700'
+                                : 'dark:bg-rose-950/60 bg-rose-50 hover:bg-rose-600 hover:text-white dark:border-rose-800 border-rose-200 dark:text-rose-300 text-rose-700'
+                            }`}
+                          >
+                            {user.accessStatus === 'SUSPENDED' ? t('team_reactivate') : t('team_suspend')}
+                          </button>
+                        </div>
                       ) : (
                         <div className="flex items-center justify-end gap-1.5">
                           <Link

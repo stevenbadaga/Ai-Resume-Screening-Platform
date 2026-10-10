@@ -44,8 +44,21 @@ export default async function TeamPage() {
     );
   }
 
+  // Spec §6.1: organization separation — the directory must only ever show
+  // the caller's own workspace members (it previously listed every user on
+  // the platform).
+  let organizationId = (session.user as any)?.organizationId as string | undefined;
+  if (!organizationId && session.user?.email) {
+    const me = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { organizationId: true },
+    });
+    organizationId = me?.organizationId;
+  }
+
   const [users, org] = await Promise.all([
     prisma.user.findMany({
+      where: organizationId ? { organizationId } : { id: '__no-org__' },
       include: { roles: true },
       orderBy: { createdAt: 'asc' }
     }),

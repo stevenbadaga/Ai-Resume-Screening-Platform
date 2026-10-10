@@ -36,8 +36,9 @@ export default async function CandidateProfilePage({ params }: { params: Promise
       parsedProfile: true,
       screeningRuns: {
         include: { assessments: { include: { criterion: true } } },
-        orderBy: { createdAt: 'desc' },
-        take: 1
+        orderBy: { createdAt: 'desc' }
+        // §6.5: ALL runs are kept and shown (history retained for comparison
+        // after re-runs); screeningRuns[0] remains the latest.
       },
       interviews: {
         include: {

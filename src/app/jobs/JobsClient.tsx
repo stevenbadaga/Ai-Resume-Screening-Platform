@@ -57,10 +57,10 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
   const [location, setLocation] = useState('');
   const [employmentType, setEmploymentType] = useState('Full-time');
   const [closesAt, setClosesAt] = useState('');
-  const [criteria, setCriteria] = useState<{ category: string; description: string; isRequired: boolean; weight: number }[]>([
-    { category: 'Technical Architecture', description: 'Full-Stack TypeScript & React Architecture', isRequired: true, weight: 4 },
-    { category: 'Data & Backend', description: 'Database Optimization & Prisma PostgreSQL', isRequired: false, weight: 3 },
-    { category: 'System Design', description: 'Distributed Queues & Async Processing (BullMQ/Redis)', isRequired: false, weight: 3 }
+  const [criteria, setCriteria] = useState<{ category: string; description: string; isRequired: boolean; weight: number; threshold: string; evidenceRules: string }[]>([
+    { category: 'Technical Architecture', description: 'Full-Stack TypeScript & React Architecture', isRequired: true, weight: 4, threshold: '', evidenceRules: '' },
+    { category: 'Data & Backend', description: 'Database Optimization & Prisma PostgreSQL', isRequired: false, weight: 3, threshold: '', evidenceRules: '' },
+    { category: 'System Design', description: 'Distributed Queues & Async Processing (BullMQ/Redis)', isRequired: false, weight: 3, threshold: '', evidenceRules: '' }
   ]);
   const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
@@ -102,7 +102,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
   };
 
   const handleAddCriteria = () => {
-    setCriteria([...criteria, { category: 'Core Skill', description: '', isRequired: false, weight: 3 }]);
+    setCriteria([...criteria, { category: 'Core Skill', description: '', isRequired: false, weight: 3, threshold: '', evidenceRules: '' }]);
   };
 
   const handleRemoveCriteria = (index: number) => {
@@ -141,7 +141,10 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
               description: c.description,
               name: c.description,
               isRequired: c.isRequired,
-              weight: c.weight
+              weight: c.weight,
+              // §6.2: minimum threshold + acceptable evidence per criterion.
+              threshold: c.threshold?.trim() || undefined,
+              evidenceRules: c.evidenceRules?.trim() || undefined
             }))
         })
       });
@@ -176,7 +179,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
   // ── Rubric edit (§6.2: changes to an approved rubric create a NEW version) ──
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<any>(null);
-  const [editCriteria, setEditCriteria] = useState<{ description: string; isRequired: boolean; weight: number }[]>([]);
+  const [editCriteria, setEditCriteria] = useState<{ category: string; description: string; isRequired: boolean; weight: number; threshold: string; evidenceRules: string }[]>([]);
   const [editChangeReason, setEditChangeReason] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
@@ -189,9 +192,12 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
     setEditingJob(job);
     setEditCriteria(
       (rubric.criteria || []).map((c: any) => ({
+        category: c.category || '',
         description: c.description || c.name || '',
         isRequired: Boolean(c.isRequired),
         weight: c.weight || 1,
+        threshold: c.threshold || '',
+        evidenceRules: c.evidenceRules || '',
       }))
     );
     setEditChangeReason('');
@@ -593,45 +599,71 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                 <span className="font-semibold text-[var(--foreground)]">{t('criteria_count').replace('{count}', String(editCriteria.length))}</span>
                 <button
                   type="button"
-                  onClick={() => setEditCriteria([...editCriteria, { description: '', isRequired: false, weight: 1 }])}
+                  onClick={() => setEditCriteria([...editCriteria, { category: '', description: '', isRequired: false, weight: 1, threshold: '', evidenceRules: '' }])}
                   className="text-[10px] text-[var(--accent)] hover:underline font-semibold"
                 >
                   {t('add_criterion')}
                 </button>
               </div>
               {editCriteria.map((crit, idx) => (
-                <div key={idx} className="flex items-center gap-1.5">
-                  <input
-                    type="text"
-                    value={crit.description}
-                    onChange={(e) => handleEditCriteriaChange(idx, 'description', e.target.value)}
-                    placeholder={t('criterion_description')}
-                    className="flex-1 field !py-1 !px-2.5 !text-[11px]"
-                  />
-                  <select
-                    value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
-                    onChange={(e) => handleEditCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
-                    className="field !w-auto !py-1 !px-1.5 !text-[10px] font-mono text-[var(--accent)]"
-                  >
-                    <option value="REQUIRED">{t('criterion_required')}</option>
-                    <option value="PREFERRED">{t('criterion_preferred')}</option>
-                  </select>
-                  <select
-                    value={crit.weight}
-                    onChange={(e) => handleEditCriteriaChange(idx, 'weight', Number(e.target.value))}
-                    className="field !w-auto !py-1 !px-2 font-mono"
-                  >
-                    {[1, 2, 3, 4, 5].map((w) => (
-                      <option key={w} value={w}>w:{w}</option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => setEditCriteria(editCriteria.filter((_, i) => i !== idx))}
-                    className="text-[var(--coral)] hover:opacity-75 p-1" aria-label={t('aria_remove_criterion')}
-                  >
-                    ✕
-                  </button>
+                <div key={idx} className="space-y-1.5 rounded-lg border border-[var(--border)] p-2">
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={crit.category}
+                      onChange={(e) => handleEditCriteriaChange(idx, 'category', e.target.value)}
+                      placeholder={t('criterion_category')}
+                      className="field !w-40 !py-1 !px-2.5 !text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      value={crit.description}
+                      onChange={(e) => handleEditCriteriaChange(idx, 'description', e.target.value)}
+                      placeholder={t('criterion_description')}
+                      className="flex-1 field !py-1 !px-2.5 !text-[11px]"
+                    />
+                    <select
+                      value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
+                      onChange={(e) => handleEditCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
+                      className="field !w-auto !py-1 !px-1.5 !text-[10px] font-mono text-[var(--accent)]"
+                    >
+                      <option value="REQUIRED">{t('criterion_required')}</option>
+                      <option value="PREFERRED">{t('criterion_preferred')}</option>
+                    </select>
+                    <select
+                      value={crit.weight}
+                      onChange={(e) => handleEditCriteriaChange(idx, 'weight', Number(e.target.value))}
+                      className="field !w-auto !py-1 !px-2 font-mono"
+                    >
+                      {[1, 2, 3, 4, 5].map((w) => (
+                        <option key={w} value={w}>w:{w}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setEditCriteria(editCriteria.filter((_, i) => i !== idx))}
+                      className="text-[var(--coral)] hover:opacity-75 p-1" aria-label={t('aria_remove_criterion')}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {/* §6.2: minimum threshold + acceptable evidence per criterion */}
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={crit.threshold}
+                      onChange={(e) => handleEditCriteriaChange(idx, 'threshold', e.target.value)}
+                      placeholder={t('criterion_threshold')}
+                      className="flex-1 field !py-1 !px-2.5 !text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      value={crit.evidenceRules}
+                      onChange={(e) => handleEditCriteriaChange(idx, 'evidenceRules', e.target.value)}
+                      placeholder={t('criterion_evidence')}
+                      className="flex-[2] field !py-1 !px-2.5 !text-[11px]"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -833,47 +865,66 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
 
                 <div className="space-y-1.5">
                   {criteria.map((crit, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={crit.category}
-                        onChange={(e) => handleCriteriaChange(idx, 'category', e.target.value)}
-                        placeholder={t('create_job_category_label')}
-                        className="w-24 field !py-1 !px-2 !text-[11px] font-mono"
-                      />
-                      <input
-                        type="text"
-                        value={crit.description}
-                        onChange={(e) => handleCriteriaChange(idx, 'description', e.target.value)}
-                        placeholder={t('criterion_example')}
-                        className="flex-1 field !py-1 !px-2.5 !text-[11px] text-xs"
-                      />
-                      <select
-                        value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
-                        onChange={(e) => handleCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
-                        className="field !w-auto !py-1 !px-1.5 !text-[10px] font-mono text-[var(--accent)]"
-                      >
-                        <option value="REQUIRED">{t('criterion_required')}</option>
-                        <option value="PREFERRED">{t('criterion_preferred')}</option>
-                      </select>
-                      <select
-                        value={crit.weight}
-                        onChange={(e) => handleCriteriaChange(idx, 'weight', Number(e.target.value))}
-                        className="field !w-auto !py-1 !px-2 font-mono !text-xs"
-                      >
-                        <option value={1}>w:1</option>
-                        <option value={2}>w:2</option>
-                        <option value={3}>w:3</option>
-                        <option value={4}>w:4</option>
-                        <option value={5}>w:5</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCriteria(idx)}
-                        className="text-[var(--coral)] hover:opacity-75 p-1 text-xs" aria-label={t('aria_remove_criterion')}
-                      >
-                        ✕
-                      </button>
+                    <div key={idx} className="space-y-1.5 rounded-lg border border-[var(--border)] p-2">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={crit.category}
+                          onChange={(e) => handleCriteriaChange(idx, 'category', e.target.value)}
+                          placeholder={t('create_job_category_label')}
+                          className="w-24 field !py-1 !px-2 !text-[11px] font-mono"
+                        />
+                        <input
+                          type="text"
+                          value={crit.description}
+                          onChange={(e) => handleCriteriaChange(idx, 'description', e.target.value)}
+                          placeholder={t('criterion_example')}
+                          className="flex-1 field !py-1 !px-2.5 !text-[11px] text-xs"
+                        />
+                        <select
+                          value={crit.isRequired ? 'REQUIRED' : 'PREFERRED'}
+                          onChange={(e) => handleCriteriaChange(idx, 'isRequired', e.target.value === 'REQUIRED')}
+                          className="field !w-auto !py-1 !px-1.5 !text-[10px] font-mono text-[var(--accent)]"
+                        >
+                          <option value="REQUIRED">{t('criterion_required')}</option>
+                          <option value="PREFERRED">{t('criterion_preferred')}</option>
+                        </select>
+                        <select
+                          value={crit.weight}
+                          onChange={(e) => handleCriteriaChange(idx, 'weight', Number(e.target.value))}
+                          className="field !w-auto !py-1 !px-2 font-mono !text-xs"
+                        >
+                          <option value={1}>w:1</option>
+                          <option value={2}>w:2</option>
+                          <option value={3}>w:3</option>
+                          <option value={4}>w:4</option>
+                          <option value={5}>w:5</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCriteria(idx)}
+                          className="text-[var(--coral)] hover:opacity-75 p-1 text-xs" aria-label={t('aria_remove_criterion')}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      {/* §6.2: minimum threshold + acceptable evidence per criterion */}
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={crit.threshold}
+                          onChange={(e) => handleCriteriaChange(idx, 'threshold', e.target.value)}
+                          placeholder={t('criterion_threshold')}
+                          className="flex-1 field !py-1 !px-2.5 !text-[11px]"
+                        />
+                        <input
+                          type="text"
+                          value={crit.evidenceRules}
+                          onChange={(e) => handleCriteriaChange(idx, 'evidenceRules', e.target.value)}
+                          placeholder={t('criterion_evidence')}
+                          className="flex-[2] field !py-1 !px-2.5 !text-[11px]"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
