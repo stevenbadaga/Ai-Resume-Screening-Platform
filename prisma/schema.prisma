@@ -238,6 +238,8 @@ model CriterionAssessment {
   effectiveResult    String?
   supportingEvidence String?
   sourceLocation     String? // e.g. bounding box or text snippet
+  // Spec §6.5: the assessor's interpretation of the evidence for this criterion.
+  interpretation     String?
   uncertainty        Boolean      @default(false)
   scoreContribution  Float?
   reviewerCorrection String?
