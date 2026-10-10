@@ -274,6 +274,21 @@ An independent review against the spec (2026-09-06) lives in [`docs/independent-
 - **Role permission strings are unified**: DB `Role` rows are created (and legacy rows self-heal) from the single RBAC matrix in `src/lib/roleAccess.ts` via `permissionsForRoleName()` — authorization always consults the matrix, and the stored strings can no longer drift from it.
 - **The compliance reports in `docs/` are point-in-time reviews**, not guarantees; treat the independent report as the source of truth for current gaps.
 
+### Requirements pass 2026-10-09 (spec re-audit)
+
+An independent re-read of the 17-page spec against the code found and closed these gaps:
+
+- **§6.5 screening re-run**: `POST /api/candidates/[id]/screening` queues a screen-only re-run against the current APPROVED rubric (idempotent per active run, audited); the candidate profile shows the full run history so earlier results stay comparable.
+- **§6.5/§6.2 criterion metadata**: the assessor now receives each criterion's category, required flag, minimum threshold, and acceptable-evidence rules; responses must return `sourceLocation` + `interpretation` (new column, migration `20261009000000_criterion_assessment_interpretation`), both persisted per assessment.
+- **§6.6 experience calculation**: `src/lib/experienceCalc.ts` — overlapping roles merged (never double-counted), gaps excluded and reported, partial dates flagged with reduced precision, internships/part-time itemised, undated entries surfaced instead of guessed (10 tests).
+- **§6.7 decision reasons**: forms now load the org's configured reason catalog (`GET /api/decisions/reasons`); the API rejects codes outside the catalog **and** any discriminatory/protected-characteristic reason or justification (admin config guarded too; 7 tests).
+- **§6.1 account suspension/reactivation**: `POST /api/team/status` (Admin-only, audited with old/new status) + Team UI buttons; **and a tenant-leak fix** — the Team directory previously listed users of *every* organization and is now org-scoped.
+- **§6.9 candidate messaging**: compose → **preview/edit** → send on the candidate profile (`POST /api/candidates/[id]/message`) with enforced confidentiality guards (internal-note leakage, "AI made the decision" claims, prompt/model internals — 6 tests); sent messages record honest SENT/FAILED delivery and retry faithfully from the snapshot.
+- **§6.2 rubric editor**: criterion rows now expose **minimum threshold** and **acceptable evidence** (create + edit), category is enforced (server-side fallback), and approving a rubric with zero criteria is refused.
+- **§9 CSP regression (critical, pre-existing)**: the nonce CSP only lived on the response header, so the browser blocked every script and no page hydrated (the sign-in form never rendered in production builds). The nonce is now forwarded on the **request** headers so Next.js stamps its scripts, and the auth pages/landing are rendered dynamically so each request carries its nonce. Also repaired the shared staging audit chain (6 historical hash mismatches, documented reseal) and the ESLint flat-config (plugin declaration) so `npm run lint` runs again: **0 errors**.
+- **Two-step sign-in E2E**: the emailed-code flow now works end-to-end through session issuance in the browser (verify → MFA ticket → `__Secure-` session cookie); remaining E2E item: the final post-sign-in dashboard navigation assertion in `recruiter-workflow.e2e.spec.ts` still needs investigation (network trace shows the session token issued successfully). The code-resend cooldown no longer dead-ends the sign-in UI (it waits out a short cooldown and retries once), and `verify` accepts an already-solved, unexpired code so an interrupted step-2 can resume without weakening single-use against guesses.
+- **§15 deliverable**: `docs/ai-evaluation-set.md` documents the AI evaluation set, per-dimension methodology, and recorded results (226 tests incl. 12 DB-backed integration tests).
+
 ---
 
 ## Documentation
@@ -283,6 +298,7 @@ An independent review against the spec (2026-09-06) lives in [`docs/independent-
 | [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md) | Architecture, user manual, and operational guide |
 | [`docs/independent-requirements-compliance-report.md`](docs/independent-requirements-compliance-report.md) | Independent spec review (2026-09-06) with per-requirement status and qualifications |
 | [`docs/spec-compliance-verification-2026-09-25.md`](docs/spec-compliance-verification-2026-09-25.md) | Latest full-spec verification (2026-09-25): gaps found, fixes applied, per-section evidence |
+| [`docs/ai-evaluation-set.md`](docs/ai-evaluation-set.md) | AI evaluation set + recorded results (§14/§15): accuracy, evidence, uncertainty, prompt safety, consistency, fairness |
 | [`docs/specification-compliance-report.md`](docs/specification-compliance-report.md) | Author-prepared spec traceability report |
 | [`docs/final-mvp-requirements-report.md`](docs/final-mvp-requirements-report.md) | MVP scope vs delivered features |
 | [`docs/requirements-gap-analysis.md`](docs/requirements-gap-analysis.md) | Gap analysis against the spec |

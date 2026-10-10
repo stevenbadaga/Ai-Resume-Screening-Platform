@@ -1,6 +1,8 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -14,6 +16,13 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
+    // Flat config resolves rules against the plugins declared in the SAME
+    // config object — the plugin instances eslint-config-next brings in are
+    // not visible here, so declare them for the react/react-hooks rules below.
+    plugins: {
+      react: reactPlugin,
+      "react-hooks": reactHooksPlugin,
+    },
     rules: {
       // Existing code predates the stricter Next.js 16 lint defaults. Keep these visible
       // as warnings while blocking newly introduced correctness and security errors.

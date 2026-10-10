@@ -91,6 +91,12 @@ async function seedDatabase() {
       purpose: 'LOGIN_MFA',
       codeHash: createHash('sha256').update(e2eLoginCode, 'utf8').digest('hex'),
       expiresAt: new Date(Date.now() + 60 * 60_000), // 1 hour — covers the whole suite
+      // Backdate creation beyond the 60s resend cooldown: issueVerificationCode()
+      // treats ANY recent code for this user+purpose as "already sent" and the
+      // challenge would 429 on the very first sign-in attempt. The pre-staged
+      // code keeps usedAt+verifiedAt stamped (proof-of-solve) and is never
+      // invalidated by a fresh issue (that only consumes unused codes).
+      createdAt: new Date(Date.now() - 5 * 60_000),
       usedAt: new Date(),
       verifiedAt: new Date(),
       attempts: 0,
