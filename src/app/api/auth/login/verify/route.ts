@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import { verifyVerificationCode } from '@/lib/verificationCode';
+import { verifyTOTP } from '@/lib/totp';
 import { safeErrorResponse } from '@/lib/validation';
 
 /**
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
     const code = typeof body?.code === 'string' ? body.code.trim() : '';
+    const factor = typeof body?.factor === 'string' ? body.factor : 'code'; // 'code' | 'totp'
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 320 || !/^\d{6}$/.test(code)) {
       return NextResponse.json(
@@ -42,10 +44,11 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, accessStatus: true, emailVerifiedAt: true },
+      select: { id: true, accessStatus: true, emailVerifiedAt: true, mustChangePassword: true },
     });
 
-    if (!user || user.accessStatus !== 'ACTIVE' || !user.emailVerifiedAt) {
+    const invitationSetup = user?.accessStatus === 'INVITED' && user.mustChangePassword;
+    if (!user || (user.accessStatus !== 'ACTIVE' && !invitationSetup) || (!user.emailVerifiedAt && !invitationSetup)) {
       // Generic failure — never reveal whether the account exists.
       return NextResponse.json(
         { error: 'Invalid or expired code. Please request a new one.' },
@@ -53,12 +56,61 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await verifyVerificationCode(user.id, 'LOGIN_MFA', code);
-    if (!result.ok) {
-      return NextResponse.json(
-        { error: 'Invalid or expired code. Please request a new one.' },
-        { status: 400 }
-      );
+    let verificationResult;
+    if (factor === 'totp') {
+      // TOTP second factor: verify against the enrolled secret.
+      // Anti-enumeration: generic failure for missing/invalid secret too.
+      const mfaUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { twoFactorSecret: true, twoFactorEnabled: true },
+      });
+      if (!mfaUser?.twoFactorSecret || !mfaUser?.twoFactorEnabled) {
+        // The login challenge said TOTP was required but the state disagrees —
+        // fall through to a generic failure to avoid leaking info.
+        return NextResponse.json(
+          { error: 'Invalid or expired code. Please request a new one.' },
+          { status: 400 }
+        );
+      }
+      const totpValid = verifyTOTP(mfaUser.twoFactorSecret, code);
+      if (!totpValid) {
+        return NextResponse.json(
+          { error: 'Invalid or expired code. Please request a new one.' },
+          { status: 400 }
+        );
+      }
+      // Record the successful TOTP verification so authorize() can confirm the
+      // second factor passed (mirrors the emailed-code proof path).
+      // Record the successful TOTP verification as a short-lived proof so
+      // authorize() can confirm the second factor passed. We use a dedicated
+      // code row with a timestamp-based hash (not a real code) — the important
+      // part is the verifiedAt timestamp, which is what hasRecentSolvedLoginCode
+      // checks.
+      const totpProofHash = Buffer.from(
+        'totp:' + user.id + ':' + Date.now().toString(36)
+      ).toString('base64');
+      verificationResult = await prisma.verificationCode.create({
+        data: {
+          userId: user.id,
+          purpose: 'LOGIN_MFA',
+          codeHash: totpProofHash,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+          verifiedAt: new Date(),
+          maxAttempts: 1,
+        },
+      });
+    } else {
+      verificationResult = await verifyVerificationCode(user.id, 'LOGIN_MFA', code);
+      if (!verificationResult.ok) {
+        return NextResponse.json(
+          { error: 'Invalid or expired code. Please request a new one.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (!user.emailVerifiedAt && factor !== 'totp') {
+      await prisma.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } });
     }
 
     // The ticket identifies the solved second factor. It is returned in the
