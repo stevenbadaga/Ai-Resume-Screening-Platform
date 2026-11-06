@@ -143,7 +143,7 @@ text. Verify after any change that:
 | Redis (incl. Upstash if used) | BullMQ resume-processing queue, rate limiting | job payloads with application/resume ids (no resume content) | provider region | `REDIS_URL` in env only | rate limiting fails open to in-memory; queue adds fail the request |
 | OpenAI (`gpt-4o-…`) | structured profile extraction + criterion scoring | **PII-redacted** resume text only (emails/phones redacted pre-send) | OpenAI API (US) | `OPENAI_API_KEY` in env; never logged | processing marks the resume FAILED with a visible error; BullMQ retries |
 | Brevo / Resend | transactional email (confirmations, invitations, resets) | recipient address, template content (names, job title, schedule) | provider API | `BREVO_API_KEY` / `RESEND_API_KEY` + `EMAIL_FROM` in env | send failure recorded honestly on the `Communication` row (`FAILED` + `failureInfo`) |
-| ClamAV daemon (optional, `docker-compose` service) | full antivirus scanning of uploads | raw upload bytes (in-memory stream, nothing retained) | self-hosted container | none (network-local) | signature-only scanning continues; with ClamAV configured the scan fails CLOSED |
+| ClamAV daemon (enabled by the Compose reference deployment) | full antivirus scanning of uploads | raw upload bytes (in-memory stream, nothing retained) | self-hosted container | none (private Compose network) | when configured but unavailable, uploads fail closed; without ClamAV configuration only signature checks run, which is not the recommended production posture |
 | Sentry (optional) | error tracking / alerting | error messages, stack traces, structured redacted context (request ids, counts) — never resume content, credentials, or request bodies | Sentry cloud (region per project) | `SENTRY_DSN` in env only | tracking is a no-op without `SENTRY_DSN`; structured JSON logs remain the source of truth |
 
 No candidate data is used for model training by any integration; prompts are one-shot requests
@@ -153,15 +153,21 @@ with no retention arrangement beyond the provider's API processing.
 
 ## 4. Deployment checklist
 
-1. `.env` complete (all `?:` required vars in `docker-compose.yml`) — generate
-   `NEXTAUTH_SECRET` with `openssl rand -base64 32`; never reuse secrets across environments.
-2. Create the private `resumes` bucket in Supabase Storage and set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` — uploads fail loudly without them (nothing is stored locally). If migrating from a local-filesystem deployment, run `npx tsx scripts/migrateUploadsToCloud.ts --apply` once.
-4. `docker compose up -d db redis` (add `clamav` and set `CLAMAV_HOST=clamav` for full AV).
-5. `npx prisma migrate deploy` (runs automatically in the compose `app` service).
-6. First staff signup for the workspace's email domain becomes its Admin (founder bootstrap) —
+1. Copy `.env.example` to `.env`; set a unique, strong URL-safe `POSTGRES_PASSWORD`
+   (for example, `openssl rand -hex 32` because Compose embeds it in a database URL), a public
+   `NEXTAUTH_URL` using HTTPS, and a newly generated `NEXTAUTH_SECRET` (for example,
+   `openssl rand -base64 32`). Never reuse secrets across environments or commit `.env`.
+2. Put the service behind a TLS-terminating reverse proxy. Compose publishes the app,
+   PostgreSQL, and Redis only on host loopback; do not change these bindings to public
+   interfaces. The database, queue, and malware-scanner ports must not be internet-facing.
+3. Create the private `resumes` bucket in Supabase Storage and set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Compose passes these to both the app and worker; without them resume uploads are unavailable. If migrating from a local-filesystem deployment, run `npx tsx scripts/migrateUploadsToCloud.ts --apply` once.
+4. Configure at least one email provider (Gmail SMTP, Brevo, or Resend) and `EMAIL_FROM`. For a production screening service, configure `OPENAI_API_KEY`; a deterministic fallback is not a substitute for validating the intended AI workflow.
+5. `docker compose up -d --build`. Compose starts a dedicated migration service before the app and worker. Review `docker compose ps` and service logs; do not route traffic until the migration exits successfully, PostgreSQL/Redis health checks pass, and a health-endpoint smoke test succeeds.
+6. The Compose reference deployment enables ClamAV by default (`CLAMAV_HOST=clamav`) and fails closed if it cannot return a verdict. Wait for virus definitions and scanner service to initialize before accepting uploads. Do not set `CLAMAV_FAIL_OPEN=true` for production.
+7. First staff signup for the workspace's email domain becomes its Admin (founder bootstrap) —
    complete DNS domain claiming on the Team page to let teammates auto-join.
-7. Configure a real email sender (Brevo verified sender or Resend domain) — the staging IP
+8. Configure a real email sender (Brevo verified sender or Resend domain) — the staging IP
    allow-list note in `docs/staging-evidence-auth-domain-claim.md` applies.
-8. Smoke-test `GET /api/health` (public) and the authenticated detail view.
-9. Schedule backups (§1.2) and the nightly audit-chain verification (§2.2); run one restore
+9. Smoke-test `GET /api/health` (public) and the authenticated detail view.
+10. Schedule backups (§1.2) and the nightly audit-chain verification (§2.2); run one restore
    drill (§1.3) before go-live.
