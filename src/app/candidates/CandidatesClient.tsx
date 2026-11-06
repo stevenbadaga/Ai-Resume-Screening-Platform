@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { roleCapabilities } from '@/lib/roleAccess';
+import { useSession } from 'next-auth/react';
 
 interface FilterFacets {
   jobs: Array<{ id: string; title: string }>;
@@ -64,12 +65,15 @@ export default function CandidatesClient({
   const [activeTab, setActiveTab] = useState<'kanban' | 'table'>('kanban');
   const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
+  const [quickFilter, setQuickFilter] = useState<'ALL' | 'NEEDS_REVIEW' | 'TOP_MATCH' | 'ZERO_SCORE' | 'INTERVIEW'>('ALL');
   const { t } = useLanguage();
   const router = useRouter();
+  const { data: session } = useSession();
+  const sessionPermissions = (session?.user as any)?.permissions as string[] | undefined;
   const stageLabels = buildStageLabels(t);
 
   // ── Bulk actions (§6.3 / §6.12: confirmation + mandatory reason) ──
-  const canMakeDecisions = roleCapabilities.canMakeDecisions(userRole);
+  const canMakeDecisions = sessionPermissions ? sessionPermissions.includes('candidates:decide') : roleCapabilities.canMakeDecisions(userRole);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<'SHORTLIST' | 'ADVANCE' | 'HOLD' | 'REJECT' | 'WITHDRAW' | 'REVIEW'>('SHORTLIST');
@@ -145,7 +149,9 @@ export default function CandidatesClient({
     { key: 'SHORTLISTED', label: t('stage_shortlisted'), tone: 'var(--success)' },
     { key: 'INTERVIEW_SCHEDULED', label: t('stage_interviewing'), tone: 'var(--info)' },
     { key: 'OFFERED', label: t('stage_offered'), tone: 'var(--success)' },
+    { key: 'HIRED', label: t('stage_hired'), tone: 'var(--success)' },
     { key: 'REJECTED', label: t('metric_rejected'), tone: 'var(--danger)' },
+    { key: 'WITHDRAWN', label: t('stage_withdrawn'), tone: 'var(--muted)' },
   ];
 
   const departments = ['ALL', ...Array.from(new Set(applications.map((c) => c.job?.department).filter(Boolean)))];
@@ -155,11 +161,31 @@ export default function CandidatesClient({
   // top of the current page only — the authoritative filter set lives in the
   // URL and is applied by the server.
   const filteredCandidates = applications.filter((c) => {
-    if (!search) return true;
+    if (search) {
+      const fullName = `${c.candidate?.firstName} ${c.candidate?.lastName}`.toLowerCase();
+      const skills = (c.parsedProfile?.skills || []).join(' ').toLowerCase();
+      if (!fullName.includes(search.toLowerCase()) && !skills.includes(search.toLowerCase())) return false;
+    }
     if (selectedDept !== 'ALL' && c.job?.department !== selectedDept) return false;
-    const fullName = `${c.candidate?.firstName} ${c.candidate?.lastName}`.toLowerCase();
-    const skills = (c.parsedProfile?.skills || []).join(' ').toLowerCase();
-    return fullName.includes(search.toLowerCase()) || skills.includes(search.toLowerCase());
+
+    if (quickFilter !== 'ALL') {
+      const run = c.screeningRuns?.[0];
+      const score = Math.round(Number(run?.effectiveResult ?? run?.totalResult) || 0);
+      const stage = (c.stage || c.status || '').toUpperCase();
+      const procStatus = (c.resumeDocument?.processingStatus || '').toUpperCase();
+
+      if (quickFilter === 'NEEDS_REVIEW') {
+        if (procStatus !== 'NEEDS_REVIEW' && stage !== 'NEEDS_REVIEW') return false;
+      } else if (quickFilter === 'TOP_MATCH') {
+        if (score < 80) return false;
+      } else if (quickFilter === 'ZERO_SCORE') {
+        if (!c.screeningRuns?.length || score !== 0) return false;
+      } else if (quickFilter === 'INTERVIEW') {
+        if (!stage.includes('INTERVIEW')) return false;
+      }
+    }
+
+    return true;
   });
 
   const reviewCount = applications.filter((app) => app.resumeDocument?.processingStatus === 'NEEDS_REVIEW').length;
@@ -238,6 +264,76 @@ export default function CandidatesClient({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Quick Filter Preset Chips */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <span className="text-[11px] font-mono text-[var(--muted)] mr-1 shrink-0 font-bold">Quick Filters:</span>
+        <button
+          type="button"
+          onClick={() => setQuickFilter('ALL')}
+          className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            quickFilter === 'ALL'
+              ? 'bg-[var(--accent)] text-white shadow-xs font-bold'
+              : 'bg-[var(--surface-muted)] text-[var(--foreground)] hover:bg-[var(--border)]'
+          }`}
+        >
+          All Candidates ({applications.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setQuickFilter('NEEDS_REVIEW')}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
+            quickFilter === 'NEEDS_REVIEW'
+              ? 'bg-amber-600 text-white shadow-xs font-bold'
+              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
+          }`}
+        >
+          <span>⚠️ Needs Review</span>
+          <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">{reviewCount}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setQuickFilter('TOP_MATCH')}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
+            quickFilter === 'TOP_MATCH'
+              ? 'bg-emerald-600 text-white shadow-xs font-bold'
+              : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
+          }`}
+        >
+          <span>⭐ Top Matches (≥80%)</span>
+          <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
+            {applications.filter((a) => (Number(a.screeningRuns?.[0]?.effectiveResult ?? a.screeningRuns?.[0]?.totalResult) || 0) >= 80).length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setQuickFilter('ZERO_SCORE')}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
+            quickFilter === 'ZERO_SCORE'
+              ? 'bg-rose-600 text-white shadow-xs font-bold'
+              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
+          }`}
+        >
+          <span>❌ Required Failed (0%)</span>
+          <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
+            {applications.filter((a) => a.screeningRuns?.length && (Number(a.screeningRuns?.[0]?.effectiveResult ?? a.screeningRuns?.[0]?.totalResult) || 0) === 0).length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setQuickFilter('INTERVIEW')}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
+            quickFilter === 'INTERVIEW'
+              ? 'bg-sky-600 text-white shadow-xs font-bold'
+              : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20'
+          }`}
+        >
+          <span>📅 Interviewing</span>
+          <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
+            {applications.filter((a) => (a.stage || a.status || '').toUpperCase().includes('INTERVIEW')).length}
+          </span>
+        </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
@@ -344,6 +440,16 @@ export default function CandidatesClient({
                   {label}
                 </button>
               ))}
+              {selectedIds.size >= 2 && (
+                <Link
+                  href={`/candidates/compare?ids=${Array.from(selectedIds).join(',')}`}
+                  className="chip chip-info !cursor-pointer hover:brightness-95 transition flex items-center gap-1 font-bold"
+                  title="Compare selected candidates side-by-side against the approved rubric"
+                >
+                  <span>⚖</span>
+                  <span>{t('bulk_compare') || `Compare Selected (${selectedIds.size})`}</span>
+                </Link>
+              )}
               <button onClick={() => setSelectedIds(new Set())} className="ml-auto text-xs text-[var(--muted)] hover:underline">
                 {t('bulk_clear_selection')}
               </button>
@@ -487,7 +593,7 @@ function FilterBar({ filters }: { filters: FilterFacets }) {
   const processingLabels = buildProcessingLabels(t);
 
   const activeCount = [
-    'job', 'stage', 'recruiter', 'minScore', 'maxScore', 'requiredStatus', 'processing', 'tags', 'from', 'to',
+    'job', 'stage', 'recruiter', 'minScore', 'maxScore', 'requiredStatus', 'processing', 'tags', 'from', 'to', 'archived',
   ].filter((k) => current[k]).length;
 
   return (
@@ -580,6 +686,16 @@ function FilterBar({ filters }: { filters: FilterFacets }) {
         <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
           {t('filter_applied_from')}
           <input type="date" defaultValue={current.from ?? ''} onChange={(e) => setParam('from', e.target.value)} className="field" />
+        </label>
+
+        <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={current.archived === 'true'}
+            onChange={(e) => setParam('archived', e.target.checked ? 'true' : 'ALL')}
+            className="accent-teal-600"
+          />
+          {t('filter_show_archived')}
         </label>
 
         <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--muted)] space-y-1 block">
