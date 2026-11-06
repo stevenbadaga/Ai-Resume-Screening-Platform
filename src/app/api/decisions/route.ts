@@ -89,7 +89,10 @@ export async function POST(req: NextRequest) {
         to: application.candidate.email,
         template: 'REJECTION_FEEDBACK',
         data: {
-          candidateName: `${application.candidate.firstName} ${application.candidate.lastName}`.trim(),
+          candidateName:
+            application.candidate.firstName && application.candidate.lastName
+              ? `${application.candidate.firstName} ${application.candidate.lastName}`.trim()
+              : undefined,
           jobTitle: application.job.title
         },
         applicationId: application.id,
