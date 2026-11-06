@@ -6,7 +6,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-7-teal?logo=prisma)](https://www.prisma.io/)
 [![BullMQ](https://img.shields.io/badge/BullMQ-Redis%20Queue-red?logo=redis)](https://bullmq.io/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o%20Structured%20Outputs-green?logo=openai)](https://openai.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-104%20tests%20passing-brightgreen?logo=vitest)](#testing)
+[![Vitest](https://img.shields.io/badge/Vitest-216%20tests%20passing-brightgreen?logo=vitest)](#testing)
 
 **RecruitAI** is an evidence-based AI talent acquisition platform and Applicant Tracking System (ATS) built against the **CODAFRIQA Intern Project Specification (Version 1.0)**.
 
@@ -153,19 +153,34 @@ Five languages, switched live without reloads via the `useLanguage()` context: *
 
 ### Option A — Docker (recommended)
 
+This Compose file is a **single-host reference deployment**, not a managed production
+platform. Before starting, copy `.env.example` to `.env`, set a unique strong
+`POSTGRES_PASSWORD`, generate a unique `NEXTAUTH_SECRET` (`openssl rand -base64 32`),
+and set `NEXTAUTH_URL` to the public HTTPS origin. Use a URL-safe database password
+(for example, `openssl rand -hex 32`) because Compose embeds it in a connection URL.
+Configure the private Supabase bucket,
+transactional email, AI provider, DNS, backups, and monitoring before accepting real data.
+Keep `.env` out of version control. The app, PostgreSQL, and Redis bind to host loopback;
+put the app behind a TLS-terminating reverse proxy. Never expose database, Redis, or
+ClamAV ports to the internet.
+
 ```bash
 git clone https://github.com/stevenbadaga/Ai-Resume-Screening-Platform.git
 cd Ai-Resume-Screening-Platform
 
-export OPENAI_API_KEY="sk-proj-your-key-here"   # PowerShell: $env:OPENAI_API_KEY="..."
+# Create and edit .env from .env.example before starting; do not commit secrets.
 docker compose up --build
 ```
 
-This starts the web app (:3000), the screening worker, PostgreSQL 15, and Redis 7. Migrations run automatically on boot.
+This starts the web app (localhost:3000), a dedicated schema-migration job, the screening worker,
+PostgreSQL, Redis, and ClamAV. The migration job must complete before the app and worker start;
+uploads fail closed until ClamAV can return a clean verdict. For a scalable production deployment,
+use managed database/queue/storage services and a secret manager, then run the staging acceptance
+and recovery drills in [`docs/production-readiness-checklist.md`](docs/production-readiness-checklist.md).
 
 ### Option B — Local Node
 
-Prerequisites: Node 20+, npm 9+, local PostgreSQL and Redis (or Neon/Upstash).
+Prerequisites: Node.js 22 LTS, npm 9+, local PostgreSQL and Redis (or managed equivalents).
 
 ```bash
 npm install
@@ -212,12 +227,13 @@ Re-running the seed detects the existing demo workspace and exits without duplic
 ## Testing
 
 ```bash
-npm run test        # Vitest suite (165 tests across 22 files)
+npm run test        # Vitest suite (216 tests across 26 files)
 npm run typecheck   # tsc --noEmit
 npm run lint        # ESLint
+npm run test:e2e    # Playwright browser E2E (requires TEST_DATABASE_URL + running app)
 ```
 
-The suite covers the deterministic scoring engine (including the unassessed-criterion and required-criterion failure rules), the RBAC permission matrix, file magic-byte/malware/path-traversal validation, CSV injection escaping, PII redaction, audit logging behavior, support-copilot guardrails, and the Redis-backed rate limiter (mocked ioredis).
+The suite covers the deterministic scoring engine (including the unassessed-criterion and required-criterion failure rules), the RBAC permission matrix, file magic-byte/malware/path-traversal validation, CSV injection escaping, PII redaction, audit logging behavior, support-copilot guardrails, the Redis-backed rate limiter (mocked ioredis), fairness/name-invariance, bias mitigation, decision-reason protection, candidate-messaging confidentiality, interview conflict detection, experience calculation, skill normalization, verification-code/2FA logic, email-delivery UI, storage abstraction, error tracking, pagination, application-stage state machine, and the audit hash chain.
 
 ### Integration tests (database-backed)
 
@@ -229,7 +245,21 @@ TEST_DATABASE_URL="postgresql://..." TEST_INTEGRATION=1 npm test
 
 Without `TEST_DATABASE_URL` the integration file self-skips, so plain `npm test` never needs a database. With it, 12 additional tests cover: org/role/user isolation, job + rubric DRAFT→APPROVED state machine, consent-compliant application intake, explainable screening-run persistence with evidence (§6.5), human decisions with stage history (§6.7), interview scheduling + conflict detection (§6.8), independent scorecards + interviewer scoping (§5/§6.8), cross-organization tenant isolation (§6.1), transactional §6.11 erasure across linked records, §6.10 analytics aggregation, approved-rubric versioning on edit (§6.2), and audit-ledger tamper detection (§6.1).
 
-CI (`.github/workflows/main.yml`) runs typecheck, tests, and a production build on every push/PR to `main`; failures block the build.
+### Browser end-to-end tests (spec §14)
+
+`e2e/recruiter-workflow.e2e.spec.ts` walks the full recruiter workflow in a real Chromium browser against a running app instance: two-step sign-in (password + emailed code) → jobs list (rubric preview) → candidates pipeline → candidate profile (evidence, blind screening, score recalibration) → human decision with reason (§6.7) → interview scheduling (§6.8) → structured scorecard (§6.8) → audit trail visibility (§6.12) → manager analytics (§6.10) → CSV export → sign-out.
+
+```bash
+npm run build && npm run start   # or npm run dev
+npx playwright test
+```
+
+The suite requires `TEST_DATABASE_URL` so `global-setup.ts` can seed a scoped recruiter account + job + rubric + candidate with a screening run via Prisma (same per-run namespace discipline as the integration suite). It self-skips without it. Set `BASE_URL` (default `http://127.0.0.1:3000`) to point at the app instance under test.
+
+CI (`.github/workflows/main.yml`) provisions an isolated PostgreSQL service and runs migrations,
+typecheck, unit and database-backed integration tests, ESLint, a production build, and Chromium
+browser E2E tests on every push/PR to `main`. A green CI run validates this synthetic test setup;
+it does not replace live provider, restore, multi-instance, or production-like staging acceptance.
 
 ---
 
@@ -252,7 +282,8 @@ An independent review against the spec (2026-09-06) lives in [`docs/independent-
 - **Partial spec areas**: compound/multi-role permissions are not consistently enforced end-to-end. Email verification **is** implemented (§6.1) — see the note below. Password reset is implemented too: hashed single-use 30-minute tokens, anti-enumeration endpoints, audit-logged completion — see `src/app/api/auth/forgot-password` and `src/app/api/auth/reset-password`.
 - **No fake-success fallbacks**: emails require `RESEND_API_KEY` — when it is missing or delivery fails, the outcome is recorded as `FAILED` on the Communication row (with the error) and surfaced in the API response, never logged as "sent". AI features require `OPENAI_API_KEY` — a missing key is a loud config error, not a silent degradation.
 - **Infrastructure-dependent claims**: multi-instance rate limiting needs production infrastructure and end-to-end evidence before being called "done". Rubric versioning **is** implemented (§6.2): editing an approved rubric creates a new DRAFT version with a mandatory change reason, and the approved version keeps scoring until the replacement is approved. Email delivery-state tracking is real (`src/lib/emailService.ts` persists SENT/FAILED + failure info per spec §6.9) but still needs production end-to-end evidence. To gather that evidence: configure `RESEND_API_KEY` (see below), deploy to staging, then trigger each template (application confirmation, interview invite, rejection, offer, team invite, password reset) and verify the `Communication` rows show `SENT` with correct timestamps.
-- **Test coverage**: 165 unit tests plus a 12-test database-backed integration suite (`__tests__/workflow.integration.test.ts`, spec §14) covering the full job→rubric→application→screening→decision→interview→scorecard→erasure workflow with tenant-isolation, rubric-versioning, and audit-tamper-detection checks.
+- **Test coverage**: 216 unit tests across 26 files plus a 12-test database-backed integration suite (`__tests__/workflow.integration.test.ts`, spec §14) covering the full job→rubric→application→screening→decision→interview→scorecard→erasure workflow with tenant-isolation, rubric-versioning, and audit-tamper-detection checks. A 12-test browser E2E suite (`e2e/recruiter-workflow.e2e.spec.ts`, spec §14) walks the full recruiter workflow in Chromium (self-skips without `TEST_DATABASE_URL`).
+- **Fairness evaluation (re-runnable)**: `npx tsx scripts/evaluate-fairness.ts` loads the seeded demo resumes and emits a written fairness report (`test-results/fairness-evaluation-*.md`) covering name-invariance across 7 name variants, PII redaction before AI, proxy-risk removal, skill-normalization consistency, and the deterministic scoring contract. The model-in-the-loop pass (live screening of the 5 demo resumes + name-invariance rerun) is recorded separately in `docs/ai-evaluation-set.md` §5 because it requires `OPENAI_API_KEY` and a live queue.
 - **Manager analytics (spec §6.10)**: `GET /api/analytics` provides time-to-screen, time-in-stage, stage conversion, interviewer completion %, processing-failure and low-confidence counts, and recruiter workload — filterable by date range, job, department, recruiter, and stage, with documented metric definitions. Hiring managers are scoped to their own jobs; department restrictions always apply.
 - **Retention configuration & enforcement (spec §6.11/§6.12)**: Admins configure per-status retention periods via `PUT /api/org/retention` (audited with old/new values); `npx tsx scripts/applyRetention.ts` applies the policy on a schedule (dry-run by default, `--apply` to execute).
 - **Consent records (spec §6.11)**: applications record the privacy-notice version accepted (`consentNoticeVersion`), acceptance timestamp, and consent choices — not just a boolean. Bump `PRIVACY_NOTICE_VERSION` in `src/lib/validation.ts` when the candidate-facing notice changes materially.
@@ -302,6 +333,8 @@ An independent re-read of the 17-page spec against the code found and closed the
 | [`docs/specification-compliance-report.md`](docs/specification-compliance-report.md) | Author-prepared spec traceability report |
 | [`docs/final-mvp-requirements-report.md`](docs/final-mvp-requirements-report.md) | MVP scope vs delivered features |
 | [`docs/requirements-gap-analysis.md`](docs/requirements-gap-analysis.md) | Gap analysis against the spec |
+| [`docs/api/reference.md`](docs/api/reference.md) | Standing API reference — every endpoint, method, role scope, request/response shape, error conventions (§15 deliverable) |
+| [`scripts/evaluate-fairness.ts`](scripts/evaluate-fairness.ts) | Re-runnable fairness evaluation runner — emits `test-results/fairness-evaluation-*.md` (name-invariance, redaction, proxy-risk, scoring contract) |
 | [`prisma/schema.prisma`](prisma/schema.prisma) | Full database schema (15 models) |
 
 ---
