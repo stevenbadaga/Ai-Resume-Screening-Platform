@@ -87,6 +87,9 @@ export async function proxy(request: NextRequest) {
     secureCookie,
   });
 
+  // Signed-out visitors may browse published openings.
+  if (!token && pathname === '/jobs') return nextWithCsp(request);
+
   // Signed-out users must always be able to reach the auth pages themselves —
   // redirecting /auth/signin to /auth/signin would loop forever and make the
   // whole application unreachable without an existing session.
@@ -100,6 +103,20 @@ export async function proxy(request: NextRequest) {
     signInUrl.searchParams.set('callbackUrl', pathname);
     return withCsp(request, NextResponse.redirect(signInUrl));
   }
+
+  if (token.accountDisabled && !pathname.startsWith('/auth/')) {
+    const signInUrl = new URL('/auth/signin', request.url);
+    signInUrl.searchParams.set('error', 'AccountUnavailable');
+    return withCsp(request, NextResponse.redirect(signInUrl));
+  }
+
+  if (token.mustChangePassword && pathname !== '/auth/first-login') {
+    const setupUrl = new URL('/auth/first-login', request.url);
+    setupUrl.searchParams.set('callbackUrl', `${pathname}${request.nextUrl.search}`);
+    return withCsp(request, NextResponse.redirect(setupUrl));
+  }
+
+  if (pathname === '/jobs') return nextWithCsp(request);
 
   const userRole = (token.role as string) || 'Candidate';
 
@@ -134,7 +151,6 @@ export const config = {
     '/admin/:path*',
     '/audit/:path*',
     '/candidates/:path*',
-    '/interviews/:path*',
     // Run on dashboard/auth pages too so every document response carries the
     // nonce CSP in production (config matcher must stay static).
     '/dashboard/:path*',
