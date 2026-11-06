@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import prisma from '@/lib/prisma';
-import { Permission, roleHasPermission, type ApplicationRole } from '@/lib/roleAccess';
+import { Permission, effectivePermissionsForRole, type ApplicationRole, type Permission as PermissionType } from '@/lib/roleAccess';
 
 export interface AuthenticatedUser {
   id: string;
@@ -11,6 +11,8 @@ export interface AuthenticatedUser {
   role: string;
   organizationId: string;
   departmentRestrictions: string[];
+  mustChangePassword: boolean;
+  permissions: PermissionType[];
 }
 
 interface AuthResult {
@@ -96,6 +98,37 @@ async function requireAuthInternal(
     };
   }
 
+  // Spec §5: an invited account that still requires first-login password setup
+  // must not access protected app features. They can only complete the first-login
+  // password-set flow. This check runs even if the session is otherwise valid so
+  // a stale session cannot bypass it.
+  if (userRecord.mustChangePassword) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { error: 'ACCOUNT_SETUP_REQUIRED' },
+        { status: 403 }
+      ),
+    };
+  }
+
+  // Session-revocation guard (spec §5, §6.1): if the password was changed
+  // (first-login setup or password reset) AFTER this session was issued,
+  // the stale session is no longer valid and the user must re-authenticate.
+  const sessionPwdChanged = (session.user as any)?.passwordChangedAt;
+  if (sessionPwdChanged && userRecord.passwordChangedAt) {
+    const sessionChanged = new Date(sessionPwdChanged);
+    if (userRecord.passwordChangedAt > sessionChanged) {
+      return {
+        user: null,
+        error: NextResponse.json(
+          { error: 'Unauthorized: Session expired — please sign in again.' },
+          { status: 401 }
+        ),
+      };
+    }
+  }
+
   const user: AuthenticatedUser = {
     id: userRecord.id,
     email: userRecord.email,
@@ -103,6 +136,8 @@ async function requireAuthInternal(
     role: userRecord.roles[0]?.name || 'Candidate',
     organizationId: userRecord.organizationId,
     departmentRestrictions: userRecord.departmentRestrictions,
+    mustChangePassword: Boolean(userRecord.mustChangePassword),
+    permissions: effectivePermissionsForRole(userRecord.roles[0]?.name || 'Candidate', userRecord.customPermissions),
   };
 
   if (check) {
@@ -111,7 +146,7 @@ async function requireAuthInternal(
       { status: 403 }
     );
 
-    if ('permission' in check && check.permission && !roleHasPermission(user.role, check.permission)) {
+    if ('permission' in check && check.permission && !user.permissions.includes(check.permission)) {
       return { user: null, error: forbidden };
     }
 
