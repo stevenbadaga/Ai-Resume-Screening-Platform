@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { redirect } from 'next/navigation';
+import { authOptions } from '@/lib/authOptions';
 import JobsClient from './JobsClient';
 import { firstParam, parsePagination, toPageInfo } from '@/lib/pagination';
 
@@ -27,7 +26,6 @@ export default async function JobsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session) redirect('/auth/signin');
   const userRole = (session?.user as any)?.role || 'Candidate';
   const organizationId = (session?.user as any)?.organizationId;
 
@@ -37,9 +35,10 @@ export default async function JobsPage({
   const status = firstParam(sp, 'status');
   const department = firstParam(sp, 'department');
 
+  const isPublicListing = userRole === 'Candidate';
   const whereClause: any =
-    userRole === 'Candidate'
-      ? { status: 'OPEN' }
+    isPublicListing
+      ? { status: 'OPEN', AND: [{ OR: [{ opensAt: null }, { opensAt: { lte: new Date() } }] }, { OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }] }] }
       : { organizationId };
 
   // Department-restricted staff only see permitted departments (§6.1).
@@ -50,10 +49,10 @@ export default async function JobsPage({
     }
   }
 
-  if (status && status !== 'ALL') {
+  if (!isPublicListing && status && status !== 'ALL') {
     whereClause.status = status;
   }
-  if (department && department !== 'ALL') {
+  if (!isPublicListing && department && department !== 'ALL') {
     // Composes with department restrictions (restrictions win via AND).
     whereClause.department = whereClause.department
       ? { in: [department] }
@@ -71,7 +70,15 @@ export default async function JobsPage({
   }
 
   const [jobs, total, departmentRows] = await Promise.all([
-    prisma.jobRequisition.findMany({
+    isPublicListing ? prisma.jobRequisition.findMany({
+      where: whereClause,
+      select: {
+        id: true, title: true, department: true, location: true, employmentType: true,
+        description: true, opensAt: true, closesAt: true, status: true, createdAt: true,
+        organization: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'desc' }, skip, take,
+    }) : prisma.jobRequisition.findMany({
       where: whereClause,
       include: {
         organization: { select: { id: true, name: true } },
@@ -100,7 +107,7 @@ export default async function JobsPage({
   // onto that shape so the client component stays unchanged.
   const jobsWithCounts = jobs.map((job) => ({
     ...job,
-    applications: Array.from({ length: job._count.applications }),
+    applications: Array.from({ length: (job as any)._count?.applications ?? 0 }),
   }));
 
   // Candidate context (§6.3 explainability): where the candidate stands on
@@ -162,6 +169,8 @@ export default async function JobsPage({
       pagination={toPageInfo(page, pageSize, total)}
       myApplications={myApplications}
       hasSavedResume={hasSavedResume}
+      isAuthenticated={Boolean(session)}
+      permissions={(session?.user as any)?.permissions || []}
       filters={{
         q: q ?? '',
         status: status ?? 'ALL',
