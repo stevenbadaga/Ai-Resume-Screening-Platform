@@ -89,6 +89,16 @@ The following residual functional/non-functional requirement gaps were closed in
 
 Verification after this pass: `npx tsc --noEmit` clean, `npm run build` succeeds, full Vitest suite **104 tests across 14 files, all passing**.
 
+### Implementation update: 2026-10-18 (v1.5)
+
+Re-audit of the 17-page PDF specification against the current tree found and closed three residual functional gaps:
+
+- **Audit search by candidate/application/job (§6.12, fix)** — the audit screen previously searched only by actor, action type, and date. A new record filter (`?record=<id>`) expands a candidate, application, or job-requisition id into that record and everything linked to it (applications, decisions, interviews, screening runs, resume, parsed profile) **within the viewing organization** — cross-organization ids resolve to an empty scope and match nothing. Implemented by `src/lib/auditRecordScope.ts` + `/audit` page/client, with a results-scope badge (i18n across all five languages) and unit tests (`__tests__/auditRecordScope.test.ts`).
+- **Admin operational-health view (§6.12, fix)** — `/api/health` reported checks but there was no human-readable surface. Health-check logic was extracted to `src/lib/healthChecks.ts` (shared by the endpoint and UI), and a new `/dashboard/system-health` page renders processing status (resumes by state), queue depth incl. failed jobs, delivery failures, storage backend/writability, and integration configuration — counts and booleans only, never secrets. Access mirrors the `/api/health` detail grant (Admin/ComplianceAuditor); route refactored to consume the same helper (behavior unchanged).
+- **Candidate/application archive (§6.3, fix)** — archive/restore of candidate and application records did not exist as a lifecycle action. New `archivedAt` columns (migration `20261018120000_candidate_application_archive`), a `POST /api/candidates/[id]/archive` endpoint (org-scoped, mandatory reason, audited `CANDIDATE_ARCHIVED`/`CANDIDATE_UNARCHIVED`), pipeline `archived=true` filter plus "show archived" toggle (default remains active-only), and an archive/restore button with badge on the candidate profile (matching §6.3 reason-capture rules). Covered by `__tests__/archive.integration.test.ts` (self-skips without `TEST_DATABASE_URL`): archive covers all org-visible applications, stages/decision history intact, restore is clean, and cross-organization access stays empty.
+
+Verification after this pass: `npx tsc --noEmit` clean; Vitest 231 passed / 17 self-skipped (29 files); `npm run lint` 0 errors; `npm run build` succeeds with the new routes compiled. Note: `prisma migrate deploy` could not reach the configured database from this environment — the archive migration is pending application (plain nullable `ADD COLUMN`, no data risk).
+
 ### Implementation update: 2026-09-19 (v1.4)
 
 - **Manager analytics UI (§6.10)**: `/dashboard/analytics` renders the `/api/analytics` metrics with date/job/department/recruiter/stage filters, stage-distribution and time-in-stage tables, recruiter workload bars, and inline documented metric definitions; linked from navigation for Admin/Recruiter/HiringManager only.
