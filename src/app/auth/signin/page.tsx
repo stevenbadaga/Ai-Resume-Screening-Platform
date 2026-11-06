@@ -1,8 +1,7 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -21,6 +20,16 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   hidePassword: string;
   noAccount: string;
   createAccount: string;
+  applicantTab: string;
+  staffTab: string;
+  applicantBadge: string;
+  staffBadge: string;
+  applicantSub: string;
+  staffSub: string;
+  applicantPlaceholder: string;
+  staffPlaceholder: string;
+  noStaffAccount: string;
+  createStaffAccount: string;
   emailNotVerified: string;
   emailNotVerifiedHint: string;
   resendVerification: string;
@@ -43,6 +52,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   codeDeliveryFailed: string;
   tooManyAttempts: string;
   codeCooldownWait: string;
+  codeSentToTOTP: string;
+  totpHint: string;
   activate: string;
   activationSuccess: string;
   registeredEmailFailed: string;
@@ -61,8 +72,18 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     invalidCredentials: 'Invalid email or password credentials.',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
-    noAccount: "Don't have an account?",
-    createAccount: 'Create Account →',
+    noAccount: "Don't have an applicant account?",
+    createAccount: 'Create Applicant Account →',
+    applicantTab: 'Work Applicant',
+    staffTab: 'Company & Staff',
+    applicantBadge: 'Candidate Workspace',
+    staffBadge: 'Company Staff Workspace',
+    applicantSub: 'Sign in to track your job applications, CV status, and interview invites.',
+    staffSub: 'Sign in to access resume screening pipelines, scoring rubrics, and team analytics.',
+    applicantPlaceholder: 'candidate@example.com',
+    staffPlaceholder: 'recruiter@company.com',
+    noStaffAccount: 'Registering a company or joining a team?',
+    createStaffAccount: 'Create Staff Account →',
     emailNotVerified: 'Please verify your email address before signing in.',
     emailNotVerifiedHint: 'We sent a verification code when you registered. Enter it to activate your account.',
     resendVerification: 'Resend verification code',
@@ -83,6 +104,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeDeliveryFailed: 'The email could not be sent right now. Please try again shortly.',
     tooManyAttempts: 'Too many attempts. Please try again later.',
     codeCooldownWait: 'A code was just sent — finishing sign-in…',
+    codeSentToTOTP: 'Enter the 6-digit code from your authenticator app for',
+    totpHint: 'Enter the 6-digit code currently shown in your authenticator app. If you lost access to your device, contact your administrator.',
     activate: 'Activate ➔',
     activationSuccess: 'Email verified! Continuing to sign-in…',
     registeredEmailFailed: 'Account created, but the verification email could not be sent (email delivery is not working right now).',
@@ -101,8 +124,18 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     invalidCredentials: 'Adresse e-mail ou mot de passe incorrect.',
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
-    noAccount: "Vous n'avez pas de compte ?",
-    createAccount: 'Créer un compte →',
+    noAccount: "Vous n'avez pas de compte candidat ?",
+    createAccount: 'Créer un compte candidat →',
+    applicantTab: 'Candidat',
+    staffTab: 'Entreprise & Équipe',
+    applicantBadge: 'Espace Candidat',
+    staffBadge: 'Espace Entreprise & Équipe',
+    applicantSub: 'Connectez-vous pour suivre vos candidatures, vos CV et vos invitations d’entretien.',
+    staffSub: 'Connectez-vous pour accéder au criblage de CV, aux grilles de notation et aux métriques.',
+    applicantPlaceholder: 'candidat@exemple.com',
+    staffPlaceholder: 'recruteur@entreprise.com',
+    noStaffAccount: 'Vous enregistrez une entreprise ou rejoignez une équipe ?',
+    createStaffAccount: 'Créer un compte entreprise →',
     emailNotVerified: 'Veuillez vérifier votre adresse e-mail avant de vous connecter.',
     emailNotVerifiedHint: "Un code de vérification vous a été envoyé lors de l'inscription. Saisissez-le pour activer votre compte.",
     resendVerification: "Renvoyer le code de vérification",
@@ -123,6 +156,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeDeliveryFailed: 'L’e-mail n’a pas pu être envoyé pour le moment. Veuillez réessayer sous peu.',
     tooManyAttempts: 'Trop de tentatives. Veuillez réessayer plus tard.',
     codeCooldownWait: 'Un code vient d’être envoyé — finalisation de la connexion…',
+    codeSentToTOTP: 'Entrez le code à 6 chiffres de votre application authentificatrice pour',
+    totpHint: 'Entrez le code à 6 chiffres actuellement affiché dans votre application authentificatrice. Si vous avez perdu l’accès à votre appareil, contactez votre administrateur.',
     activate: 'Activer ➔',
     activationSuccess: 'E-mail vérifié ! Continuation de la connexion…',
     registeredEmailFailed: 'Compte créé, mais l’e-mail de vérification n’a pas pu être envoyé (l’envoi d’e-mails ne fonctionne pas pour le moment).',
@@ -141,8 +176,18 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     invalidCredentials: 'El correo o la contraseña no son válidos.',
     showPassword: 'Mostrar contraseña',
     hidePassword: 'Ocultar contraseña',
-    noAccount: '¿No tienes una cuenta?',
-    createAccount: 'Crear cuenta →',
+    noAccount: '¿No tienes una cuenta de candidato?',
+    createAccount: 'Crear cuenta de candidato →',
+    applicantTab: 'Candidato',
+    staffTab: 'Empresa y Personal',
+    applicantBadge: 'Espacio del Candidato',
+    staffBadge: 'Espacio de Empresa y Equipo',
+    applicantSub: 'Inicia sesión para revisar tus solicitudes, estado de CV e invitaciones a entrevistas.',
+    staffSub: 'Inicia sesión para acceder al cribado de CVs, rúbricas de evaluación y análisis de equipo.',
+    applicantPlaceholder: 'candidato@ejemplo.com',
+    staffPlaceholder: 'reclutador@empresa.com',
+    noStaffAccount: '¿Registras una empresa o te unes a un equipo?',
+    createStaffAccount: 'Crear cuenta de personal →',
     emailNotVerified: 'Verifique su dirección de correo antes de iniciar sesión.',
     emailNotVerifiedHint: 'Se envió un código de verificación al registrarse. Ingréselo para activar su cuenta.',
     resendVerification: 'Reenviar código de verificación',
@@ -163,6 +208,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeDeliveryFailed: 'No se pudo enviar el correo ahora mismo. Inténtelo de nuevo en breve.',
     tooManyAttempts: 'Demasiados intentos. Inténtelo más tarde.',
     codeCooldownWait: 'Se acaba de enviar un código — completando el inicio de sesión…',
+    codeSentToTOTP: 'Ingresa el código de 6 dígitos de tu app de autenticación para',
+    totpHint: 'Ingresa el código de 6 dígitos de tu app de autenticación. Si perdiste el acceso a tu dispositivo, contacta a tu administrador.',
     activate: 'Activar ➔',
     activationSuccess: '¡Correo verificado! Continuando con el inicio de sesión…',
     registeredEmailFailed: 'Cuenta creada, pero no se pudo enviar el correo de verificación (el envío de correos no funciona en este momento).',
@@ -181,8 +228,18 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     invalidCredentials: 'Ungültige E-Mail-Adresse oder ungültiges Passwort.',
     showPassword: 'Passwort anzeigen',
     hidePassword: 'Passwort ausblenden',
-    noAccount: 'Noch kein Konto?',
-    createAccount: 'Konto erstellen →',
+    noAccount: 'Noch kein Bewerberkonto?',
+    createAccount: 'Bewerberkonto erstellen →',
+    applicantTab: 'Bewerber',
+    staffTab: 'Unternehmen & Team',
+    applicantBadge: 'Bewerber-Arbeitsbereich',
+    staffBadge: 'Unternehmens-Arbeitsbereich',
+    applicantSub: 'Melden Sie sich an, um Ihre Bewerbungen, Lebenslauf-Status und Einladungen einzusehen.',
+    staffSub: 'Melden Sie sich an, um Lebenslauf-Prüfungen, Bewertungsrubriken und Team-Analysen zu verwalten.',
+    applicantPlaceholder: 'bewerber@beispiel.de',
+    staffPlaceholder: 'recruiter@unternehmen.de',
+    noStaffAccount: 'Unternehmen registrieren oder Team beitreten?',
+    createStaffAccount: 'Mitarbeiterkonto erstellen →',
     emailNotVerified: 'Bitte bestätigen Sie Ihre E-Mail-Adresse vor der Anmeldung.',
     emailNotVerifiedHint: 'Bei der Registrierung wurde ein Bestätigungscode gesendet. Geben Sie ihn ein, um Ihr Konto zu aktivieren.',
     resendVerification: 'Bestätigungscode erneut senden',
@@ -203,6 +260,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeDeliveryFailed: 'Die E-Mail konnte gerade nicht gesendet werden. Bitte gleich erneut versuchen.',
     tooManyAttempts: 'Zu viele Versuche. Bitte später erneut versuchen.',
     codeCooldownWait: 'Ein Code wurde gerade gesendet — Anmeldung wird abgeschlossen…',
+    codeSentToTOTP: 'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App für ein',
+    totpHint: 'Geben Sie den 6-stelligen Code ein, der aktuell in Ihrer Authenticator-App angezeigt wird. Wenn Sie den Zugriff auf Ihr Gerät verloren haben, wenden Sie sich an Ihren Administrator.',
     activate: 'Aktivieren ➔',
     activationSuccess: 'E-Mail bestätigt! Anmeldung wird fortgesetzt…',
     registeredEmailFailed: 'Konto erstellt, aber die Bestätigungs-E-Mail konnte nicht gesendet werden (der E-Mail-Versand funktioniert derzeit nicht).',
@@ -221,8 +280,18 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     invalidCredentials: 'Imeyili/ijambo ry’ibanga si byo.',
     showPassword: 'Erekana ijambo ry’ibanga',
     hidePassword: 'Hisha ijambo ry’ibanga',
-    noAccount: 'Nta konti ufite?',
-    createAccount: 'Fungura konti →',
+    noAccount: 'Nta konti y’usaba akazi ufite?',
+    createAccount: 'Fungura konti y’usaba akazi →',
+    applicantTab: 'Usaba akazi',
+    staffTab: 'Ikigo n’Abakozi',
+    applicantBadge: 'Umwanya w’Usaba Akazi',
+    staffBadge: 'Umwanya w’Ikigo n’Abakozi',
+    applicantSub: 'Injira kugira ngo ukurikirane ubusabe bwawe, imiterere ya CV, n’ubutumire bw’ibazwa.',
+    staffSub: 'Injira kugira ngo ubashe gukoresha isuzuma rya CV, ibipimo byo gusuzuma, n’ibarurishamibare.',
+    applicantPlaceholder: 'usaba@urugero.rw',
+    staffPlaceholder: 'umukozi@ikigo.rw',
+    noStaffAccount: 'Ukeneye kwandikisha ikigo cyangwa kwinjira mu ikipe?',
+    createStaffAccount: 'Fungura konti y’ikigo →',
     emailNotVerified: 'Banza umeze aderesi ya imeyili mbere yo kwinjira.',
     emailNotVerifiedHint: 'Kode yo kwemeza yoherejwe iyo wiyandikishije. Yandike kugira ngo ukoreshe konti yawe.',
     resendVerification: 'Ongera uwohereze kode yo kwemeza',
@@ -243,6 +312,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeDeliveryFailed: 'Imeyili ntishobora koherezwa ubu. Ongera ugerageze minyote.',
     tooManyAttempts: 'Ongeraneza bwinshi. Ongera ugerageze nyuma.',
     codeCooldownWait: 'Kode yoherezwa vuba — baguze gusa…',
+    codeSentToTOTP: 'Andika kodya 6 kuturageza hanyuma',
+    totpHint: 'Andika kodya 6 ishyirwaga muri prooteyi yawe ya autentifikasyon. Niba uburyowoko bwawe bwafunzwe, kontakt yufite umuyobozi wawe.',
     activate: 'Emeza konti ➔',
     activationSuccess: 'Imeyili yemejwe! Birimo gukomeza kwinjira…',
     registeredEmailFailed: 'Konti yafunguwe, ariko imeyili yo kwemeza ntishobora koherezwa (kohereza imeyili ntikora ubu).',
@@ -258,6 +329,15 @@ function SignInForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const initialPortal =
+    searchParams.get('portal') === 'staff' ||
+    searchParams.get('accountType') === 'worker' ||
+    searchParams.get('type') === 'worker'
+      ? 'staff'
+      : 'applicant';
+
+  const [portalType, setPortalType] = useState<'applicant' | 'staff'>(initialPortal);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -266,8 +346,8 @@ function SignInForm() {
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'delivery-failed'>('idle');
 
-  // Two-step sign-in state: step 'credentials' → step 'code'.
-  const [step, setStep] = useState<'credentials' | 'code'>('credentials');
+  // Two-step sign-in state: step 'credentials' → 'code' (emailed) or 'totp' (TOTP).
+  const [step, setStep] = useState<'credentials' | 'code' | 'totp'>('credentials');
   const [code, setCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'verifying' | 'resent' | 'delivery-failed'>('idle');
 
@@ -351,9 +431,12 @@ function SignInForm() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.success) {
-        // Factor 1 solved. Move to the code step — the password stays in
-        // memory only; it is re-checked by NextAuth when the session is issued.
-        setStep('code');
+        // Factor 1 solved. Move to the appropriate second-factor step.
+        if (data.next === 'totp') {
+          setStep('totp');
+        } else {
+          setStep('code');
+        }
         setCodeStatus('idle');
       } else if (data.error === 'EMAIL_NOT_VERIFIED') {
         setEmailNotVerified(true);
@@ -421,7 +504,8 @@ function SignInForm() {
     }
   };
 
-  // Step 2: verify the emailed code, then exchange both factors for a session.
+  // Step 2: verify the second factor (emailed code or TOTP), then exchange
+  // both factors for a session.
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (codeStatus === 'verifying') return;
@@ -432,7 +516,7 @@ function SignInForm() {
       const res = await fetch('/api/auth/login/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, factor: step === 'totp' ? 'totp' : 'code' }),
       });
       const data = await res.json().catch(() => ({}));
 
@@ -449,7 +533,11 @@ function SignInForm() {
           setError(copy.invalidCredentials);
           setStep('credentials');
         } else {
-          router.push('/dashboard');
+          const requestedDestination = searchParams.get('callbackUrl');
+          const destination = requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
+            ? requestedDestination
+            : '/dashboard';
+          router.push(destination);
           router.refresh();
         }
       } else if (res.status === 429) {
@@ -465,7 +553,9 @@ function SignInForm() {
   };
 
   // Resend a fresh login code (server enforces a 60s cooldown).
+  // For TOTP, this is not available — codes refresh every 30 seconds.
   const handleResendCode = async () => {
+    if (step === 'totp') return; // TOTP codes auto-refresh; no resend.
     if (!email || !password || codeStatus === 'verifying' || cooldownSeconds > 0) return;
     setError('');
     try {
@@ -499,25 +589,76 @@ function SignInForm() {
           </div>
           <div className="chip chip-success !text-[9px] !tracking-[0.18em] uppercase">
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-            {copy.secureAccess}
+            {step === 'credentials'
+              ? (portalType === 'applicant' ? copy.applicantBadge : copy.staffBadge)
+              : copy.secureAccess}
           </div>
           <h1 className="text-2xl font-extrabold text-[var(--foreground)] tracking-tight">
-            {step === 'code' ? copy.codeTitle : copy.title}
+            {step === 'code' || step === 'totp' ? copy.codeTitle : copy.title}
           </h1>
           {step === 'credentials' && (
             <p className="text-xs text-[var(--muted)]">
               {copy.subtitle}
             </p>
           )}
-          {step === 'code' && (
+          {(step === 'code' || step === 'totp') && (
             <p className="text-xs text-[var(--muted)]">
-              {copy.codeSentTo} <span className="font-bold text-[var(--foreground)]">{email}</span>
+              {step === 'totp' ? copy.codeSentToTOTP : copy.codeSentTo} <span className="font-bold text-[var(--foreground)]">{email}</span>
             </p>
           )}
         </div>
 
+        {/* Portal Switcher (credentials mode) */}
+        {step === 'credentials' && (
+          <div className="space-y-3">
+            <div className="segmented max-w-xs mx-auto">
+              <button
+                type="button"
+                onClick={() => setPortalType('applicant')}
+                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
+                  portalType === 'applicant' ? 'active' : ''
+                }`}
+              >
+                <span aria-hidden="true">🧑‍💼</span>
+                <span>{copy.applicantTab}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPortalType('staff')}
+                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
+                  portalType === 'staff' ? 'active' : ''
+                }`}
+              >
+                <span aria-hidden="true">🏢</span>
+                <span>{copy.staffTab}</span>
+              </button>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] flex items-center gap-2.5 text-left">
+              <span className="text-xl" aria-hidden="true">{portalType === 'applicant' ? '📄' : '🏢'}</span>
+              <div>
+                <h3 className="font-bold text-[var(--foreground)] text-xs">
+                  {portalType === 'applicant' ? copy.applicantBadge : copy.staffBadge}
+                </h3>
+                <p className="text-[10px] text-[var(--muted)]">
+                  {portalType === 'applicant' ? copy.applicantSub : copy.staffSub}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {error && (
-          <div role="alert" className="p-3.5 rounded-lg border text-xs font-bold text-center" style={{ backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))', borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)', color: 'var(--danger)' }}>
+          <div
+            role="alert"
+            className="p-3.5 rounded-lg border text-xs font-bold text-center"
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
+              borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)',
+              color: 'var(--danger)',
+            }}
+          >
             ⚠️ {error}
           </div>
         )}
@@ -625,29 +766,30 @@ function SignInForm() {
                 name="email"
                 autoComplete="email"
                 autoFocus
-                required              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (emailFormatError) setEmailFormatError(false);
-              }}
-              placeholder="user@codafriqa.rw"
-              aria-invalid={emailFormatError || undefined}
-              aria-describedby={emailFormatError ? 'signin-email-format-error' : undefined}
-              className={`w-full field !rounded-lg !px-4 !py-2.5 ${
-                emailFormatError
-                  ? '!border-[var(--danger)]'
-                  : ''
-              }`}
-            />
-            {emailFormatError && (
-              <p
-                id="signin-email-format-error"
-                role="alert"
-                className="mt-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400"
-              >
-                ⚠️ {copy.emailInvalidPrompt}
-              </p>
-            )}
+                required
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailFormatError) setEmailFormatError(false);
+                }}
+                placeholder={portalType === 'applicant' ? copy.applicantPlaceholder : copy.staffPlaceholder}
+                aria-invalid={emailFormatError || undefined}
+                aria-describedby={emailFormatError ? 'signin-email-format-error' : undefined}
+                className={`w-full field !rounded-lg !px-4 !py-2.5 ${
+                  emailFormatError
+                    ? '!border-[var(--danger)]'
+                    : ''
+                }`}
+              />
+              {emailFormatError && (
+                <p
+                  id="signin-email-format-error"
+                  role="alert"
+                  className="mt-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400"
+                >
+                  ⚠️ {copy.emailInvalidPrompt}
+                </p>
+              )}
             </div>
 
             <div>
@@ -694,7 +836,7 @@ function SignInForm() {
           <form onSubmit={handleCodeSubmit} className="space-y-4 text-xs">
             <div>
               <label htmlFor="signin-code" className="field-label">
-                {copy.codeLabel}
+                {step === 'totp' ? 'Authenticator Code' : copy.codeLabel}
               </label>
               <input
                 type="text"
@@ -710,7 +852,7 @@ function SignInForm() {
                 placeholder={copy.codePlaceholder}
                 className="w-full field !rounded-lg !px-4 !py-3 text-center !text-2xl !font-bold !tracking-[0.5em]"
               />
-              <p className="mt-2 text-[11px] text-[var(--muted)]">{copy.codeHint}</p>
+              <p className="mt-2 text-[11px] text-[var(--muted)]">{step === 'totp' ? copy.totpHint : copy.codeHint}</p>
             </div>
 
             {codeStatus === 'delivery-failed' && (
@@ -749,14 +891,20 @@ function SignInForm() {
               >
                 {copy.backToCredentials}
               </button>
-              <button
-                type="button"
-                onClick={handleResendCode}
-                disabled={cooldownSeconds > 0}
-                className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline disabled:opacity-60 disabled:hover:no-underline"
-              >
-                {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
-              </button>
+              {step === 'totp' ? (
+                <span className="text-[11px] text-[var(--muted)]">
+                  New code every 30 seconds
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  disabled={cooldownSeconds > 0}
+                  className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline disabled:opacity-60 disabled:hover:no-underline"
+                >
+                  {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
+                </button>
+              )}
             </div>
           </form>
         )}
@@ -772,11 +920,22 @@ function SignInForm() {
         </div>
 
         {/* Link to Registration */}
-        <div className="pt-2 text-center text-xs text-[var(--muted)]">
-          {copy.noAccount}{' '}
-          <Link href="/auth/signup" className="link">
-            {copy.createAccount}
-          </Link>
+        <div className="pt-2 text-center text-xs text-[var(--muted)] border-t border-[var(--border)]">
+          {portalType === 'applicant' ? (
+            <div>
+              <span>{copy.noAccount} </span>
+              <Link href="/auth/signup?accountType=candidate" className="link font-bold">
+                {copy.createAccount}
+              </Link>
+            </div>
+          ) : (
+            <div>
+              <span>{copy.noStaffAccount} </span>
+              <Link href="/auth/signup?accountType=worker" className="link font-bold">
+                {copy.createStaffAccount}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -793,7 +952,8 @@ function SignInLoading() {
 }
 
 export default function SignIn() {
-  return (      <Suspense fallback={<SignInLoading />}>
+  return (
+    <Suspense fallback={<SignInLoading />}>
       <SignInForm />
     </Suspense>
   );
