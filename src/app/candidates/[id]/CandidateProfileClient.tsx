@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { roleCapabilities, roleHasPermission, Permission } from '@/lib/roleAccess';
+import { FINAL_STAGES } from '@/lib/applicationStages';
+import { useSession } from 'next-auth/react';
 
 interface Props {
   application?: any;
@@ -20,6 +22,9 @@ export default function CandidateProfileClient({
   userRole = 'Recruiter'
 }: Props) {
   const { t } = useLanguage();
+  const { data: session } = useSession();
+  const sessionPermissions = (session?.user as any)?.permissions as string[] | undefined;
+  const allows = (permission: Permission, fallback: boolean) => sessionPermissions ? sessionPermissions.includes(permission) : fallback;
   const initialApp = application || profile || {};
   const [app, setApp] = useState(initialApp);
 
@@ -87,6 +92,10 @@ export default function CandidateProfileClient({
   // §6.5: recruiter-triggered screening re-run (earlier runs stay for comparison).
   const [rerunningScreening, setRerunningScreening] = useState(false);
 
+  // §6.3: archive/restore lifecycle with mandatory reason (captured client-side
+  // via prompt, verified server-side).
+  const [archiving, setArchiving] = useState(false);
+
   // §6.9: compose → preview → send candidate communications.
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageTemplate, setMessageTemplate] = useState('RECRUITER_MESSAGE');
@@ -98,15 +107,54 @@ export default function CandidateProfileClient({
   // Active highlighted snippet
   const [highlightedSnippet, setHighlightedSnippet] = useState<string | null>(null);
 
+  const renderResumeWithHighlight = (text: string, snippet: string | null) => {
+    if (!text) return t('cprofile_no_resume_text');
+    if (!snippet || !snippet.trim()) return text;
+
+    const trimmed = snippet.trim();
+    const lowerText = text.toLowerCase();
+    const lowerSnippet = trimmed.toLowerCase();
+    const matchIndex = lowerText.indexOf(lowerSnippet);
+
+    if (matchIndex === -1) return text;
+
+    const before = text.substring(0, matchIndex);
+    const match = text.substring(matchIndex, matchIndex + trimmed.length);
+    const after = text.substring(matchIndex + trimmed.length);
+
+    return (
+      <>
+        {before}
+        <mark id="evidence-quote-anchor" className="bg-teal-500/30 text-teal-300 dark:text-teal-200 px-1 py-0.5 rounded font-bold ring-2 ring-teal-500 animate-pulse">
+          {match}
+        </mark>
+        {after}
+      </>
+    );
+  };
+
   const { showToast } = useToast();
 
-  const canMakeDecisions = roleCapabilities.canMakeDecisions(userRole);
-  const canOverrideScores = roleCapabilities.canOverrideScores(userRole);
-  const canScheduleInterviews = roleCapabilities.canScheduleInterviews(userRole);
-  const canGenerateInterviewQuestions = roleCapabilities.canGenerateInterviewQuestions(userRole);
-  const canSubmitScorecards = roleCapabilities.canSubmitScorecards(userRole);
-  const canRunScreening = roleHasPermission(userRole, Permission.RunScreening);
-  const canContactCandidates = roleHasPermission(userRole, Permission.ContactCandidates);
+  const canMakeDecisions = allows(Permission.MakeHiringDecisions, roleCapabilities.canMakeDecisions(userRole));
+  const canOverrideScores = allows(Permission.OverrideScores, roleCapabilities.canOverrideScores(userRole));
+  const canScheduleInterviews = allows(Permission.ScheduleInterviews, roleCapabilities.canScheduleInterviews(userRole));
+  const canGenerateInterviewQuestions = allows(Permission.GenerateInterviewQuestions, roleCapabilities.canGenerateInterviewQuestions(userRole));
+  const canSubmitScorecards = allows(Permission.SubmitScorecards, roleCapabilities.canSubmitScorecards(userRole));
+  const canRunScreening = allows(Permission.RunScreening, roleHasPermission(userRole, Permission.RunScreening));
+  const canContactCandidates = allows(Permission.ContactCandidates, roleHasPermission(userRole, Permission.ContactCandidates));
+
+  // Derived stage state, read from the canonical stage vocabulary so the UI
+  // can never drift from what decision/stage routes write (single map, §8).
+  const currentStage: string = app.stage || 'NEW';
+  const isStage = (stage: string) => currentStage === stage;
+  const isShortlisted = isStage('SHORTLISTED');
+  const isInterviewing = isStage('INTERVIEW_SCHEDULED');
+  const isOffered = isStage('OFFERED');
+  const isHired = isStage('HIRED');
+  const isRejected = isStage('REJECTED');
+  const isWithdrawn = isStage('WITHDRAWN');
+  const isTerminal = FINAL_STAGES.includes(currentStage);
+  const isArchived = Boolean(app.archivedAt);
 
   // Load the approved decision-reason catalog once (§6.7). Falls back to the
   // built-in defaults rendered below if the request fails.
@@ -347,6 +395,37 @@ export default function CandidateProfileClient({
 
   // §6.5: queue an AI screening re-run against the current APPROVED rubric.
   // Earlier runs remain untouched so results stay comparable.
+  const handleToggleArchive = async () => {
+    if (archiving || !app.candidate?.id) return;
+    const archived = !isArchived;
+    const defaultReason = archived ? 'Archiving inactive applicant — records kept for audit' : 'Restoring from archive for continued review';
+    const reason = window.prompt(
+      archived
+        ? 'Archive this candidate and every application they hold? Records are preserved and the action is audited. Give a short reason:'
+        : 'Restore this candidate from the archive? Give a short reason:',
+      defaultReason
+    );
+    if (!reason || reason.trim().length < 3) return;
+
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/candidates/${app.candidate.id}/archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archived, reason: reason.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Archive request failed');
+      showToast(archived ? 'Candidate archived' : 'Candidate restored', 'success');
+      // Refresh server-rendered state so the archivedAt badge stays truthful.
+      window.location.reload();
+    } catch (e: any) {
+      showToast(e?.message || 'Archive request failed', 'error');
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   const handleRerunScreening = async () => {
     if (rerunningScreening) return;
     setRerunningScreening(true);
@@ -473,76 +552,190 @@ export default function CandidateProfileClient({
             </button>
           )}
 
-          {canGenerateInterviewQuestions && (
+          {/* Active Stage Indicator Badge */}
+          <div className="flex items-center gap-1.5 self-center mr-1">
+            <span className="chip !text-[10px] font-mono font-bold uppercase tracking-wider">
+              {t('stage_col')}: {currentStage}
+            </span>
+            {isArchived ? (
+              <span className="chip !text-[10px] font-mono font-bold uppercase tracking-wider !text-amber-600 dark:!text-amber-400">
+                🗄 {t('cprofile_archived_badge')}
+              </span>
+            ) : null}
+          </div>
+
+          {/* 7. Archive/Restore (§6.3): lifecycle action with reason capture —
+              keeps all records, removes nothing, fully audited server-side. */}
+          {canMakeDecisions && (
+            <button
+              onClick={handleToggleArchive}
+              disabled={archiving}
+              className={`btn btn-secondary btn-sm !text-xs ${isArchived ? 'text-slate-600 dark:text-slate-300' : 'text-amber-700 dark:text-amber-300'}`}
+              title={isArchived ? 'Restore the candidate and all their applications to the active pipeline' : 'Archive the candidate and all their applications (records stay intact)'}
+            >
+              <span>🗄</span>
+              <span>{archiving ? '…' : isArchived ? t('cprofile_restore_btn') : t('cprofile_archive_btn')}</span>
+            </button>
+          )}
+
+          {/* 1. Contact / Message: available whenever candidate is not withdrawn */}
+          {canContactCandidates && !isWithdrawn && (
+            <button
+              onClick={() => {
+                setMessagePreview(null);
+                setShowMessageModal(true);
+              }}
+              className="btn btn-secondary btn-sm !text-xs"
+              title="Compose and preview candidate communication"
+            >
+              <span>✉</span>
+              <span>{t('btn_message_candidate')}</span>
+            </button>
+          )}
+
+          {/* 2. AI Interview Questions: relevant during active evaluation */}
+          {canGenerateInterviewQuestions && !isTerminal && (
             <button
               onClick={handleGenerateQuestions}
-              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+              className="btn btn-secondary btn-sm !text-xs"
+              title="Generate customized behavioral and technical interview questions based on CV gaps"
             >
               <span>🤖</span>
               <span>{t('btn_ai_questions')}</span>
             </button>
           )}
 
-          {canSubmitScorecards && (
+          {/* 3. Submit Scorecard: relevant for interviewers during interview stages */}
+          {canSubmitScorecards && (isShortlisted || isInterviewing) && (
             <button
               onClick={() => setShowScorecardModal(true)}
-              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+              className="btn btn-secondary btn-sm !text-xs font-bold text-teal-600 dark:text-teal-400"
+              title="Submit structured scorecard evaluation"
             >
               <span>📝</span>
               <span>{t('btn_scorecard')}</span>
             </button>
           )}
 
-          {canScheduleInterviews && (
+          {/* 4. Schedule Interview: relevant when shortlisted or interviewing */}
+          {canScheduleInterviews && !isTerminal && !isOffered && (
             <Link
               href={`/candidates/${app.id}/interview`}
-              className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
+              className="btn btn-secondary btn-sm !text-xs font-semibold"
+              title="Schedule structured interview session with conflict check"
             >
               <span>📅</span>
               <span>{t('btn_schedule')}</span>
             </Link>
           )}
 
-          {(canMakeDecisions || canOverrideScores) && (
-            <>
-              {canOverrideScores && (
-                <button
-                  onClick={() => setOverrideModalOpen(true)}
-                  className="px-2.5 py-1.5 dark:bg-amber-950/40 bg-amber-50 dark:hover:bg-amber-900/60 hover:bg-amber-100 border dark:border-amber-800/50 border-amber-200 dark:text-amber-300 text-amber-800 text-xs font-medium rounded-lg transition flex items-center gap-1"
-                >
-                  <span>✏</span>
-                  <span>{t('btn_recalibrate')}</span>
-                </button>
-              )}
+          {/* 5. Score Recalibration: available to decision-makers during review */}
+          {canOverrideScores && !isTerminal && !isOffered && (
+            <button
+              onClick={() => setOverrideModalOpen(true)}
+              className="btn btn-secondary btn-sm !text-xs text-amber-700 dark:text-amber-300"
+              title="Override score with mandatory human rationale"
+            >
+              <span>✏</span>
+              <span>{t('btn_recalibrate')}</span>
+            </button>
+          )}
 
-              {canMakeDecisions && (
+          {/* 6. Human Decision Actions: context-aware based on current stage */}
+          {canMakeDecisions && (
+            <div className="flex items-center gap-1.5">
+              {isRejected ? (
+                <button
+                  onClick={() => openDecisionDialog('REVIEW')}
+                  className="btn btn-secondary btn-sm !text-xs font-bold text-amber-600"
+                  title="Return application to review status"
+                >
+                  <span>↺</span>
+                  <span>Return to Review</span>
+                </button>
+              ) : isOffered ? (
                 <>
                   <button
-                    onClick={() => openDecisionDialog('SHORTLIST')}
-                    className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
+                    onClick={() => openDecisionDialog('ADVANCE')}
+                    className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
+                    title="Confirm candidate acceptance and mark as Hired"
                   >
-                    <span>⭐</span>
-                    <span>{t('decision_action_shortlist')}</span>
+                    <span>✓</span>
+                    <span>Mark as Hired</span>
                   </button>
-
                   <button
                     onClick={() => openDecisionDialog('REJECT')}
-                    className="px-2.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
+                    className="btn btn-danger btn-sm !text-xs"
+                    title="Record candidate decline or rescission"
+                  >
+                    <span>✕</span>
+                    <span>Decline / Rescind</span>
+                  </button>
+                </>
+              ) : isHired ? (
+                <span className="chip chip-success font-bold text-xs">
+                  🎉 Hired
+                </span>
+              ) : isWithdrawn ? (
+                <span className="chip font-bold text-xs text-[var(--muted)]">
+                  Withdrawn
+                </span>
+              ) : isShortlisted || isInterviewing ? (
+                <>
+                  <button
+                    onClick={() => openDecisionDialog('HOLD')}
+                    className="btn btn-secondary btn-sm !text-xs"
+                    title="Place candidate on temporary hold"
+                  >
+                    <span>⏸</span>
+                    <span>Hold</span>
+                  </button>
+                  <button
+                    onClick={() => openDecisionDialog('REJECT')}
+                    className="btn btn-danger btn-sm !text-xs"
+                    title="Record human rejection decision with rationale"
                   >
                     <span>✕</span>
                     <span>{t('decision_action_reject')}</span>
                   </button>
-
                   <button
                     onClick={() => setShowOfferModal(true)}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-xs"
+                    className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
+                    title="Extend formal job offer"
                   >
                     <span>🚀</span>
                     <span>{t('btn_extend_offer')}</span>
                   </button>
                 </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => openDecisionDialog('HOLD')}
+                    className="btn btn-secondary btn-sm !text-xs"
+                    title="Place candidate on talent hold"
+                  >
+                    <span>⏸</span>
+                    <span>Hold</span>
+                  </button>
+                  <button
+                    onClick={() => openDecisionDialog('REJECT')}
+                    className="btn btn-danger btn-sm !text-xs"
+                    title="Reject application with documented reason"
+                  >
+                    <span>✕</span>
+                    <span>{t('decision_action_reject')}</span>
+                  </button>
+                  <button
+                    onClick={() => openDecisionDialog('SHORTLIST')}
+                    className="btn btn-primary btn-sm !text-xs font-bold"
+                    title="Shortlist candidate for interview progression"
+                  >
+                    <span>⭐</span>
+                    <span>{t('decision_action_shortlist')}</span>
+                  </button>
+                </>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -580,7 +773,7 @@ export default function CandidateProfileClient({
                 <button onClick={() => setHighlightedSnippet(null)} className="text-teal-400 hover:text-white font-bold ml-2">✕</button>
               </div>
             )}
-            {app.resumeDocument?.extractedText || app.resumeText || t('cprofile_no_resume_text')}
+            {renderResumeWithHighlight(app.resumeDocument?.extractedText || app.resumeText || '', highlightedSnippet)}
           </div>
         </div>
 
@@ -721,6 +914,12 @@ export default function CandidateProfileClient({
                     onClick={() => {
                       setHighlightedSnippet(crit.quotedEvidence);
                       showToast(t('toast_evidence_located').replace('{evidence}', crit.quotedEvidence), 'info');
+                      setTimeout(() => {
+                        const el = document.getElementById('evidence-quote-anchor');
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                      }, 50);
                     }}
                     className="w-full text-left p-2 dark:bg-[#0F171D] bg-slate-50 border-l-2 border-teal-500 rounded-r-md text-[10px] dark:text-slate-300 text-slate-700 font-mono italic hover:bg-teal-500/10 transition"
                   >
