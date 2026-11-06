@@ -2,7 +2,7 @@
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import CandidatesClient from './CandidatesClient';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +36,9 @@ export interface CandidatesSearchParams {
   tags?: string;
   from?: string;
   to?: string;
+  // §6.3: archived applications default out of the pipeline; `archived=true`
+  // flips the view to exactly the archived application records.
+  archived?: string;
   page?: string;
   sort?: string;
 }
@@ -51,6 +54,14 @@ function buildWhere(params: CandidatesSearchParams, organizationId: string, user
   if (params.job) where.jobId = params.job;
   if (params.stage && params.stage !== 'ALL') where.stage = params.stage;
   if (params.recruiter) where.assignedRecruiterId = params.recruiter;
+
+  // §6.3 archive lifecycle: default view is active records only; recruiters
+  // can inspect exactly the archived set without losing the active totals.
+  if (params.archived === 'true') {
+    where.archivedAt = { not: null };
+  } else {
+    where.archivedAt = null;
+  }
 
   if (params.from || params.to) {
     where.createdAt = {
