@@ -53,6 +53,7 @@ export async function POST(req: Request) {
         id: true,
         passwordHash: true,
         accessStatus: true,
+        mustChangePassword: true,
         emailVerifiedAt: true,
         createdAt: true,
       },
@@ -60,7 +61,8 @@ export async function POST(req: Request) {
 
     const GENERIC_FAILURE = { error: 'Invalid email or password credentials.' };
 
-    if (!user || !user.passwordHash || user.accessStatus !== 'ACTIVE') {
+    const invitationSetup = user?.accessStatus === 'INVITED' && user.mustChangePassword;
+    if (!user || !user.passwordHash || (user.accessStatus !== 'ACTIVE' && !invitationSetup)) {
       // Burn comparable time on the unknown-account path (bcrypt compare
       // against a dummy hash) so response timing does not enumerate accounts.
       await bcrypt.compare(password, '$2a$12$C6UzMDM.H6dfI/f/IKcEeO7ZBpQzCG3pEmDdOEOnXOchNOpURciG6');
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
     // Credentials were correct at this point, so surfacing this is safe —
     // same policy as the legacy EMAIL_NOT_VERIFIED flow — and the user gets
     // an actionable message instead of a dead end.
-    if (!user.emailVerifiedAt) {
+    if (!user.emailVerifiedAt && !invitationSetup) {
       return NextResponse.json(
         {
           error: 'EMAIL_NOT_VERIFIED',
@@ -84,6 +86,26 @@ export async function POST(req: Request) {
         },
         { status: 403 }
       );
+    }
+
+    // Load the 2FA state to decide which second factor to require.
+    const mfaUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { twoFactorEnabled: true, twoFactorSecret: true },
+    });
+
+    // Spec §6: staff with TOTP enrolled must complete the TOTP challenge
+    // instead of (or in addition to) the emailed code. We require TOTP first
+    // for enrolled staff — the emailed code remains available as a recovery
+    // path only if the TOTP device is unavailable (handled by the verify step
+    // through a separate recovery flow).
+    if (mfaUser?.twoFactorEnabled && mfaUser?.twoFactorSecret) {
+      return NextResponse.json({
+        success: true,
+        email,
+        next: 'totp',
+        message: 'Enter the 6-digit code from your authenticator app.',
+      });
     }
 
     // Second factor: email a fresh 6-digit code. If email delivery is down,
