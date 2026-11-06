@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission } from '@/lib/auth';
 import { Permission, permissionsForRoleName } from '@/lib/roleAccess';
+import { logAuditEvent } from '@/lib/auditLogger';
 import { teamDeleteSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
@@ -35,7 +36,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } });
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      include: { roles: true },
+    });
     if (!targetUser || targetUser.organizationId !== dbUser.organizationId) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -51,8 +55,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cannot delete the Primary Owner of the organization.' }, { status: 403 });
     }
 
+    // Protect the last Admin from deletion.
+    if (targetUser.roles.some((r) => r.name === 'Admin')) {
+      const adminCount = await prisma.user.count({
+        where: {
+          organizationId: dbUser.organizationId,
+          roles: { some: { name: 'Admin' } },
+        },
+      });
+      if (adminCount <= 1) {
+        return NextResponse.json(
+          { error: 'Cannot delete the last Admin of the organization.' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Safely delete the user
     await prisma.user.delete({ where: { id: targetUserId } });
+
+    await logAuditEvent({
+      action: 'USER_DELETED',
+      actorId: auth.user.id,
+      organizationId: dbUser.organizationId,
+      affectedRecordId: targetUserId,
+      previousValues: { email: targetUser.email, name: targetUser.name ?? null },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
