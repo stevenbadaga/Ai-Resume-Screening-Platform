@@ -40,6 +40,11 @@ model User {
   accessStatus            String                   @default("ACTIVE") // ACTIVE, SUSPENDED, INVITED
   emailVerifiedAt         DateTime? // NULL = email not yet verified (spec §6.1: only valid emails)
   departmentRestrictions  String[] // Array of allowed departments
+  passwordChangedAt       DateTime? // Non-null after first login password setup / password reset — used to revoke stale JWT sessions
+  mustChangePassword      Boolean                  @default(false) // INVITED staff must set their own password on first login (spec §5)
+  twoFactorSecret         String? // Base32-encoded TOTP secret (encrypted at rest — see auth service)
+  twoFactorEnabled        Boolean                  @default(false) // Staff must complete 2FA on next login once enabled
+  customPermissions       String[]                 @default([])
   organizationId          String
   organization            Organization             @relation(fields: [organizationId], references: [id])
   roles                   Role[]
@@ -114,33 +119,37 @@ model Criterion {
 }
 
 model Candidate {
-  id                   String           @id @default(uuid())
-  firstName            String
-  lastName             String
-  email                String
-  consentGiven         Boolean          @default(false)
+  id                      String           @id @default(uuid())
+  firstName               String
+  lastName                String
+  email                   String
+  // Spec §6.3: candidates and their applications are archivable records —
+  // archived records stay queryable for audit/history but leave the active
+  // pipeline and analytics surfaces until restored.
+  archivedAt              DateTime?
+  consentGiven            Boolean          @default(false)
   // Spec §6.11: the privacy-notice version the candidate accepted, when they
   // accepted it, and the consent choices captured at application time.
-  consentNoticeVersion String?
-  consentGivenAt       DateTime?
-  consentChoices       String? // JSON — permitted consent choices
-  source               String? // E.g., LinkedIn, Career Page
-  tags                 String[]
+  consentNoticeVersion    String?
+  consentGivenAt          DateTime?
+  consentChoices          String? // JSON — permitted consent choices
+  source                  String? // E.g., LinkedIn, Career Page
+  tags                    String[]
   // Self-service candidate profile: skills/experience the candidate maintains
   // (JSON strings) plus their saved default CV. The saved CV powers one-click
   // applications — the candidate uploads once, then applies to any OPEN
   // requisition in a click; each application still stores its own
   // ResumeDocument snapshot via the standard intake pipeline.
-  skills               String? // JSON — self-declared skills
-  experience           String? // JSON — self-declared experience summary
-  profileResumeRef     String? // Storage reference (supabase:<bucket>:<key> or legacy path)
-  profileResumeName    String? // Original filename (display only)
-  profileResumeSize    Int?
+  skills                  String? // JSON — self-declared skills
+  experience              String? // JSON — self-declared experience summary
+  profileResumeRef        String? // Storage reference (supabase:<bucket>:<key> or legacy path)
+  profileResumeName       String? // Original filename (display only)
+  profileResumeSize       Int?
   profileResumeUploadedAt DateTime?
-  applications         Application[]
-  privacyRequests      PrivacyRequest[]
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  applications            Application[]
+  privacyRequests         PrivacyRequest[]
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
 
   @@index([email]) // duplicate detection lookups (§6.3)
 }
@@ -155,6 +164,9 @@ model Application {
   assignedRecruiter   User?                 @relation("AssignedRecruiter", fields: [assignedRecruiterId], references: [id])
   stage               String                @default("NEW")
   status              String                @default("ACTIVE")
+  // Spec §6.3: archive action for application records (distinct from the
+  // WITHDRAWN pipeline stage — archiving keeps data, it removes no decision).
+  archivedAt          DateTime?
   notes               String? // JSON or text
   decisionHistory     String? // JSON tracking previous/new stages
   resumeDocument      ResumeDocument?
@@ -294,27 +306,27 @@ model InterviewParticipant {
 }
 
 model Communication {
-  id             String          @id @default(uuid())
-  applicationId  String?
-  application    Application?    @relation(fields: [applicationId], references: [id])
-  jobId          String?
-  job            JobRequisition? @relation(fields: [jobId], references: [id])
-  senderId       String?
-  sender         User?           @relation("Sender", fields: [senderId], references: [id])
-  recipient      String // Email address
-  template       String
-  contentVersion String
-  deliveryState  String          @default("PENDING") // PENDING, SENT, FAILED
+  id              String          @id @default(uuid())
+  applicationId   String?
+  application     Application?    @relation(fields: [applicationId], references: [id])
+  jobId           String?
+  job             JobRequisition? @relation(fields: [jobId], references: [id])
+  senderId        String?
+  sender          User?           @relation("Sender", fields: [senderId], references: [id])
+  recipient       String // Email address
+  template        String
+  contentVersion  String
+  deliveryState   String          @default("PENDING") // PENDING, SENT, FAILED
   /// Populated by sendRecordedEmail() on delivery failure (spec §6.9);
   /// added in migrations/20260911000000_add_email_failure_info
-  failureInfo    String?
-  lastError      String?
+  failureInfo     String?
+  lastError       String?
   /// §6.9: JSON snapshot of the template payload at send time, so a safe
   /// retry can faithfully re-render the same content (e.g. the interview
   /// schedule in an invitation) instead of a generic body.
   payloadSnapshot String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   @@index([deliveryState]) // failed-notification follow-up (§6.12)
   @@index([applicationId])
