@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import DuplicatesClient from './DuplicatesClient';
 
 export const dynamic = 'force-dynamic';
@@ -75,5 +75,5 @@ export default async function DuplicatesPage() {
     .filter(([_, list]) => list.length > 1)
     .map(([email, candidates]) => ({ email, candidates }));
 
-  return <DuplicatesClient duplicates={JSON.parse(JSON.stringify(duplicates))} />;
+  return <DuplicatesClient duplicates={JSON.parse(JSON.stringify(duplicates))} userRole={userRole} />;
 }
