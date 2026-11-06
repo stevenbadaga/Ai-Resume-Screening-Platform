@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Permission, ROLE_PERMISSIONS, roleCapabilities, roleHasPermission, rolesWithPermission } from '@/lib/roleAccess';
+import { Permission, ROLE_PERMISSIONS, effectivePermissionsForRole, roleCapabilities, roleHasPermission, rolesWithPermission } from '@/lib/roleAccess';
 
 const ALL_ROLES = Object.keys(ROLE_PERMISSIONS) as Array<keyof typeof ROLE_PERMISSIONS>;
 
@@ -41,6 +41,14 @@ describe('role capability matrix', () => {
 });
 
 describe('typed permission matrix (ROLE_PERMISSIONS)', () => {
+  it('adds only recognized per-user grants to the role permissions', () => {
+    expect(effectivePermissionsForRole('Interviewer', [Permission.ManageJobs, 'unknown:grant'])).toEqual([
+      ...ROLE_PERMISSIONS.Interviewer,
+      Permission.ManageJobs,
+    ]);
+    expect(effectivePermissionsForRole('unknown-role', ['unknown:grant'])).toEqual([]);
+  });
+
   it('grants Admin every permission and Candidate none', () => {
     const allPermissions = Object.values(Permission);
     for (const permission of allPermissions) {
