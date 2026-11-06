@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { sendRecordedEmail } from '@/lib/emailService';
 import { requirePermission } from '@/lib/auth';
-import { Permission, ROLE_PERMISSIONS, permissionsForRoleName } from '@/lib/roleAccess';
+import { Permission, ROLE_PERMISSIONS, isPermission, permissionsForRoleName } from '@/lib/roleAccess';
 import { teamInviteSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
@@ -16,7 +18,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = validateBody(teamInviteSchema, body);
     if (error) return error;
 
-    const { email, roleName } = data;
+    const { email, name, roleName } = data;
 
     // Ensure the role exists — permissions come from the RBAC matrix
     // (src/lib/roleAccess.ts), NOT a hardcoded fallback like ['VIEW_JOBS'].
@@ -27,6 +29,10 @@ export async function POST(req: NextRequest) {
     }
 
     const permissions = permissionsForRoleName(roleName);
+    const requestedPermissions = [...new Set(data.permissions ?? [])];
+    if (requestedPermissions.some((p) => !isPermission(p) || !auth.user.permissions.includes(p as any)) || permissions.some((p) => !auth.user.permissions.includes(p as any))) {
+      return NextResponse.json({ error: 'You cannot grant permissions you do not hold.' }, { status: 403 });
+    }
 
     let role = await prisma.role.findFirst({ where: { name: roleName } });
     if (!role) {
@@ -50,11 +56,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
+    // Spec §5: create a cryptographically random temporary password for the
+    // invited account. It is hashed immediately (never stored plaintext) and
+    // delivered ONLY inside the invite email (single-use, short-lived path).
+    // The Admin never sees it — there is no "show me the password" endpoint.
+    const tempPassword = randomBytes(18).toString('base64url').slice(0, 16);
+    const passwordHash = await bcrypt.hash(tempPassword, 12);
+
     // Create the invited user record
     const newUser = await prisma.user.create({
       data: {
         email,
+        name: name || null,
+        passwordHash,
         accessStatus: 'INVITED',
+        mustChangePassword: true,
+        customPermissions: requestedPermissions,
         organizationId: auth.user.organizationId,
         roles: {
           connect: { id: role.id }
@@ -62,14 +79,24 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Send invite email and record the delivery outcome honestly.
+    // Send invite email with the temporary credential and a first-login
+    // instruction. The temp password is single-use: the recipient must set their
+    // own password on first login (POST /api/auth/first-login), after which the
+    // temporary credential is invalidated (mustChangePassword cleared + new
+    // passwordChangedAt stamped).
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const organization = await prisma.organization.findUnique({
+      where: { id: auth.user.organizationId },
+      select: { name: true },
+    });
     const delivery = await sendRecordedEmail({
       to: email,
       template: 'TEAM_INVITATION',
       data: {
-        candidateName: 'there',
-        joinLink: `${baseUrl}/auth/signup?invite=${newUser.id}`
+        candidateName: name || 'there',
+        joinLink: `${baseUrl}/auth/signin`,
+        tempPassword,
+        organizationName: organization?.name ?? '',
       },
       senderId: auth.user.id
     });
