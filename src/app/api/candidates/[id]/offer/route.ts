@@ -68,7 +68,9 @@ export async function POST(
       to: application.candidate.email,
       template: 'OFFER_LETTER',
       data: {
-        candidateName: `${application.candidate.firstName} ${application.candidate.lastName}`,
+        candidateName: application.candidate.firstName && application.candidate.lastName
+          ? `${application.candidate.firstName} ${application.candidate.lastName}`
+          : undefined,
         jobTitle: application.job.title,
         offerDetails: {
           salary: String(salary),
