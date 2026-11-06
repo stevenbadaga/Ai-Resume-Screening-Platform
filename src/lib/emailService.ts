@@ -33,7 +33,6 @@ export interface EmailPayload {
     schedule?: string;
     timezone?: string;
     meetingLink?: string;
-    joinLink?: string;
     offerDetails?: {
       salary: string;
       startDate: string;
@@ -43,6 +42,16 @@ export interface EmailPayload {
     /** Manually composed candidate message (§6.9) — previewed and edited before send. */
     subject?: string;
     body?: string;
+    /** Temporary password for TEAM_INVITATION emails (spec §5). Single-use, first-login only. */
+    tempPassword?: string;
+    /** New role name for TEAM_INVITATION emails. */
+    newRole?: string;
+    /** Organization name for TEAM_INVITATION emails. */
+    organizationName?: string;
+    /** Join link for TEAM_INVITATION emails. */
+    joinLink?: string;
+    /** Alias for organizationName — legacy snapshot payloads may carry orgName. */
+    orgName?: string;
   };
   applicationId?: string;
 }
@@ -72,6 +81,9 @@ function escapeHtml(value: string): string {
 
 function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']): string {
   const name = escapeHtml(data.candidateName ?? 'there');
+  if (!data.candidateName) {
+    console.warn('[email] no candidateName supplied to template ' + template + ' — sender sees "there".');
+  }
   const jobTitle = escapeHtml(data.jobTitle ?? '');
   const safe = (v?: string) => escapeHtml(v ?? '');
 
@@ -110,8 +122,17 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
       body += `${data.body ?? ''}`;
       break;
     case 'TEAM_INVITATION':
-      body += `<p>You have been invited to join a recruitment workspace on RecruitAI.</p>
-        ${data.joinLink ? `<p><a href="${safe(data.joinLink)}">Click here to accept the invitation and create your account</a></p>` : ''}`;
+      body += `<p>You have been invited to join a recruitment workspace on RecruitAI.</p>`;
+      const org = safe(data.organizationName ?? data.orgName ?? '');
+      body += `<p>You have been invited to join the <strong>${org}</strong> workspace on RecruitAI.</p>`;
+      if (data.tempPassword) {
+        body += `<p>Your account has been created. To set up your own password, sign in with the temporary credential below, then choose a new password when prompted:</p>
+          <p style="font-size: 32px; letter-spacing: 8px; font-weight: 700; font-family: monospace; color: #0f766e;">${safe(data.tempPassword)}</p>
+          <p>This temporary credential is for your first login only. You will be asked to choose your own password immediately.</p>`;
+      }
+      if (data.joinLink) {
+        body += `<p><a href="${safe(data.joinLink)}">Sign in here</a></p>`;
+      }
       break;
     case 'EMAIL_VERIFICATION':
       body += `<p>Please confirm your email address to activate your account.</p>
@@ -265,6 +286,12 @@ export async function sendTransactionalEmail(
   payload: EmailPayload,
   customHtmlBody?: string
 ): Promise<{ success: true; id: string }> {
+  // Accept orgName as a legacy alias for organizationName so existing
+  // route handlers that already send orgName keep working without a
+  // coordinated deploy. New code should use organizationName directly.
+  if (payload.data.orgName && !payload.data.organizationName) {
+    payload.data.organizationName = payload.data.orgName;
+  }
   const fromEnv = (process.env.EMAIL_FROM || '').toLowerCase();
   if (!gmailSenderWarned && !gmailSmtpConfigured() && /@(gmail|googlemail)\.com["']?$/.test(fromEnv)) {
     gmailSenderWarned = true;
