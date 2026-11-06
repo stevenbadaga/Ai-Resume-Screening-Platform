@@ -1,10 +1,11 @@
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import Link from 'next/link';
 import AuditClient from './AuditClient';
 import { parsePagination, toPageInfo } from '@/lib/pagination';
+import { resolveAuditRecordScope, type AuditScopePrisma } from '@/lib/auditRecordScope';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,12 +53,14 @@ export default async function AuditPage({
     );
   }
 
-  // Spec §6.12: the audit log must support search by user, action type, and date
-  // range — and it must never show one organization's events to another (§6.1).
+  // Spec §6.12: the audit log must support search by user, candidate,
+  // application, job, action type, and date range — and it must never show one
+  // organization's events to another (§6.1).
   const sp = await searchParams;
-  const { actor, action, from, to } = {
+  const { actor, action, record, from, to } = {
     actor: typeof sp.actor === 'string' ? sp.actor : undefined,
     action: typeof sp.action === 'string' ? sp.action : undefined,
+    record: typeof sp.record === 'string' ? sp.record : undefined,
     from: typeof sp.from === 'string' ? sp.from : undefined,
     to: typeof sp.to === 'string' ? sp.to : undefined,
   };
@@ -84,6 +87,16 @@ export default async function AuditPage({
     where.timestamp = { ...(where.timestamp as object | undefined), lte: toEnd };
   }
 
+  // Record search (§6.12): a candidate/application/job id expands to that
+  // record and everything linked to it within this organization. Unknown or
+  // foreign ids resolve to an empty scope — matching no events at all.
+  const recordScope = record && record.trim()
+    ? await resolveAuditRecordScope(prisma as unknown as AuditScopePrisma, organizationId, record)
+    : null;
+  if (recordScope) {
+    where.affectedRecordId = { in: recordScope.affectedRecordIds };
+  }
+
   const [events, total] = await Promise.all([
     prisma.auditEvent.findMany({
       where,
@@ -106,7 +119,8 @@ export default async function AuditPage({
   return (
     <AuditClient
       events={JSON.parse(JSON.stringify(events))}
-      filters={{ actor: actor ?? '', action: action ?? '', from: from ?? '', to: to ?? '' }}
+      filters={{ actor: actor ?? '', action: action ?? '', record: record ?? '', from: from ?? '', to: to ?? '' }}
+      recordScope={recordScope ? { type: recordScope.type, matchCount: recordScope.affectedRecordIds.length } : undefined}
       pagination={toPageInfo(page, pageSize, total)}
     />
   );
