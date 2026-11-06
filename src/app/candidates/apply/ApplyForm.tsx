@@ -9,12 +9,40 @@ export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: stri
   const [isUploading, setIsUploading] = useState(false);
   const [status, setStatus] = useState<{ text: string; error: boolean } | null>(null);
   const [usingSavedCv, setUsingSavedCv] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   // Personalization: pre-fill form with saved profile data for returning applicants
   const prefillFirstName = candidateProfile?.firstName || '';
   const prefillLastName = candidateProfile?.lastName || '';
   const prefillEmail = candidateProfile?.email || '';
   const savedCv = candidateProfile?.savedCv;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFileError(null);
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+    // Pre-flight check file size: 5MB limit (§6.4)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError('File exceeds 5MB limit. Please upload a smaller PDF or DOCX resume.');
+      setSelectedFile(null);
+      e.target.value = '';
+      return;
+    }
+    // Pre-flight check format
+    const name = file.name.toLowerCase();
+    if (!name.endsWith('.pdf') && !name.endsWith('.docx')) {
+      setFileError('Invalid file format. Only .pdf and .docx resumes are supported.');
+      setSelectedFile(null);
+      e.target.value = '';
+      return;
+    }
+    setSelectedFile(file);
+    if (usingSavedCv) setUsingSavedCv(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,10 +165,22 @@ export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: stri
               name="resume" 
               type="file" 
               accept=".pdf,.docx" 
+              onChange={handleFileChange}
               className="input-field" 
               style={{ padding: '0.5rem' }}
               required={!savedCv || !usingSavedCv}
             />
+            {fileError && (
+              <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                ⚠️ {fileError}
+              </p>
+            )}
+            {selectedFile && !fileError && (
+              <div className="mt-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between">
+                <span>📄 {selectedFile.name} ({(selectedFile.size / 1024).toFixed(0)} KB)</span>
+                <span>✅ Format verified</span>
+              </div>
+            )}
             {savedCv && usingSavedCv && (
               <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', fontWeight: 500 }}>
                 ✓ {t('apply_personalized_using_saved_cv')}
