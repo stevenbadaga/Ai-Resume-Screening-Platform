@@ -54,11 +54,15 @@ change.
 ## 3. How to run the automated evaluation
 
 ```bash
-npm test                 # full suite — 212 tests across 26 files (integration self-skips)
+npm test                 # full suite — 216 tests across 26 files (integration self-skips)
 npx tsc --noEmit         # type contract (schema fields are compiler-checked)
 npm run verify-audit-chain
+# Re-run the deterministic fairness report (no API key needed):
+npx tsx scripts/evaluate-fairness.ts   # writes test-results/fairness-evaluation-*.md
 # Optional, database-backed (spec §14 workflow suite):
 TEST_DATABASE_URL="postgresql://..." TEST_INTEGRATION=1 npm test
+# Optional, browser E2E (spec §14) — requires a running app + TEST_DATABASE_URL:
+npm run build && npm run start && npx playwright test
 ```
 
 ## 4. Recorded results (2026-10-09, codebase at this handover)
@@ -72,7 +76,7 @@ TEST_DATABASE_URL="postgresql://..." TEST_INTEGRATION=1 npm test
 | Prompt/document safety | **pass** — redaction before prompts, schema-constrained output, seed case 5, malware/JS/macro signature scans (11 tests), secret/path-traversal guards (31 security tests) | `security.test.ts`, `malwareScan.test.ts`, `fairness.test.ts` |
 | Consistency / reproducibility | **pass** — every run stores rubric version, resume version, AI version, and full config snapshot (now incl. evidence rules); experience summary is a pure function pinned to a fixed clock (10 tests) | `experienceCalc.test.ts`, `ScreeningRun.configuration` |
 | Fairness | **pass** — identical scores/rankings across 7 name variants; identifiers redacted pre-AI without over-redacting job content; protected-attribute decision reasons blocked | `fairness.test.ts`, `biasMitigation.test.ts`, `decisionReasons.test.ts` |
-| Overall suite | **212 passed / 26 files** (+12 DB-backed integration tests self-skipping without `TEST_DATABASE_URL`), typecheck clean | `npm test`, `npx tsc --noEmit` |
+| Overall suite | **216 passed / 26 files** (+12 DB-backed integration tests self-skipping without `TEST_DATABASE_URL`), typecheck clean, browser E2E suite ready (self-skips without `TEST_DATABASE_URL`) | `npm test`, `npx tsc --noEmit`, `npx playwright test` |
 
 **Full suite totals for this handover: 212 unit tests passing, 26 test files, plus 12 integration tests.**
 
@@ -99,7 +103,7 @@ is performed on the seeded set and recorded here:
 
 | Date | Model | Runs | Evidence verbatim? | Source location correct? | Case 3 → 0%? | Case 5 safe? | Name-invariance | Notes |
 |---|---|---|---|---|---|---|---|---|
-| _pending operator run_ | gpt-4o-2024-08-06 | — | — | — | — | — | automated proxy passing | Requires a configured `OPENAI_API_KEY` and a live queue; the deterministic contract is already covered above |
+| _pending operator run_ | gpt-4o-2024-08-06 | — | — | — | — | — | automated proxy passing (7-variant name-invariance + redaction + proxy-risk in `scripts/evaluate-fairness.ts`) | Requires a configured `OPENAI_API_KEY` and a live queue; the deterministic contract is already covered above |
 
 ## 6. Limitations (honest status)
 
@@ -108,6 +112,11 @@ is performed on the seeded set and recorded here:
   results in §4 pin everything *around* the model: the prompt contract, the
   deterministic scoring math, redaction, schema-enforced evidence fields, and
   name-invariance of the scoring layer.
+- The deterministic fairness layer is re-runnable any time via
+  `npx tsx scripts/evaluate-fairness.ts`, which emits a dated report under
+  `test-results/`. That report covers name-invariance, PII redaction, proxy-risk
+  removal, skill-normalization consistency, and the deterministic scoring
+  contract — it does **not** execute the model-in-the-loop pass.
 - "Unusual resume layouts" is covered by the confidence-gated `NEEDS_REVIEW`
   path rather than a fixed layout corpus; add extraction fixtures here as
   they are collected.
