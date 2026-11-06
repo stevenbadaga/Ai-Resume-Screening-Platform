@@ -101,6 +101,125 @@ body {
 }
 
 @layer components {
+  /* Dashboard opening panel: luminous editorial header with a quiet orbital mark. */
+  .dashboard-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 14rem;
+    padding: 1.65rem 1.8rem;
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    background:
+      radial-gradient(ellipse at 84% 45%, var(--accent-soft), transparent 34%),
+      radial-gradient(ellipse at 72% 5%, var(--accent-ring), transparent 42%),
+      linear-gradient(118deg, var(--surface) 0%, var(--surface) 66%);
+    box-shadow: 0 18px 48px -32px var(--accent-ring);
+  }
+  html.dark .dashboard-hero {
+    background:
+      radial-gradient(ellipse at 84% 45%, var(--accent-soft), transparent 34%),
+      radial-gradient(ellipse at 72% 5%, var(--accent-ring), transparent 42%),
+      linear-gradient(118deg, var(--surface-raised) 0%, var(--surface) 68%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 24px 60px -38px rgb(0 0 0 / 0.75);
+  }
+  .dashboard-hero-content { position: relative; z-index: 2; max-width: 40rem; }
+  .dashboard-hero-mark {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--accent-ring);
+    border-radius: 0.65rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .dashboard-hero-title {
+    max-width: 36rem;
+    color: var(--foreground);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 1.08;
+  }
+  .dashboard-hero-copy {
+    max-width: 34rem;
+    margin-top: 0.55rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+  .dashboard-hero-primary { min-height: 2.55rem; padding-inline: 1rem; }
+  .dashboard-hero-sync { min-height: 2.55rem; }
+  .dashboard-hero-art {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: 5%;
+    width: 13rem;
+    height: 13rem;
+    transform: translateY(-50%);
+    color: var(--accent);
+    opacity: 0.9;
+  }
+  .dashboard-orbit {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--accent-ring);
+    border-radius: 50%;
+  }
+  .dashboard-orbit-outer { transform: scale(1); }
+  .dashboard-orbit-inner { inset: 1.35rem; border-color: var(--accent-ring); }
+  .dashboard-orbit-dot {
+    position: absolute;
+    width: 0.55rem;
+    height: 0.55rem;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 18px var(--accent-ring);
+  }
+  .dashboard-orbit-dot-one { top: 1.55rem; right: 2.2rem; }
+  .dashboard-orbit-dot-two { bottom: 2.15rem; left: 1.25rem; background: var(--accent); }
+  .dashboard-hero-emblem {
+    position: absolute;
+    inset: 3.8rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--accent-ring);
+    border-radius: 2rem;
+    background: var(--surface-raised);
+    box-shadow: 0 16px 40px -20px var(--accent-ring), inset 0 1px 0 rgb(255 255 255 / 0.35);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .dashboard-hero-emblem svg { width: 3rem; height: 3rem; }
+  .dashboard-stat {
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px -18px var(--accent-ring);
+    animation: dashboard-rise 420ms both;
+  }
+  .dashboard-stat::after {
+    position: absolute;
+    top: 0;
+    left: 1rem;
+    width: 2.5rem;
+    height: 2px;
+    border-radius: 0 0 999px 999px;
+    background: var(--grad-accent);
+    content: '';
+    opacity: 0.75;
+  }
+  .dashboard-stat:nth-child(2) { animation-delay: 50ms; }
+  .dashboard-stat:nth-child(3) { animation-delay: 100ms; }
+  .dashboard-stat:nth-child(4) { animation-delay: 150ms; }
+  @keyframes dashboard-rise {
+    from { opacity: 0; translate: 0 8px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+
   /* ── Surfaces ──────────────────────────────────────────────── */
   .panel {
     background-color: var(--surface);
@@ -417,8 +536,8 @@ body {
     display: flex;
     align-items: center;
     gap: 0.55rem;
-    padding: 0.42rem 0.6rem;
-    border-radius: 0.55rem;
+    padding: 0.58rem 0.7rem;
+    border-radius: 0.7rem;
     font-size: 12px;
     font-weight: 500;
     color: color-mix(in srgb, var(--foreground) 68%, transparent);
@@ -732,6 +851,13 @@ html.dark .glass-card {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px 0 color-mix(in srgb, var(--accent) 55%, transparent);
   filter: brightness(1.08);
+}
+
+@media (max-width: 640px) {
+  .dashboard-hero { min-height: 0; padding: 1.25rem; }
+  .dashboard-hero-art { right: -6rem; opacity: 0.24; }
+  .dashboard-hero-content { max-width: 100%; }
+  .dashboard-hero-copy { max-width: 25rem; }
 }
 
 .btn-aurora:active {
