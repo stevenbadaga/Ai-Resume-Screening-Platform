@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { Permission } from '@/lib/roleAccess';
 
 interface TeamClientProps {
   initialUsers: any[];
@@ -73,6 +74,10 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
   const [editingUser, setEditingUser] = useState<any | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>('Recruiter');
   const [savingRole, setSavingRole] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [invitePermissions, setInvitePermissions] = useState<string[]>([]);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+  const permissionChoices = Object.entries(Permission).map(([key, value]) => ({ key, value }));
 
   // Invite modal state
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -81,8 +86,40 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
   const [inviteRole, setInviteRole] = useState('Recruiter');
   const [inviting, setInviting] = useState(false);
 
+  // User deletion state
+  const [deleteTargetUser, setDeleteTargetUser] = useState<any | null>(null);
+  const [deletingUser, setDeletingUser] = useState(false);
+
   const { showToast } = useToast();
   const { t } = useLanguage();
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetUser || deletingUser) return;
+    setDeletingUser(true);
+    try {
+      const res = await fetch('/api/team/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: deleteTargetUser.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setUsers((prev) => prev.filter((u) => u.id !== deleteTargetUser.id));
+        showToast(
+          `User ${deleteTargetUser.name || deleteTargetUser.email} has been removed from the organization.`,
+          'success',
+          'Team Member Removed'
+        );
+        setDeleteTargetUser(null);
+      } else {
+        showToast(data.error || 'Failed to remove team member', 'error');
+      }
+    } catch {
+      showToast('Network error while removing team member', 'error');
+    } finally {
+      setDeletingUser(false);
+    }
+  };
 
   // Strict Segregation: Separate internal workers from external candidates
   const staffMembers = users.filter((u) => {
@@ -98,6 +135,25 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
   const handleOpenEdit = (user: any) => {
     setEditingUser(user);
     setSelectedRole(user.roles?.[0]?.name || 'Candidate');
+    setSelectedPermissions(user.customPermissions || []);
+  };
+
+  const handleSavePermissions = async () => {
+    if (!editingUser) return;
+    setSavingPermissions(true);
+    try {
+      const res = await fetch('/api/team/permissions', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: editingUser.id, permissions: selectedPermissions }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not update permissions.');
+      setUsers((prev) => prev.map((u) => u.id === editingUser.id ? { ...u, customPermissions: data.permissions } : u));
+      setEditingUser({ ...editingUser, customPermissions: data.permissions });
+      showToast('Permissions updated.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not update permissions.', 'error');
+    } finally { setSavingPermissions(false); }
   };
 
   // §6.1: administrators can suspend (revoke access immediately) or
@@ -184,7 +240,8 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         body: JSON.stringify({
           email: inviteEmail,
           name: inviteName,
-          roleName: inviteRole
+          roleName: inviteRole,
+          permissions: invitePermissions
         })
       });
 
@@ -202,6 +259,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         setShowInviteModal(false);
         setInviteName('');
         setInviteEmail('');
+        setInvitePermissions([]);
         showToast(t('toast_invited').replace('{email}', inviteEmail), 'success', t('toast_invited_title'));
       } else {
         showToast(data.error || t('toast_invite_failed'), 'error');
@@ -423,7 +481,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                     </td>
                     <td className="p-3 font-mono text-[10px] dark:text-slate-400 text-slate-500">
                       {isStaff
-                        ? user.roles?.[0]?.permissions?.join(', ') || 'READ_WRITE'
+                        ? [...(user.roles?.[0]?.permissions || []), ...(user.customPermissions || [])].filter((value: string, index: number, all: string[]) => all.indexOf(value) === index).join(', ') || 'No permissions'
                         : t('team_applicant_portal')}
                     </td>
                     <td className="p-3 text-right">
@@ -444,6 +502,14 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                             }`}
                           >
                             {user.accessStatus === 'SUSPENDED' ? t('team_reactivate') : t('team_suspend')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTargetUser(user)}
+                            className="px-2 py-1 rounded text-xs font-semibold border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition"
+                            title="Remove member from workspace"
+                          >
+                            Remove
                           </button>
                         </div>
                       ) : (
@@ -521,6 +587,16 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 </button>
               </div>
             </form>
+            <div className="border-t dark:border-[#30424A] border-slate-100 pt-3 space-y-2">
+              <p className="font-semibold">Additional permissions</p>
+              <div className="max-h-36 overflow-y-auto space-y-1">
+                {permissionChoices.map(({ key, value }) => <label key={value} className="flex items-center gap-2">
+                  <input type="checkbox" checked={selectedPermissions.includes(value)} onChange={(e) => setSelectedPermissions((p) => e.target.checked ? [...p, value] : p.filter((x) => x !== value))} />
+                  <span>{key}</span>
+                </label>)}
+              </div>
+              <button type="button" onClick={handleSavePermissions} disabled={savingPermissions} className="px-3 py-1.5 bg-teal-700 text-white rounded-lg font-semibold">{savingPermissions ? t('loading') : 'Save permissions'}</button>
+            </div>
           </div>
         </div>
       )}
@@ -573,6 +649,16 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 </select>
               </div>
 
+              <details className="border-t dark:border-[#30424A] pt-2">
+                <summary className="cursor-pointer font-semibold">Additional permissions</summary>
+                <div className="max-h-36 overflow-y-auto mt-2 space-y-1">
+                  {permissionChoices.map(({ key, value }) => <label key={value} className="flex items-center gap-2">
+                    <input type="checkbox" checked={invitePermissions.includes(value)} onChange={(e) => setInvitePermissions((p) => e.target.checked ? [...p, value] : p.filter((x) => x !== value))} />
+                    <span>{key}</span>
+                  </label>)}
+                </div>
+              </details>
+
               <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-[#30424A] border-slate-100">
                 <button
                   type="button"
@@ -590,6 +676,51 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* REMOVE MEMBER CONFIRMATION MODAL */}
+      {deleteTargetUser && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-base">⚠️</span>
+                <h3 className="text-sm font-bold dark:text-white text-slate-900">Remove Team Member</h3>
+              </div>
+              <button onClick={() => setDeleteTargetUser(null)} className="text-slate-400">✕</button>
+            </div>
+
+            <div className="space-y-2.5 text-slate-600 dark:text-slate-300">
+              <p>
+                Are you sure you want to remove <strong className="text-slate-900 dark:text-white">{deleteTargetUser.name || deleteTargetUser.email}</strong> from this workspace?
+              </p>
+              <div className="p-2.5 rounded-lg border dark:border-[#30424A] border-slate-200 dark:bg-[#0F171D] bg-slate-50 space-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <p>• Role: <span className="font-semibold text-slate-800 dark:text-slate-200">{deleteTargetUser.roles?.[0]?.name || 'Staff'}</span></p>
+                <p>• Email: <span className="font-mono text-slate-800 dark:text-slate-200">{deleteTargetUser.email}</span></p>
+                <p>• Active sessions will be terminated immediately.</p>
+                <p>• Historical audit trail entries remain preserved.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-[#30424A] border-slate-100">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetUser(null)}
+                className="px-3 py-1.5 dark:bg-slate-800 bg-slate-100 rounded-lg font-medium"
+                disabled={deletingUser}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deletingUser}
+                className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg shadow-xs transition"
+              >
+                {deletingUser ? 'Removing...' : 'Confirm Removal'}
+              </button>
+            </div>
           </div>
         </div>
       )}
