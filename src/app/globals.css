@@ -1,151 +1,929 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* ────────────────────────────────────────────────────────────────
+   RecruitAI design tokens — "Aurora" identity.
+
+   One brand idea everywhere: an electric indigo→violet gradient
+   ("the aurora") on calm, violet-tinted neutrals. Light mode is a
+   luminous porcelain workspace; dark mode is deep ink with glowing
+   accents. Depth comes from layered, violet-tinted shadows and soft
+   ambient light instead of heavy borders.
+   ──────────────────────────────────────────────────────────────── */
 :root {
-  /* Vibrant, sleek color palette */
-  --primary: #4F46E5; /* Indigo */
-  --primary-hover: #4338CA;
-  --primary-light: rgba(79, 70, 229, 0.1);
-  --secondary: #10B981; /* Emerald */
-  --secondary-hover: #059669;
-  --accent: #F43F5E; /* Rose */
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --surface-hover: #f1f5f9;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
+  --background: #F8F9FD;
+  --foreground: #0F172A;
+  --muted: #64748B;
 
-  /* Glassmorphism utility variables */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-muted: #F1F5F9;
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  --accent: #6366F1;
+  --accent-strong: #4F46E5;
+  --accent-2: #06B6D4;
+  --accent-soft: rgba(99, 102, 241, 0.08);
+  --accent-ring: rgba(99, 102, 241, 0.2);
+
+  /* Aurora Cyber Luxe Brand Gradient */
+  --grad-accent: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #06B6D4 100%);
+  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.12));
+
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #06B6D4;
+
+  /* Legacy aliases */
+  --coral: var(--danger);
+  --amber: var(--warning);
+
+  --shadow-color: 99 102 241;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary: #6366f1;
-    --primary-hover: #818cf8;
-    --background: #09090b;
-    --surface: #18181b;
-    --surface-hover: #27272a;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    
-    --glass-bg: rgba(24, 24, 27, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  }
+html.dark {
+  --background: #090A15;
+  --foreground: #F8FAFC;
+  --muted: #94A3B8;
+
+  --surface: #121324;
+  --surface-raised: #1A1C33;
+  --surface-muted: #222544;
+
+  --border: #232742;
+  --border-strong: #33395E;
+
+  --accent: #818CF8;
+  --accent-strong: #A5B4FC;
+  --accent-2: #22D3EE;
+  --accent-soft: rgba(129, 140, 248, 0.14);
+  --accent-ring: rgba(129, 140, 248, 0.28);
+
+  --grad-accent: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #06B6D4 100%);
+  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.2));
+
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --info: #38BDF8;
+
+  --shadow-color: 0 0 0;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+html {
+  color-scheme: light;
 }
-
-html, body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  height: 100%;
+html.dark {
+  color-scheme: dark;
 }
 
 body {
+  color: var(--foreground);
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
+  letter-spacing: -0.006em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: 100vh;
+  /* Ambient aurora light: two soft brand glows anchored to the viewport. */
   background-color: var(--background);
-  color: var(--text-main);
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
+  background-image:
+    radial-gradient(55rem 55rem at 115% -12%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 62%),
+    radial-gradient(48rem 48rem at -18% 112%, color-mix(in srgb, var(--accent-2) 7%, transparent), transparent 62%);
+  background-attachment: fixed;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-  transition: var(--transition);
+::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-  transition: var(--transition);
+@layer components {
+  /* Dashboard opening panel: luminous editorial header with a quiet orbital mark. */
+  .dashboard-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 14rem;
+    padding: 1.65rem 1.8rem;
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    background:
+      radial-gradient(ellipse at 84% 45%, var(--accent-soft), transparent 34%),
+      radial-gradient(ellipse at 72% 5%, var(--accent-ring), transparent 42%),
+      linear-gradient(118deg, var(--surface) 0%, var(--surface) 66%);
+    box-shadow: 0 18px 48px -32px var(--accent-ring);
+  }
+  html.dark .dashboard-hero {
+    background:
+      radial-gradient(ellipse at 84% 45%, var(--accent-soft), transparent 34%),
+      radial-gradient(ellipse at 72% 5%, var(--accent-ring), transparent 42%),
+      linear-gradient(118deg, var(--surface-raised) 0%, var(--surface) 68%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 24px 60px -38px rgb(0 0 0 / 0.75);
+  }
+  .dashboard-hero-content { position: relative; z-index: 2; max-width: 40rem; }
+  .dashboard-hero-mark {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--accent-ring);
+    border-radius: 0.65rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .dashboard-hero-title {
+    max-width: 36rem;
+    color: var(--foreground);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 1.08;
+  }
+  .dashboard-hero-copy {
+    max-width: 34rem;
+    margin-top: 0.55rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+  .dashboard-hero-primary { min-height: 2.55rem; padding-inline: 1rem; }
+  .dashboard-hero-sync { min-height: 2.55rem; }
+  .dashboard-hero-art {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: 5%;
+    width: 13rem;
+    height: 13rem;
+    transform: translateY(-50%);
+    color: var(--accent);
+    opacity: 0.9;
+  }
+  .dashboard-orbit {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--accent-ring);
+    border-radius: 50%;
+  }
+  .dashboard-orbit-outer { transform: scale(1); }
+  .dashboard-orbit-inner { inset: 1.35rem; border-color: var(--accent-ring); }
+  .dashboard-orbit-dot {
+    position: absolute;
+    width: 0.55rem;
+    height: 0.55rem;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 18px var(--accent-ring);
+  }
+  .dashboard-orbit-dot-one { top: 1.55rem; right: 2.2rem; }
+  .dashboard-orbit-dot-two { bottom: 2.15rem; left: 1.25rem; background: var(--accent); }
+  .dashboard-hero-emblem {
+    position: absolute;
+    inset: 3.8rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--accent-ring);
+    border-radius: 2rem;
+    background: var(--surface-raised);
+    box-shadow: 0 16px 40px -20px var(--accent-ring), inset 0 1px 0 rgb(255 255 255 / 0.35);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .dashboard-hero-emblem svg { width: 3rem; height: 3rem; }
+  .dashboard-stat {
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px -18px var(--accent-ring);
+    animation: dashboard-rise 420ms both;
+  }
+  .dashboard-stat::after {
+    position: absolute;
+    top: 0;
+    left: 1rem;
+    width: 2.5rem;
+    height: 2px;
+    border-radius: 0 0 999px 999px;
+    background: var(--grad-accent);
+    content: '';
+    opacity: 0.75;
+  }
+  .dashboard-stat:nth-child(2) { animation-delay: 50ms; }
+  .dashboard-stat:nth-child(3) { animation-delay: 100ms; }
+  .dashboard-stat:nth-child(4) { animation-delay: 150ms; }
+  @keyframes dashboard-rise {
+    from { opacity: 0; translate: 0 8px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+
+  /* ── Surfaces ──────────────────────────────────────────────── */
+  .panel {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow:
+      0 1px 2px rgb(var(--shadow-color) / 0.05),
+      0 2px 8px -2px rgb(var(--shadow-color) / 0.06);
+  }
+  .panel-raised {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.55),
+      0 1px 2px rgb(var(--shadow-color) / 0.05),
+      0 12px 32px -14px rgb(var(--shadow-color) / 0.22);
+  }
+  html.dark .panel-raised {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.04),
+      0 1px 2px rgb(var(--shadow-color) / 0.05),
+      0 12px 32px -14px rgb(0 0 0 / 0.55);
+  }
+  .panel-hover {
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+  }
+  .panel-hover:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+    box-shadow:
+      0 2px 4px rgb(var(--shadow-color) / 0.05),
+      0 16px 36px -14px color-mix(in srgb, var(--accent) 26%, rgb(var(--shadow-color)) / 0.2);
+  }
+
+  /* ── Typography helpers ────────────────────────────────────── */
+  .eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .h-page {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+  .page-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .muted {
+    color: var(--muted);
+  }
+
+  /* Standard page header row: title + subtitle on the left,
+     primary actions on the right. */
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) {
+    .page-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  /* ── Buttons ───────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.008em;
+    border-radius: 0.55rem;
+    padding: 0.45rem 0.9rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+      transform 0.12s ease, box-shadow 0.15s ease, background-position 0.25s ease, filter 0.15s ease;
+    cursor: pointer;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-sm {
+    font-size: 11px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.45rem;
+  }
+  .btn-xs {
+    font-size: 10px;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.4rem;
+  }
+
+  /* Primary action: the aurora gradient with a soft brand glow. */
+  .btn-primary {
+    background-image: var(--grad-accent);
+    background-size: 160% 100%;
+    background-position: 0% 0%;
+    color: #FFFFFF;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 1px 2px rgb(var(--shadow-color) / 0.12),
+      0 6px 18px -6px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-position: 90% 0%;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 1px 2px rgb(var(--shadow-color) / 0.12),
+      0 8px 24px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+
+  .btn-secondary {
+    background-color: var(--surface);
+    color: var(--foreground);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.05);
+  }
+  html.dark .btn-secondary { background-color: var(--surface-raised); border-color: var(--border); }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--border-strong));
+    background-color: var(--surface-muted);
+    box-shadow: 0 2px 10px -4px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--surface-muted);
+    color: var(--foreground);
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--danger) 8%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 55%, transparent);
+  }
+
+  .btn-danger-solid {
+    background-color: var(--danger);
+    color: #fff;
+  }
+  .btn-danger-solid:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--danger) 85%, black);
+  }
+
+  /* ── Form fields ───────────────────────────────────────────── */
+  .field-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .field {
+    width: 100%;
+    background-color: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 0.55rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 12px;
+    color: var(--foreground);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+  html.dark .field { background-color: var(--surface-raised); border-color: var(--border); }
+  .field::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
+  .field:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 35%, var(--border-strong)); }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+  .field:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* ── Status / meta chips ───────────────────────────────────── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-muted);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  html.dark .chip { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04); }
+  .chip-accent {
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    background-color: var(--accent-soft);
+    color: var(--accent);
+  }
+  .chip-success {
+    border-color: color-mix(in srgb, var(--success) 30%, transparent);
+    background-color: color-mix(in srgb, var(--success) 8%, transparent);
+    color: var(--success);
+  }
+  .chip-warning {
+    border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+    background-color: color-mix(in srgb, var(--warning) 8%, transparent);
+    color: var(--warning);
+  }
+  .chip-danger {
+    border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+    background-color: color-mix(in srgb, var(--danger) 8%, transparent);
+    color: var(--danger);
+  }
+  .chip-info {
+    border-color: color-mix(in srgb, var(--info) 30%, transparent);
+    background-color: color-mix(in srgb, var(--info) 8%, transparent);
+    color: var(--info);
+  }
+
+  /* ── Stat cards (KPI tiles) ────────────────────────────────── */
+  .stat-card {
+    position: relative;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.05);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+    overflow: hidden;
+  }
+  /* Gradient hairline on the top edge — quiet brand presence. */
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background-image: var(--grad-accent);
+    opacity: 0;
+    transition: opacity 0.16s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+    box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .stat-card:hover::before { opacity: 1; }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+  }
+  .stat-hint {
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── Data tables ───────────────────────────────────────────── */
+  .table {
+    width: 100%;
+    text-align: left;
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  .table thead th {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    background-color: var(--surface-muted);
+    padding: 0.45rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .table tbody td {
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .table tbody tr:last-child td { border-bottom: none; }
+  .table tbody tr { transition: background-color 0.1s ease; }
+  .table tbody tr:hover { background-color: var(--surface-muted); }
+
+  /* ── Sidebar navigation links ──────────────────────────────── */
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.58rem 0.7rem;
+    border-radius: 0.7rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--foreground) 68%, transparent);
+    transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .nav-link:hover {
+    background-color: var(--surface-muted);
+    color: var(--foreground);
+  }
+  /* Active destination: the aurora pill with a soft glow. */
+  .nav-link.active {
+    background-image: var(--grad-accent);
+    color: #FFFFFF;
+    font-weight: 600;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 4px 14px -5px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+
+  /* Brand tile (logo mark) — the gradient with a glow. */
+  .brand-mark {
+    background-image: var(--grad-accent);
+    color: #FFFFFF;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.25),
+      0 4px 14px -4px color-mix(in srgb, var(--accent) 65%, transparent);
+  }
+
+  /* ── Segmented control ─────────────────────────────────────── */
+  .segmented {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background-color: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 0.55rem;
+  }
+  .segmented button {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.4rem;
+    color: var(--muted);
+    transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+    cursor: pointer;
+  }
+  .segmented button:hover { color: var(--foreground); }
+  .segmented button.active {
+    background-color: var(--surface);
+    color: var(--foreground);
+    box-shadow: 0 1px 3px rgb(var(--shadow-color) / 0.1);
+  }
+
+  /* ── Modals ────────────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: rgb(26 27 51 / 0.45);
+    backdrop-filter: blur(4px);
+  }
+  html.dark .modal-overlay {
+    background-color: rgb(0 0 0 / 0.6);
+  }
+  .modal {
+    width: 100%;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow:
+      0 24px 60px -12px rgb(var(--shadow-color) / 0.4),
+      0 4px 16px rgb(var(--shadow-color) / 0.12),
+      0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+    font-size: 12px;
+  }
+
+  /* ── Empty states ──────────────────────────────────────────── */
+  .empty-state {
+    background-color: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: 0.875rem;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+  }
+  .empty-state-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  /* ── Links & misc ──────────────────────────────────────────── */
+  .link {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .link:hover { text-decoration: underline; }
+
+  .kbd {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    padding: 0.05rem 0.35rem;
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 0.3rem;
+    background-color: var(--surface-muted);
+    color: var(--muted);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--surface-muted) 25%,
+      color-mix(in srgb, var(--surface-muted) 55%, var(--border)) 50%,
+      var(--surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease infinite;
+    border-radius: 0.375rem;
+  }
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Section header inside panels: small uppercase title row. */
+  .panel-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
 }
 
-/* Base UI Utilities */
-.glass-panel {
-  background: var(--glass-bg);
+/* Keep the existing utility-based UI (older dashboard pages) on the same
+   visual system — remap the old warm-paper hardcoded hexes and legacy
+   indigo/violet utilities onto the renovated tokens. These overrides are
+   theme-aware because the tokens themselves change under html.dark. */
+
+/* Old warm paper surfaces → clean surfaces */
+.bg-\[\#FFFDF8\],
+.bg-\[\#FFFDF8\]\/90 { background-color: var(--surface) !important; }
+.dark\:bg-\[\#17242B\],
+.dark\:bg-\[\#17242B\]\/90,
+.dark\:bg-\[\#17242B\]\/65,
+.dark\:bg-\[\#17242B\]\/95 { background-color: var(--surface) !important; }
+.bg-\[\#F8F5EE\]\/80,
+.bg-\[\#E9E4D9\] { background-color: var(--surface-muted) !important; }
+.dark\:bg-\[\#18242C\],
+.dark\:bg-\[\#1F2E37\] { background-color: var(--surface-raised) !important; }
+.dark\:bg-\[\#101A20\],
+.dark\:bg-\[\#101A20\]\/70 { background-color: var(--surface-muted) !important; }
+.dark\:bg-\[\#0B0F19\] { background-color: var(--surface-raised) !important; }
+.bg-teal-50\/50 { background-color: var(--accent-soft) !important; }
+
+/* Old warm paper borders → token borders */
+.border-\[\#D8D2C6\] { border-color: var(--border) !important; }
+.dark\:border-\[\#30424A\] { border-color: var(--border) !important; }
+
+/* Old hardcoded accent buttons → token accent */
+.bg-\[\#0F766E\] { background-color: var(--accent) !important; }
+.hover\:bg-\[\#115E59\]:hover { background-color: var(--accent-strong) !important; }
+
+/* Brand tiles that used the flat accent token get the aurora gradient. */
+.bg-\[var\(--accent\)\] {
+  background-image: var(--grad-accent) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 4px 14px -4px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+/* Dark text on gradient tiles would vanish — brand tiles are white-label. */
+.dark\:text-\[\#0B0F14\] { color: #FFFFFF !important; }
+
+/* Legacy indigo/violet accents → the accent token */
+.bg-indigo-600 { background-color: var(--accent) !important; }
+.hover\:bg-indigo-500:hover { background-color: var(--accent-strong) !important; }
+.hover\:bg-indigo-700:hover { background-color: var(--accent-strong) !important; }
+.text-indigo-600, .text-indigo-500, .text-indigo-400 { color: var(--accent) !important; }
+.dark\:text-indigo-400, .dark\:text-indigo-300 { color: var(--accent) !important; }
+.border-indigo-200, .border-indigo-500, .dark\:border-indigo-500\/20 { border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important; }
+.bg-violet-600 { background-color: var(--accent-strong) !important; }
+/* Legacy indigo→violet gradients become the full aurora brand gradient. */
+.bg-gradient-to-r.from-indigo-600,
+.bg-gradient-to-br.from-indigo-600,
+.bg-gradient-to-l.from-indigo-600 {
+  background-image: var(--grad-accent) !important;
+}
+.from-indigo-600 { --tw-gradient-from: var(--accent) var(--tw-gradient-from-position) !important; }
+.to-violet-600 { --tw-gradient-to: var(--accent-strong) var(--tw-gradient-to-position) !important; }
+.from-indigo-500 { --tw-gradient-from: var(--accent-strong) var(--tw-gradient-from-position) !important; }
+.to-violet-500 { --tw-gradient-to: var(--accent) var(--tw-gradient-to-position) !important; }
+.bg-indigo-500\/10, .bg-indigo-500\/20 { background-color: var(--accent-soft) !important; }
+
+/* Legacy rose/red accents → danger token */
+.bg-rose-950\/80 { background-color: color-mix(in srgb, var(--danger) 16%, var(--surface)) !important; }
+.bg-rose-950\/40, .bg-rose-950\/60 { background-color: color-mix(in srgb, var(--danger) 10%, var(--surface)) !important; }
+.bg-rose-50 { background-color: color-mix(in srgb, var(--danger) 7%, var(--surface)) !important; }
+.dark\:bg-rose-950\/60 { background-color: color-mix(in srgb, var(--danger) 10%, var(--surface)) !important; }
+.border-rose-300, .dark\:border-rose-800, .border-rose-800\/60 { border-color: color-mix(in srgb, var(--danger) 35%, transparent) !important; }
+.text-rose-800, .dark\:text-rose-200 { color: var(--danger) !important; }
+.text-rose-300, .text-rose-400, .text-rose-500 { color: var(--danger) !important; }
+
+/* Legacy emerald/amber semantic colors → tokens */
+.text-emerald-500, .text-emerald-600, .dark\:text-emerald-400, .text-emerald-700, .dark\:text-emerald-300 { color: var(--success) !important; }
+.border-emerald-500\/40, .border-emerald-200, .dark\:border-emerald-400\/20 { border-color: color-mix(in srgb, var(--success) 35%, transparent) !important; }
+.bg-emerald-50, .dark\:bg-emerald-400\/10 { background-color: color-mix(in srgb, var(--success) 8%, var(--surface)) !important; }
+.bg-emerald-400 { background-color: var(--success) !important; }
+.text-amber-500, .text-amber-600, .dark\:text-amber-400, .dark\:text-amber-200, .text-amber-200 { color: var(--warning) !important; }
+.bg-amber-950\/70, .bg-amber-800 { background-color: color-mix(in srgb, var(--warning) 12%, var(--surface)) !important; }
+.border-amber-800 { border-color: color-mix(in srgb, var(--warning) 35%, transparent) !important; }
+.text-teal-600, .text-teal-700, .dark\:text-teal-300, .dark\:text-teal-400 { color: var(--accent) !important; }
+.bg-teal-700, .dark\:bg-teal-600, .bg-teal-600 { background-color: var(--accent) !important; }
+.hover\:bg-teal-800:hover, .dark\:hover\:bg-teal-500:hover { background-color: var(--accent-strong) !important; }
+.bg-teal-500\/10, .bg-teal-950\/50, .bg-teal-950\/60, .bg-teal-950\/70, .dark\:bg-teal-950\/50, .dark\:bg-teal-950\/60, .dark\:bg-teal-950\/70 { background-color: var(--accent-soft) !important; }
+.border-teal-500\/30, .border-teal-500\/40, .dark\:border-teal-800\/60, .border-teal-200, .dark\:border-teal-800 { border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important; }
+.accent-teal-600 { accent-color: var(--accent) !important; }
+.text-purple-500, .dark\:text-purple-400 { color: var(--accent) !important; }
+.text-sky-500, .text-sky-700, .dark\:text-sky-300 { color: var(--info) !important; }
+.text-indigo-500\/70 { color: color-mix(in srgb, var(--accent) 70%, transparent) !important; }
+
+/* Slate palette harmonization → the renovated neutral scale. These pages
+   pre-date the token system; remapping the utilities keeps every screen on
+   one visual language without editing thousands of lines. */
+.text-slate-900, .text-slate-800 { color: var(--foreground) !important; }
+.dark\:text-white { color: var(--foreground) !important; }
+.text-slate-700, .text-slate-600 { color: color-mix(in srgb, var(--foreground) 82%, transparent) !important; }
+.dark\:text-slate-100, .dark\:text-slate-200 { color: var(--foreground) !important; }
+.dark\:text-slate-300 { color: color-mix(in srgb, var(--foreground) 82%, transparent) !important; }
+.text-slate-500, .text-slate-400 { color: var(--muted) !important; }
+.dark\:text-slate-400, .dark\:text-slate-500 { color: var(--muted) !important; }
+
+.bg-white { background-color: var(--surface) !important; }
+.bg-slate-50, .bg-slate-100 { background-color: var(--surface-muted) !important; }
+.dark\:bg-slate-900\/60, .dark\:bg-slate-900\/50, .dark\:bg-slate-950\/80, .dark\:bg-slate-950 { background-color: var(--surface-raised) !important; }
+.dark\:bg-slate-900 { background-color: var(--surface-raised) !important; }
+.hover\:bg-slate-50:hover, .hover\:bg-slate-100:hover { background-color: var(--surface-muted) !important; }
+.dark\:hover\:bg-slate-900\/50:hover, .dark\:hover\:bg-slate-800:hover { background-color: var(--surface-muted) !important; }
+.hover\:bg-slate-200\/70:hover { background-color: var(--surface-muted) !important; }
+.bg-slate-200 { background-color: var(--border) !important; }
+
+.border-slate-200, .border-slate-100 { border-color: var(--border) !important; }
+.dark\:border-slate-800, .dark\:border-slate-700, .dark\:border-slate-800\/80, .dark\:border-slate-800\/60 { border-color: var(--border) !important; }
+.divide-slate-100 > :not([hidden]) ~ :not([hidden]), .dark\:divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border) !important; }
+
+/* Kanban/stage color classes (legacy) → semantic tokens */
+.border-slate-500\/40 { border-color: color-mix(in srgb, var(--muted) 35%, transparent) !important; }
+.text-slate-400 { color: var(--muted) !important; }
+.border-amber-500\/40 { border-color: color-mix(in srgb, var(--warning) 35%, transparent) !important; }
+.border-indigo-500\/40 { border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important; }
+.border-violet-500\/40 { border-color: color-mix(in srgb, var(--muted) 35%, transparent) !important; }
+.border-teal-500\/40 { border-color: color-mix(in srgb, var(--success) 35%, transparent) !important; }
+.border-sky-500\/40 { border-color: color-mix(in srgb, var(--info) 35%, transparent) !important; }
+.border-rose-500\/40 { border-color: color-mix(in srgb, var(--danger) 35%, transparent) !important; }
+.bg-sky-500\/10 { background-color: color-mix(in srgb, var(--info) 8%, transparent) !important; }
+.bg-violet-500\/10 { background-color: color-mix(in srgb, var(--muted) 8%, transparent) !important; }
+.bg-teal-500\/5, .bg-slate-500\/5, .bg-amber-500\/5, .bg-indigo-500\/5, .bg-violet-500\/5, .bg-sky-500\/5, .bg-emerald-500\/5, .bg-rose-500\/5 { background-color: color-mix(in srgb, var(--foreground) 4%, transparent) !important; }
+.hover\:bg-teal-500\/10:hover { background-color: var(--accent-soft) !important; }
+.hover\:bg-sky-500\/10:hover { background-color: color-mix(in srgb, var(--info) 8%, transparent) !important; }
+.hover\:bg-violet-500\/10:hover { background-color: color-mix(in srgb, var(--muted) 8%, transparent) !important; }
+.hover\:bg-indigo-500\/10:hover { background-color: var(--accent-soft) !important; }
+.hover\:bg-rose-500\/10:hover { background-color: color-mix(in srgb, var(--danger) 8%, transparent) !important; }
+.hover\:bg-slate-500\/10:hover { background-color: var(--surface-muted) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ── Cyber Aurora Utilities ─────────────────────────────────── */
+.glass-card {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
 }
 
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+html.dark .glass-card {
+  background: rgba(18, 19, 36, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-hover);
+.text-gradient-aurora {
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-aurora {
+  background: var(--grad-accent);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.btn-aurora:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--primary-light);
+  box-shadow: 0 6px 20px 0 color-mix(in srgb, var(--accent) 55%, transparent);
+  filter: brightness(1.08);
 }
 
-.btn-secondary {
-  background-color: transparent;
-  color: var(--text-main);
-  border: 1px solid var(--border);
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-weight: 500;
+@media (max-width: 640px) {
+  .dashboard-hero { min-height: 0; padding: 1.25rem; }
+  .dashboard-hero-art { right: -6rem; opacity: 0.24; }
+  .dashboard-hero-content { max-width: 100%; }
+  .dashboard-hero-copy { max-width: 25rem; }
 }
 
-.btn-secondary:hover {
-  background-color: var(--surface-hover);
+.btn-aurora:active {
+  transform: translateY(0);
 }
 
-.input-field {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background-color: var(--surface);
-  color: var(--text-main);
-  font-family: inherit;
-  transition: var(--transition);
+.score-badge-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
 }
 
-.input-field:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+html.dark .score-badge-high {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.3);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.score-badge-med {
+  background: rgba(6, 182, 212, 0.15);
+  color: #06B6D4;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
 }
 
-.animate-in {
-  animation: fadeIn 0.5s ease-out forwards;
+html.dark .score-badge-med {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+}
+
+/* Scrollbars tuned to each theme */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border-strong) 80%, var(--muted));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); background-clip: padding-box; }
+::-webkit-scrollbar-track { background: transparent; }
+html.dark ::-webkit-scrollbar-track { background: transparent; }
+html.dark ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border-strong) 70%, var(--muted));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html.dark ::-webkit-scrollbar-thumb:hover { background: var(--muted); background-clip: padding-box; }
+
+/* a11y (spec section 9 Accessibility): a visible keyboard focus ring for
+   every interactive element. Component styles use focus:outline-none with a
+   border-color change only, which fails WCAG 2.4.7 for keyboard users; this
+   global focus-visible rule restores a high-contrast ring without affecting
+   pointer users. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

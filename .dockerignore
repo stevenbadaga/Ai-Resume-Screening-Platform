@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.venv
+test-results
+playwright-report
+coverage
+uploads
+backups
+.freebuff
+
+# Keep local credentials and build artifacts out of Docker build contexts.
+.env*
+!.env.example
+
+*.log
+*.tsbuildinfo

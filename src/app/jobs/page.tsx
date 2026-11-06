@@ -1,82 +1,185 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/authOptions';
+import JobsClient from './JobsClient';
+import { firstParam, parsePagination, toPageInfo } from '@/lib/pagination';
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic';
 
-export default function JobsPage() {
-  const [isDrafting, setIsDrafting] = useState(false);
-  const [rubricCriteria, setRubricCriteria] = useState([{ category: '', description: '', isRequired: true, weight: 1 }]);
+/**
+ * Job requisition board (§6.2) — server-side filtering + pagination.
+ *
+ * Previously loaded every requisition in the org with all rubrics, criteria,
+ * and applications attached, then rendered them client-side. Now filters and
+ * paging run in the database via searchParams (shareable URLs, consistent
+ * totals with exports and dashboards):
+ *
+ *   q (title/description/department), status, department, page.
+ *
+ * Candidates keep the org-wide OPEN listing (public board volume is bounded
+ * by open requisitions) but still get paged + searchable results.
+ */
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role || 'Candidate';
+  const organizationId = (session?.user as any)?.organizationId;
+
+  const sp = await searchParams;
+  const { page, pageSize, skip, take } = parsePagination(sp);
+  const q = firstParam(sp, 'q');
+  const status = firstParam(sp, 'status');
+  const department = firstParam(sp, 'department');
+
+  const isPublicListing = userRole === 'Candidate';
+  const whereClause: any =
+    isPublicListing
+      ? { status: 'OPEN', AND: [{ OR: [{ opensAt: null }, { opensAt: { lte: new Date() } }] }, { OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }] }] }
+      : { organizationId };
+
+  // Department-restricted staff only see permitted departments (§6.1).
+  if (userRole !== 'Candidate') {
+    const departmentRestrictions = (session?.user as any)?.departmentRestrictions as string[] | undefined;
+    if (departmentRestrictions?.length) {
+      whereClause.department = { in: departmentRestrictions };
+    }
+  }
+
+  if (!isPublicListing && status && status !== 'ALL') {
+    whereClause.status = status;
+  }
+  if (!isPublicListing && department && department !== 'ALL') {
+    // Composes with department restrictions (restrictions win via AND).
+    whereClause.department = whereClause.department
+      ? { in: [department] }
+      : department;
+    if (userRole !== 'Candidate' && (session?.user as any)?.departmentRestrictions?.length) {
+      whereClause.department = { in: [department] };
+    }
+  }
+  if (q) {
+    whereClause.OR = [
+      { title: { contains: q, mode: 'insensitive' } },
+      { description: { contains: q, mode: 'insensitive' } },
+      { department: { contains: q, mode: 'insensitive' } },
+    ];
+  }
+
+  const [jobs, total, departmentRows] = await Promise.all([
+    isPublicListing ? prisma.jobRequisition.findMany({
+      where: whereClause,
+      select: {
+        id: true, title: true, department: true, location: true, employmentType: true,
+        description: true, opensAt: true, closesAt: true, status: true, createdAt: true,
+        organization: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'desc' }, skip, take,
+    }) : prisma.jobRequisition.findMany({
+      where: whereClause,
+      include: {
+        organization: { select: { id: true, name: true } },
+        rubrics: { include: { criteria: true } },
+        // Count aggregates instead of pulling every application row —
+        // the card only displays the number.
+        _count: { select: { applications: true } },
+        owner: { select: { name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.jobRequisition.count({ where: whereClause }),
+    // Department facet for the filter dropdown (staff only).
+    userRole === 'Candidate'
+      ? Promise.resolve([])
+      : prisma.jobRequisition.findMany({
+          where: { organizationId },
+          select: { department: true },
+          distinct: ['department'],
+        }),
+  ]);
+
+  // JobsClient cards read `job.applications.length`; map the count aggregate
+  // onto that shape so the client component stays unchanged.
+  const jobsWithCounts = jobs.map((job) => ({
+    ...job,
+    applications: Array.from({ length: (job as any)._count?.applications ?? 0 }),
+  }));
+
+  // Candidate context (§6.3 explainability): where the candidate stands on
+  // each position — application stage + latest AI screening score — plus
+  // whether they have a saved CV for one-click apply.
+  let myApplications: Record<
+    string,
+    { applicationId: string; status: string; stage: string; score: number | null; appliedAt: string }
+  > = {};
+  let hasSavedResume = false;
+  if (userRole === 'Candidate') {
+    const email = (session?.user as any)?.email as string | undefined;
+    if (email) {
+      const cand = await prisma.candidate.findFirst({
+        where: { email },
+        select: {
+          profileResumeRef: true,
+          applications: {
+            select: {
+              id: true,
+              jobId: true,
+              status: true,
+              stage: true,
+              createdAt: true,
+              screeningRuns: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: { totalResult: true, effectiveResult: true },
+              },
+            },
+          },
+        },
+      });
+      hasSavedResume = Boolean(cand?.profileResumeRef);
+      myApplications = Object.fromEntries(
+        (cand?.applications ?? []).map((a) => {
+          const run = a.screeningRuns[0];
+          const raw = run?.effectiveResult ?? run?.totalResult ?? null;
+          const score = raw === null ? null : Number(raw);
+          return [
+            a.jobId,
+            {
+              applicationId: a.id,
+              status: a.status,
+              stage: a.stage,
+              score: score !== null && Number.isFinite(score) ? score : null,
+              appliedAt: a.createdAt.toISOString(),
+            },
+          ];
+        })
+      );
+    }
+  }
 
   return (
-    <div className="animate-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Job Requisitions & Rubrics</h1>
-        <button className="btn-primary" onClick={() => setIsDrafting(true)}>+ Create New Job</button>
-      </div>
-
-      {isDrafting ? (
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h2 style={{ marginBottom: '1.5rem' }}>Draft New Job Requisition</h2>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-            <input className="input-field" placeholder="Job Title (e.g. Senior Frontend Engineer)" />
-            <input className="input-field" placeholder="Department" />
-            <textarea className="input-field" placeholder="Job Description" rows={4} />
-          </div>
-
-          <h3 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>Screening Rubric</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Define the specific criteria the AI will use to assess candidates.</p>
-          
-          {rubricCriteria.map((criterion, index) => (
-            <div key={index} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
-              <input 
-                className="input-field" 
-                placeholder="Category (e.g. Skill, Experience)" 
-                style={{ flex: 1 }} 
-              />
-              <input 
-                className="input-field" 
-                placeholder="Description" 
-                style={{ flex: 2 }} 
-              />
-              <select className="input-field" style={{ flex: 1 }}>
-                <option value="required">Required</option>
-                <option value="preferred">Preferred</option>
-              </select>
-              <input 
-                className="input-field" 
-                type="number" 
-                placeholder="Weight (1-5)" 
-                style={{ width: '100px' }} 
-              />
-            </div>
-          ))}
-          
-          <button 
-            className="btn-secondary" 
-            style={{ marginBottom: '2rem' }}
-            onClick={() => setRubricCriteria([...rubricCriteria, { category: '', description: '', isRequired: true, weight: 1 }])}
-          >
-            + Add Criterion
-          </button>
-
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            <button className="btn-secondary" onClick={() => setIsDrafting(false)}>Cancel</button>
-            <button className="btn-primary">Submit for Approval</button>
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-          {/* Sample existing jobs */}
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <h3>Senior Backend Developer</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Engineering • Full-time</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.875rem', padding: '0.25rem 0.75rem', backgroundColor: 'var(--secondary)', color: 'white', borderRadius: '1rem' }}>Approved</span>
-              <button className="btn-secondary" style={{ padding: '0.25rem 0.75rem' }}>View Pipeline</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <JobsClient
+      initialJobs={JSON.parse(JSON.stringify(jobsWithCounts))}
+      userRole={userRole}
+      pagination={toPageInfo(page, pageSize, total)}
+      myApplications={myApplications}
+      hasSavedResume={hasSavedResume}
+      isAuthenticated={Boolean(session)}
+      permissions={(session?.user as any)?.permissions || []}
+      filters={{
+        q: q ?? '',
+        status: status ?? 'ALL',
+        department: department ?? 'ALL',
+        departments: departmentRows
+          .map((r) => r.department)
+          .filter((d): d is string => Boolean(d))
+          .sort(),
+      }}
+    />
   );
 }

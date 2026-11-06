@@ -1,0 +1,30 @@
+John Doe
+Email: john.doe@email.com
+Phone: 555-019-2837
+
+Summary:
+Highly skilled Senior Software Engineer with 8 years of experience building scalable enterprise applications using React, Node.js, and PostgreSQL. Proven track record of leading technical teams and optimizing database performance.
+
+Skills:
+- React.js, Next.js, TypeScript
+- Node.js, Express, Python
+- PostgreSQL, MongoDB, Redis
+- AWS (EC2, S3, RDS), Docker, Kubernetes
+- Agile/Scrum, CI/CD
+
+Experience:
+Senior Software Engineer | Tech Innovators Inc.
+June 2019 - Present
+- Architected a microservices-based backend using Node.js and PostgreSQL, increasing system throughput by 40%.
+- Led a team of 5 engineers to deliver a new real-time analytics dashboard built in React and Next.js.
+- Implemented robust CI/CD pipelines using GitHub Actions, reducing deployment times by 50%.
+
+Software Engineer | Web Solutions Corp
+January 2016 - May 2019
+- Developed responsive front-end components using React and Redux.
+- Designed RESTful APIs that served over 1M monthly active users.
+- Migrated legacy database from MySQL to PostgreSQL.
+
+Education:
+B.S. in Computer Science
+University of Technology, Graduated 2015

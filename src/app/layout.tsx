@@ -1,41 +1,47 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+import './globals.css';
+import AppShell from '@/components/AppShell';
+import Providers from '@/components/Providers';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { ToastProvider } from '@/components/Toast';
+import { LanguageProvider } from '@/lib/i18n/LanguageContext';
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-jakarta'
+});
 
 export const metadata: Metadata = {
-  title: "AI Resume Screening Platform",
-  description: "Evidence-based recruitment and candidate matching.",
+  title: 'RecruitAI | Enterprise AI Resume Screening Platform',
+  description: 'Evidence-based recruitment and candidate screening powered by explainable AI rubrics.',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body>
-        <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
-          {/* Sidebar */}
-          <aside className="glass-panel" style={{ width: '250px', padding: '2rem', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem', borderRadius: 0 }}>
-            <h2 style={{ color: 'var(--primary)', marginBottom: '2rem' }}>RecruitAI</h2>
-            <a href="/" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Dashboard</a>
-            <a href="/jobs" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Jobs & Rubrics</a>
-            <a href="/candidates" className="btn-secondary" style={{ border: 'none', textAlign: 'left', padding: '0.5rem' }}>Candidates</a>
-          </aside>
-          
-          {/* Main Content */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <header style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span>Intern (Recruiter)</span>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>I</div>
-              </div>
-            </header>
-            <main style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
-              {children}
-            </main>
-          </div>
-        </div>
+    <html lang="en" className={jakarta.variable} suppressHydrationWarning>
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans text-sm">
+        {/* §9 Accessibility: keyboard users can jump past the navigation */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-teal-600 focus:px-3 focus:py-2 focus:text-white focus:text-xs focus:font-bold"
+        >
+          Skip to main content
+        </a>
+        <Providers>
+          <ThemeProvider>
+            <LanguageProvider>
+              <ToastProvider>
+                <AppShell>{children}</AppShell>
+              </ToastProvider>
+            </LanguageProvider>
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

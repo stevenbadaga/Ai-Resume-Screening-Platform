@@ -1,36 +1,346 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RecruitAI — AI Resume Screening & Talent Intelligence Platform
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-7-teal?logo=prisma)](https://www.prisma.io/)
+[![BullMQ](https://img.shields.io/badge/BullMQ-Redis%20Queue-red?logo=redis)](https://bullmq.io/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o%20Structured%20Outputs-green?logo=openai)](https://openai.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-216%20tests%20passing-brightgreen?logo=vitest)](#testing)
 
-First, run the development server:
+**RecruitAI** is an evidence-based AI talent acquisition platform and Applicant Tracking System (ATS) built against the **CODAFRIQA Intern Project Specification (Version 1.0)**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+It combines deterministic rubric-based resume screening with verbatim quoted evidence, human-in-the-loop hiring decisions, structured interview scorecards, GDPR data-subject rights, and a tamper-evident audit ledger.
+
+---
+
+## Table of Contents
+
+- [Platform Overview](#platform-overview)
+- [Key Features](#key-features)
+- [System Architecture](#system-architecture)
+- [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
+- [Multilingual Support (i18n)](#multilingual-support-i18n)
+- [Technology Stack](#technology-stack)
+- [Quick Start](#quick-start)
+- [Testing](#testing)
+- [Security & Privacy Notes](#security--privacy-notes)
+- [Known Gaps & Honest Status](#known-gaps--honest-status)
+- [Documentation](#documentation)
+- [Author](#author)
+
+---
+
+## Platform Overview
+
+Traditional recruitment pipelines suffer from manual screening fatigue, unconscious evaluator bias, hallucinated keyword matching, and opaque decisions. RecruitAI addresses this with a human-in-the-loop design:
+
+1. **Deterministic match scoring** — AI evaluations are bound to approved job rubrics with fixed weight formulas (`MATCH` = full weight, `PARTIAL` = half, `MISSING`/unassessed = 0). A missing *required* criterion fails the run at 0%.
+2. **Verbatim quoted evidence** — every criterion result is grounded with an exact quote from the candidate's CV, surfaced via the OpenAI Structured Outputs JSON schema.
+3. **Human authority** — AI never advances candidates. Stage changes (`SHORTLIST`, `ADVANCE`, `HOLD`, `REJECT`, `WITHDRAW`, `REVIEW`) require a logged-in human with a mandatory written rationale.
+4. **Privacy by design** — PII is redacted before prompts leave the server; GDPR Article 20 export and Article 17 erasure are built in.
+
+---
+
+## Key Features
+
+| Area | What you get | Where to look |
+| :--- | :--- | :--- |
+| Cross-tenant job board | Browse open requisitions across organizations with company badges | `src/app/jobs/` |
+| Requisition builder | Departments, required vs preferred criteria, weights (1–5), rubric preview | `src/app/api/jobs/`, `src/app/api/jobs/[id]/rubric/` |
+| Application intake | PDF/DOCX/TXT upload (≤ 5 MB) with magic-byte validation, layered malware scanning (signature layer + optional ClamAV daemon), rate limiting, explicit consent capture | `src/app/api/jobs/apply/route.ts`, `src/lib/malwareScan.ts`, `src/lib/validation.ts` |
+| Async screening | BullMQ + Redis queue with retry/backoff; background worker extracts text and runs GPT-4o structured evaluation | `src/lib/queue.ts`, `src/lib/worker.ts`, `src/lib/scoringEngine.ts` |
+| Split-screen evaluation | Original CV beside criterion-by-criterion results with click-to-highlight evidence | `src/app/candidates/[id]/` |
+| Blind screening | One-click PII redaction toggle to reduce evaluator bias | `src/lib/resumeProcessor.ts` |
+| Non-destructive overrides | Recruiters recalibrate scores with mandatory justification; raw AI result is preserved | `src/app/api/decisions/override/` |
+| 6-stage decisions | Auditable `SHORTLIST` / `ADVANCE` / `HOLD` / `REJECT` / `WITHDRAW` / `REVIEW` actions | `src/app/api/decisions/` |
+| Interview scorecards | Multi-attribute ratings (technical, communication, problem-solving) and hire recommendations | `src/app/api/candidates/[id]/scorecard/` |
+| Kanban pipeline | 5-stage board with search/filter, comparison matrix, duplicate resolver | `src/app/candidates/` |
+| GDPR suite | Article 20 JSON export; Article 17 transactional erasure incl. physical file deletion and account anonymization | `src/app/api/privacy/`, `src/app/privacy/` |
+| Dashboards & audit | Hiring funnel telemetry, CSV export with formula-injection escaping, tamper-evident hash-chained audit ledger with a nightly verification script | `src/app/dashboard/`, `src/app/audit/`, `src/lib/auditChain.ts`, `scripts/verifyAuditChain.ts` |
+| Versioned rubrics | Editing an approved rubric creates a new DRAFT version with a mandatory change reason — the approved version and historical results are never altered | `src/app/api/jobs/[id]/rubric/` |
+| Bulk actions | Multi-select pipeline decisions with mandatory reason + explicit confirmation, audited as one transaction | `src/app/candidates/CandidatesClient.tsx`, `src/app/api/candidates/bulk-action/` |
+| Operations | `GET /api/health` liveness + admin detail view, `npm run backup` / `npm run restore` with checksums, documented runbook | `src/app/api/health/`, `scripts/backup.sh`, `docs/operations-runbook.md` |
+| Manager analytics | §6.10 metrics — time-to-screen, time-in-stage, stage conversion, interviewer completion, workload — with date/job/department/recruiter/stage filters | `src/app/dashboard/analytics/`, `src/app/api/analytics/` |
+| AI support copilot | In-app assistant grounded on product knowledge with domain guardrails — including the live skill taxonomy rendered from the same shared table screening uses | `src/lib/supportBrain.ts`, `src/components/SupportWidget.tsx` |
+
+---
+
+## System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Frontend (Next.js 16 + React 19)"]
+        UI[Job board & Kanban ATS]
+        Apply[Multipart resume upload]
+        Viewer[Split-screen evaluator]
+        Privacy[GDPR privacy suite]
+    end
+
+    subgraph Edge ["Edge routing & auth"]
+        Proxy[proxy.ts route guards]
+        NextAuth[NextAuth sessions + RBAC]
+    end
+
+    subgraph API ["API route handlers"]
+        JobAPI["/api/jobs, /api/jobs/apply"]
+        DecisionAPI["/api/decisions, /api/decisions/override"]
+        ScorecardAPI["/api/candidates/[id]/scorecard"]
+        PrivacyAPI["/api/privacy/export, /api/privacy/erasure"]
+    end
+
+    subgraph Async ["Async pipeline"]
+        BullMQ[BullMQ queue]
+        Worker[Background worker]
+        Redis[(Redis)]
+        OpenAI[OpenAI GPT-4o]
+    end
+
+    subgraph Data ["Persistence"]
+        Prisma[Prisma ORM 7]
+        Postgres[(PostgreSQL)]
+        Uploads[(Sandboxed uploads/)]
+    end
+
+    Client --> Proxy --> NextAuth --> API
+    JobAPI --> Uploads
+    JobAPI --> BullMQ --> Redis
+    Worker --> Redis
+    Worker --> OpenAI
+    Worker --> Prisma
+    API --> Prisma --> Postgres
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Role-Based Access Control (RBAC)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Authorization is driven by a typed permission matrix — `ROLE_PERMISSIONS` in [`src/lib/roleAccess.ts`](src/lib/roleAccess.ts) — and enforced in route handlers via `requirePermission()` from [`src/lib/auth.ts`](src/lib/auth.ts). Permissions are compiler-checked constants (e.g. `Permission.MakeHiringDecisions`), so a typo is a build error, and granting a role a new capability is a one-line matrix change.
 
-## Learn More
+| Role | Scope |
+| :--- | :--- |
+| **Admin** | Full control: team/role management, all data, audit log, privacy queue |
+| **Recruiter** | End-to-end pipeline: jobs, screening, decisions, interviews, offers, merges |
+| **Hiring Manager** | Department head: reviews, score recalibration, decisions (no offers) |
+| **Interviewer** | Evaluates: scorecards and interview questions; no hiring decisions |
+| **Compliance Auditor** | Read-only: audit ledger, scorecard views, GDPR request queue |
+| **Candidate** | External seeker: browse jobs, apply, track own applications, self-service GDPR |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Multilingual Support (i18n)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Five languages, switched live without reloads via the `useLanguage()` context: **English (`en`)**, **French (`fr`)**, **Spanish (`es`)**, **German (`de`)**, and **Kinyarwanda (`rw`)** — dictionaries in [`src/lib/i18n/translations.ts`](src/lib/i18n/translations.ts).
 
-## Deploy on Vercel
+> Note: coverage is deepest on navigation, dashboard, and core flows; some secondary screens still fall back to English.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Technology Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, standalone output) + [React 19](https://react.dev/)
+- **Language**: TypeScript 5 (strict)
+- **Database/ORM**: PostgreSQL via [Prisma 7](https://www.prisma.io/) with the `@prisma/adapter-pg` driver adapter
+- **Queue**: [BullMQ 6](https://bullmq.io/) + ioredis (Upstash-compatible, TLS-aware)
+- **AI**: [OpenAI](https://openai.com/) `gpt-4o` with Structured Outputs (JSON-schema-constrained responses)
+- **Auth**: NextAuth 4 credentials provider, bcrypt (12 rounds), JWT session callbacks
+- **Validation**: Zod 4 on every mutating endpoint
+- **Testing**: [Vitest 4](https://vitest.dev/) with Testing Library
+
+---
+
+## Quick Start
+
+### Option A — Docker (recommended)
+
+This Compose file is a **single-host reference deployment**, not a managed production
+platform. Before starting, copy `.env.example` to `.env`, set a unique strong
+`POSTGRES_PASSWORD`, generate a unique `NEXTAUTH_SECRET` (`openssl rand -base64 32`),
+and set `NEXTAUTH_URL` to the public HTTPS origin. Use a URL-safe database password
+(for example, `openssl rand -hex 32`) because Compose embeds it in a connection URL.
+Configure the private Supabase bucket,
+transactional email, AI provider, DNS, backups, and monitoring before accepting real data.
+Keep `.env` out of version control. The app, PostgreSQL, and Redis bind to host loopback;
+put the app behind a TLS-terminating reverse proxy. Never expose database, Redis, or
+ClamAV ports to the internet.
+
+```bash
+git clone https://github.com/stevenbadaga/Ai-Resume-Screening-Platform.git
+cd Ai-Resume-Screening-Platform
+
+# Create and edit .env from .env.example before starting; do not commit secrets.
+docker compose up --build
+```
+
+This starts the web app (localhost:3000), a dedicated schema-migration job, the screening worker,
+PostgreSQL, Redis, and ClamAV. The migration job must complete before the app and worker start;
+uploads fail closed until ClamAV can return a clean verdict. For a scalable production deployment,
+use managed database/queue/storage services and a secret manager, then run the staging acceptance
+and recovery drills in [`docs/production-readiness-checklist.md`](docs/production-readiness-checklist.md).
+
+### Option B — Local Node
+
+Prerequisites: Node.js 22 LTS, npm 9+, local PostgreSQL and Redis (or managed equivalents).
+
+```bash
+npm install
+
+# 1. Configure environment — see .env.example for the full list
+cp .env.example .env
+
+# 2. Initialize the database
+npx prisma generate
+npx prisma db push
+
+# 3a. Development
+npm run dev
+
+# 3b. Production
+npm run build && npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000). Create the first account via `/auth/signin` → signup; the first signup bootstraps the default organization. The BullMQ worker (`src/lib/worker.ts`) must be running for resume screening to process — run it in a separate terminal with `npx tsx src/lib/worker.ts`.
+
+### Sample demo accounts (spec §15)
+
+To evaluate the platform without signing up, seed a self-contained demonstration workspace with one approved sample account per role, two approved rubric-driven jobs, and five synthetic resumes covering different match levels and edge cases (strong match, transferable skills, missing required criterion, ambiguous/overlapping dates, and embedded resume instructions for the prompt-safety case):
+
+```bash
+npx tsx scripts/seedDemoData.ts
+```
+
+All demo accounts share the README-documented password `Demo-Passw0rd!` (synthetic data — never use in production):
+
+| Role | Email |
+| :--- | :--- |
+| Administrator | `admin@demo.local` |
+| Recruitment Manager / Recruiter | `manager@demo.local`, `recruiter@demo.local` |
+| Hiring Manager | `hiring@demo.local` |
+| Interviewer | `interviewer@demo.local` |
+| Compliance Auditor | `auditor@demo.local` |
+| Candidate | `candidate@demo.local` |
+
+Re-running the seed detects the existing demo workspace and exits without duplicating anything. Screening is intentionally not pre-run — trigger it from the UI to walk the full processing → evidence → decision workflow.
+
+---
+
+## Testing
+
+```bash
+npm run test        # Vitest suite (216 tests across 26 files)
+npm run typecheck   # tsc --noEmit
+npm run lint        # ESLint
+npm run test:e2e    # Playwright browser E2E (requires TEST_DATABASE_URL + running app)
+```
+
+The suite covers the deterministic scoring engine (including the unassessed-criterion and required-criterion failure rules), the RBAC permission matrix, file magic-byte/malware/path-traversal validation, CSV injection escaping, PII redaction, audit logging behavior, support-copilot guardrails, the Redis-backed rate limiter (mocked ioredis), fairness/name-invariance, bias mitigation, decision-reason protection, candidate-messaging confidentiality, interview conflict detection, experience calculation, skill normalization, verification-code/2FA logic, email-delivery UI, storage abstraction, error tracking, pagination, application-stage state machine, and the audit hash chain.
+
+### Integration tests (database-backed)
+
+`__tests__/workflow.integration.test.ts` runs the spec §14 full-workflow integration suite against a **real PostgreSQL database** — strictly scoped to per-run, uniquely-named organizations/emails so it never touches other data, and self-cleaning afterwards:
+
+```bash
+TEST_DATABASE_URL="postgresql://..." TEST_INTEGRATION=1 npm test
+```
+
+Without `TEST_DATABASE_URL` the integration file self-skips, so plain `npm test` never needs a database. With it, 12 additional tests cover: org/role/user isolation, job + rubric DRAFT→APPROVED state machine, consent-compliant application intake, explainable screening-run persistence with evidence (§6.5), human decisions with stage history (§6.7), interview scheduling + conflict detection (§6.8), independent scorecards + interviewer scoping (§5/§6.8), cross-organization tenant isolation (§6.1), transactional §6.11 erasure across linked records, §6.10 analytics aggregation, approved-rubric versioning on edit (§6.2), and audit-ledger tamper detection (§6.1).
+
+### Browser end-to-end tests (spec §14)
+
+`e2e/recruiter-workflow.e2e.spec.ts` walks the full recruiter workflow in a real Chromium browser against a running app instance: two-step sign-in (password + emailed code) → jobs list (rubric preview) → candidates pipeline → candidate profile (evidence, blind screening, score recalibration) → human decision with reason (§6.7) → interview scheduling (§6.8) → structured scorecard (§6.8) → audit trail visibility (§6.12) → manager analytics (§6.10) → CSV export → sign-out.
+
+```bash
+npm run build && npm run start   # or npm run dev
+npx playwright test
+```
+
+The suite requires `TEST_DATABASE_URL` so `global-setup.ts` can seed a scoped recruiter account + job + rubric + candidate with a screening run via Prisma (same per-run namespace discipline as the integration suite). It self-skips without it. Set `BASE_URL` (default `http://127.0.0.1:3000`) to point at the app instance under test.
+
+CI (`.github/workflows/main.yml`) provisions an isolated PostgreSQL service and runs migrations,
+typecheck, unit and database-backed integration tests, ESLint, a production build, and Chromium
+browser E2E tests on every push/PR to `main`. A green CI run validates this synthetic test setup;
+it does not replace live provider, restore, multi-instance, or production-like staging acceptance.
+
+---
+
+## Security & Privacy Notes
+
+- **File safety**: uploads are validated by magic bytes (`%PDF-`, `PK\x03\x04`), size-limited, and scanned by a layered malware scanner — signature layer (EICAR, embedded PE executables, PDF active content, DOCX macros/OLE) always runs, and when `CLAMAV_HOST` is set the bytes are streamed to a ClamAV daemon (fail-closed when unreachable, `docker-compose.yml` ships the service). All file access is sandboxed to the uploads directory (`isPathWithinUploads`).
+- **Rate limiting**: Redis-backed fixed-window limiter with automatic in-memory fallback (`src/lib/rateLimit.ts`); applied to login, signup, uploads, and the support chatbot.
+- **PII handling**: contact details are redacted before resume text reaches OpenAI; prompts instruct the model never to infer, only quote.
+- **CSV safety**: exports escape formula-injection characters (`=`, `+`, `-`, `@`).
+- **GDPR**: Article 17 erasure is transactional — physical resume files are unlinked only after path validation, records are anonymized (`ANON-<uuid>`), and sessions are terminated.
+
+These are engineering controls, not certifications — see [Known Gaps](#known-gaps--honest-status).
+
+---
+
+## Known Gaps & Honest Status
+
+An independent review against the spec (2026-09-06) lives in [`docs/independent-requirements-compliance-report.md`](docs/independent-requirements-compliance-report.md). Its summary: a working MVP across all major flows, with these known gaps:
+
+- **Partial spec areas**: compound/multi-role permissions are not consistently enforced end-to-end. Email verification **is** implemented (§6.1) — see the note below. Password reset is implemented too: hashed single-use 30-minute tokens, anti-enumeration endpoints, audit-logged completion — see `src/app/api/auth/forgot-password` and `src/app/api/auth/reset-password`.
+- **No fake-success fallbacks**: emails require `RESEND_API_KEY` — when it is missing or delivery fails, the outcome is recorded as `FAILED` on the Communication row (with the error) and surfaced in the API response, never logged as "sent". AI features require `OPENAI_API_KEY` — a missing key is a loud config error, not a silent degradation.
+- **Infrastructure-dependent claims**: multi-instance rate limiting needs production infrastructure and end-to-end evidence before being called "done". Rubric versioning **is** implemented (§6.2): editing an approved rubric creates a new DRAFT version with a mandatory change reason, and the approved version keeps scoring until the replacement is approved. Email delivery-state tracking is real (`src/lib/emailService.ts` persists SENT/FAILED + failure info per spec §6.9) but still needs production end-to-end evidence. To gather that evidence: configure `RESEND_API_KEY` (see below), deploy to staging, then trigger each template (application confirmation, interview invite, rejection, offer, team invite, password reset) and verify the `Communication` rows show `SENT` with correct timestamps.
+- **Test coverage**: 216 unit tests across 26 files plus a 12-test database-backed integration suite (`__tests__/workflow.integration.test.ts`, spec §14) covering the full job→rubric→application→screening→decision→interview→scorecard→erasure workflow with tenant-isolation, rubric-versioning, and audit-tamper-detection checks. A 12-test browser E2E suite (`e2e/recruiter-workflow.e2e.spec.ts`, spec §14) walks the full recruiter workflow in Chromium (self-skips without `TEST_DATABASE_URL`).
+- **Fairness evaluation (re-runnable)**: `npx tsx scripts/evaluate-fairness.ts` loads the seeded demo resumes and emits a written fairness report (`test-results/fairness-evaluation-*.md`) covering name-invariance across 7 name variants, PII redaction before AI, proxy-risk removal, skill-normalization consistency, and the deterministic scoring contract. The model-in-the-loop pass (live screening of the 5 demo resumes + name-invariance rerun) is recorded separately in `docs/ai-evaluation-set.md` §5 because it requires `OPENAI_API_KEY` and a live queue.
+- **Manager analytics (spec §6.10)**: `GET /api/analytics` provides time-to-screen, time-in-stage, stage conversion, interviewer completion %, processing-failure and low-confidence counts, and recruiter workload — filterable by date range, job, department, recruiter, and stage, with documented metric definitions. Hiring managers are scoped to their own jobs; department restrictions always apply.
+- **Retention configuration & enforcement (spec §6.11/§6.12)**: Admins configure per-status retention periods via `PUT /api/org/retention` (audited with old/new values); `npx tsx scripts/applyRetention.ts` applies the policy on a schedule (dry-run by default, `--apply` to execute).
+- **Consent records (spec §6.11)**: applications record the privacy-notice version accepted (`consentNoticeVersion`), acceptance timestamp, and consent choices — not just a boolean. Bump `PRIVACY_NOTICE_VERSION` in `src/lib/validation.ts` when the candidate-facing notice changes materially.
+- **Screening reproducibility (spec §6.5/§7)**: every screening run stores the rubric version, resume version, and a full configuration snapshot (model, scoring rules, per-criterion weights/thresholds) alongside the AI version.
+- **Interviewer assignment (spec §6.8)**: scheduling accepts `interviewerIds` (same-org active staff); assigned interviewers get notifications and can only view/complete scorecards for interviews they are assigned to; reschedule/cancel notify candidates and all participants.
+- **Skill normalization (spec §6.6)**: extracted skills are normalized across common abbreviations and variants (JS→JavaScript, k8s→Kubernetes, postgres→PostgreSQL) while preserving the resume's original wording; exact vs related/transferable vs missing skills are classified separately (`src/lib/skillNormalization.ts`). The canonical taxonomy (`CANONICAL_SKILL_NAMES` / `getSkillTaxonomy()`) is the **single shared skill list**: the screening engine normalizes resume skills through it, and the support copilot renders its skill knowledge from the same table, so the two can never drift apart (pinned by drift-guard tests in `__tests__/skillNormalization.test.ts`).
+- **Configuring email delivery (Brevo or Resend)**:
+  - **Brevo (recommended when you don't own a domain)** — verify a single *sender email address* (e.g. your Gmail) via a confirmation link — no domain or DNS records needed:
+    1. Create an account at [brevo.com](https://brevo.com) (free, 300 emails/day).
+    2. Dashboard → **Senders & IP → Senders → Add sender** — enter your email, click the confirmation link Brevo sends you.
+    3. Create an API key (**SMTP & API → API Keys → Generate**), starts with `xkeysib-`.
+    4. In `.env`: `BREVO_API_KEY="xkeysib-..."` and `EMAIL_FROM="the-sender-you-verified@gmail.com"` (must match the verified sender exactly).
+    5. Restart the app. Emails deliver to *any* recipient up to 300/day.
+  - **Resend** — create a key at [resend.com/api-keys](https://resend.com/api-keys) (`re_...`), set `RESEND_API_KEY` and either verify a domain or use `EMAIL_FROM="onboarding@resend.dev"` (sandbox — delivers only to your own Resend account email).
+  - If both keys are set, Brevo is used. Every send records honest `SENT`/`FAILED` + error detail on its `Communication` row (spec §6.9) — nothing is ever faked.
+- **Email verification is required for new signups (spec §6.1)**: an account cannot sign in until its owner enters the 6-digit verification code emailed at signup (10 minutes, single-use, SHA-256-hashed at rest). The sign-in page offers a resend for unverified accounts and an inline box to paste the code; existing accounts created before this change are grandfathered as verified. Known disposable/throwaway inbox providers are rejected at signup. Apply the migrations `20260912000000_add_email_verified_at` and `20261001000000_add_verification_codes` (`npx prisma migrate dev`) on your next DB connection.
+- **Two-step sign-in (2FA) is required for every account (spec §6.1 hardening)**: step 1 verifies email + password server-side and emails a 6-digit code; step 2 exchanges the pasted code for the session via NextAuth. Codes live 10 minutes, tolerate at most 5 wrong entries, are compared in constant time, and only the hash is stored — a database leak exposes no usable codes. There is no bypass: the credentials provider refuses any sign-in that did not complete both steps (proven by a short-lived MFA ticket plus a database record of the solved code).
+- **RBAC bootstrap — workspace founder becomes Admin**: the first staff signup whose email domain has **no verified workspace** founds a new workspace and becomes its Admin (recorded as the Organization's `primaryOwnerId`), with a DNS TXT challenge pre-seeded for their own email domain. Staff whose email domain **matches a verified workspace** automatically join that workspace as Recruiters — only an Admin can elevate them via the audited team/role endpoint, and the client-supplied role is always ignored server-side. A workspace's identity is its verified email domain (unique across the platform), proven by publishing `recruitai-verify=<token>` at `_recruitai-challenge.<domain>`; display names are cosmetic and never used for routing, so name-squatting gains nothing.
+- **Role permission strings are unified**: DB `Role` rows are created (and legacy rows self-heal) from the single RBAC matrix in `src/lib/roleAccess.ts` via `permissionsForRoleName()` — authorization always consults the matrix, and the stored strings can no longer drift from it.
+- **The compliance reports in `docs/` are point-in-time reviews**, not guarantees; treat the independent report as the source of truth for current gaps.
+
+### Requirements pass 2026-10-09 (spec re-audit)
+
+An independent re-read of the 17-page spec against the code found and closed these gaps:
+
+- **§6.5 screening re-run**: `POST /api/candidates/[id]/screening` queues a screen-only re-run against the current APPROVED rubric (idempotent per active run, audited); the candidate profile shows the full run history so earlier results stay comparable.
+- **§6.5/§6.2 criterion metadata**: the assessor now receives each criterion's category, required flag, minimum threshold, and acceptable-evidence rules; responses must return `sourceLocation` + `interpretation` (new column, migration `20261009000000_criterion_assessment_interpretation`), both persisted per assessment.
+- **§6.6 experience calculation**: `src/lib/experienceCalc.ts` — overlapping roles merged (never double-counted), gaps excluded and reported, partial dates flagged with reduced precision, internships/part-time itemised, undated entries surfaced instead of guessed (10 tests).
+- **§6.7 decision reasons**: forms now load the org's configured reason catalog (`GET /api/decisions/reasons`); the API rejects codes outside the catalog **and** any discriminatory/protected-characteristic reason or justification (admin config guarded too; 7 tests).
+- **§6.1 account suspension/reactivation**: `POST /api/team/status` (Admin-only, audited with old/new status) + Team UI buttons; **and a tenant-leak fix** — the Team directory previously listed users of *every* organization and is now org-scoped.
+- **§6.9 candidate messaging**: compose → **preview/edit** → send on the candidate profile (`POST /api/candidates/[id]/message`) with enforced confidentiality guards (internal-note leakage, "AI made the decision" claims, prompt/model internals — 6 tests); sent messages record honest SENT/FAILED delivery and retry faithfully from the snapshot.
+- **§6.2 rubric editor**: criterion rows now expose **minimum threshold** and **acceptable evidence** (create + edit), category is enforced (server-side fallback), and approving a rubric with zero criteria is refused.
+- **§9 CSP regression (critical, pre-existing)**: the nonce CSP only lived on the response header, so the browser blocked every script and no page hydrated (the sign-in form never rendered in production builds). The nonce is now forwarded on the **request** headers so Next.js stamps its scripts, and the auth pages/landing are rendered dynamically so each request carries its nonce. Also repaired the shared staging audit chain (6 historical hash mismatches, documented reseal) and the ESLint flat-config (plugin declaration) so `npm run lint` runs again: **0 errors**.
+- **Two-step sign-in E2E**: the emailed-code flow now works end-to-end through session issuance in the browser (verify → MFA ticket → `__Secure-` session cookie); remaining E2E item: the final post-sign-in dashboard navigation assertion in `recruiter-workflow.e2e.spec.ts` still needs investigation (network trace shows the session token issued successfully). The code-resend cooldown no longer dead-ends the sign-in UI (it waits out a short cooldown and retries once), and `verify` accepts an already-solved, unexpired code so an interrupted step-2 can resume without weakening single-use against guesses.
+- **§15 deliverable**: `docs/ai-evaluation-set.md` documents the AI evaluation set, per-dimension methodology, and recorded results (226 tests incl. 12 DB-backed integration tests).
+
+---
+
+## Documentation
+
+| Document | Contents |
+| :--- | :--- |
+| [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md) | Architecture, user manual, and operational guide |
+| [`docs/independent-requirements-compliance-report.md`](docs/independent-requirements-compliance-report.md) | Independent spec review (2026-09-06) with per-requirement status and qualifications |
+| [`docs/spec-compliance-verification-2026-09-25.md`](docs/spec-compliance-verification-2026-09-25.md) | Latest full-spec verification (2026-09-25): gaps found, fixes applied, per-section evidence |
+| [`docs/ai-evaluation-set.md`](docs/ai-evaluation-set.md) | AI evaluation set + recorded results (§14/§15): accuracy, evidence, uncertainty, prompt safety, consistency, fairness |
+| [`docs/specification-compliance-report.md`](docs/specification-compliance-report.md) | Author-prepared spec traceability report |
+| [`docs/final-mvp-requirements-report.md`](docs/final-mvp-requirements-report.md) | MVP scope vs delivered features |
+| [`docs/requirements-gap-analysis.md`](docs/requirements-gap-analysis.md) | Gap analysis against the spec |
+| [`docs/api/reference.md`](docs/api/reference.md) | Standing API reference — every endpoint, method, role scope, request/response shape, error conventions (§15 deliverable) |
+| [`scripts/evaluate-fairness.ts`](scripts/evaluate-fairness.ts) | Re-runnable fairness evaluation runner — emits `test-results/fairness-evaluation-*.md` (name-invariance, redaction, proxy-risk, scoring contract) |
+| [`prisma/schema.prisma`](prisma/schema.prisma) | Full database schema (15 models) |
+
+---
+
+## Author
+
+**jospin20** — [jospinshyaka807@gmail.com](mailto:jospinshyaka807@gmail.com) · [GitHub](https://github.com/jospin20)
+
+Built for the CODAFRIQA Intern Project Specification (Version 1.0).
