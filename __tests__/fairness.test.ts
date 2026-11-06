@@ -88,4 +88,19 @@ describe('Fairness: name invariance of screening results (spec §14)', () => {
     expect(redacted).toContain('TypeScript');
     expect(redacted).toContain('PostgreSQL');
   });
+
+  it('redacts proxy-risk identifiers beyond emails and phones', () => {
+    const text = [
+      'Amara Okafor graduated in 2012 from the University of Nairobi, located at 12 Riverside Drive, Nairobi.',
+      'Contact: +250 788 123 456; Email: amara.okafor@example.com',
+      'Interests: running, community leadership, and soccer.'
+    ].join(' ');
+
+    const redacted = redactPII(text);
+    expect(redacted).not.toMatch(/Amara Okafor|Okafor|University of Nairobi|12 Riverside Drive|2012|Nairobi/gi);
+    expect(redacted).toContain('[NAME_REDACTED]');
+    expect(redacted).toContain('[EMAIL_REDACTED]');
+    expect(redacted).toContain('[PHONE_REDACTED]');
+    expect(redacted).toContain('[YEAR_REDACTED]');
+  });
 });
