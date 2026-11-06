@@ -104,41 +104,58 @@ export default function DashboardClient({
   const safeAudits = Array.isArray(recentAudit) ? recentAudit : [];
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
-      {/* Top Header & Sync Action */}
-      <div className="page-header pb-3 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="h-page">{t('nav_dashboard')}</h1>
-            <span className="chip chip-accent">{t('workspace_overview')}</span>
+    <div className="space-y-5 max-w-7xl mx-auto">
+      {/* Branded workspace welcome and primary actions */}
+      <section className="dashboard-hero">
+        <div className="dashboard-hero-content">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="dashboard-hero-mark" aria-hidden="true">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 18V8.5L12 4l8 4.5V18M8 18v-5h8v5M4 9l8 4 8-4" />
+              </svg>
+            </span>
+            <span className="eyebrow">{t('workspace_overview')}</span>
           </div>
-          <p className="page-subtitle mt-0.5">
-            {t('dashboard_subtitle')}
-          </p>
+          <h1 className="dashboard-hero-title">{t('nav_dashboard')}</h1>
+          <p className="dashboard-hero-copy">{t('dashboard_subtitle')}</p>
+
+          <div className="flex flex-wrap items-center gap-2.5 mt-5">
+            <Link href="/candidates" className="btn btn-primary dashboard-hero-primary">
+              {t('btn_review_applications')} <span aria-hidden="true">&rarr;</span>
+            </Link>
+            <button onClick={handleSyncTelemetry} disabled={isSyncing} className="btn btn-secondary dashboard-hero-sync">
+              <svg
+                className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 00-15.357-2m15.357 2H15" />
+              </svg>
+              <span>{isSyncing ? t('loading') : t('realtime_sync')}</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Link href="/candidates" className="btn btn-primary">
-            {t('btn_review_applications')} <span aria-hidden="true">&rarr;</span>
-          </Link>
-          <button onClick={handleSyncTelemetry} disabled={isSyncing} className="btn btn-secondary">
-            <svg
-              className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        <div className="dashboard-hero-art" aria-hidden="true">
+          <div className="dashboard-orbit dashboard-orbit-outer" />
+          <div className="dashboard-orbit dashboard-orbit-inner" />
+          <div className="dashboard-orbit-dot dashboard-orbit-dot-one" />
+          <div className="dashboard-orbit-dot dashboard-orbit-dot-two" />
+          <div className="dashboard-hero-emblem">
+            <svg viewBox="0 0 48 48" fill="none">
+              <path d="M15 8h13l9 9v22H15a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4Z" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M28 8v10h9M18 25h14M18 31h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="m19 18 2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span>{isSyncing ? t('loading') : t('realtime_sync')}</span>
-          </button>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* KPI stat row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)]/40 group">
+        <div className="dashboard-stat glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)]/40 group">
           <div className="flex items-center justify-between">
             <span className="stat-label text-xs font-semibold text-[var(--muted)]">{t('total_candidates')}</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -151,7 +168,7 @@ export default function DashboardClient({
           <span className="stat-hint text-[11px] text-[var(--muted)] mt-1 block font-medium">{t('kpi_across_jobs')}</span>
         </div>
 
-        <div className="glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40 group">
+        <div className="dashboard-stat glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40 group">
           <div className="flex items-center justify-between">
             <span className="stat-label text-xs font-semibold text-[var(--muted)]">{t('open_requisitions')}</span>
             <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -164,7 +181,7 @@ export default function DashboardClient({
           <span className="stat-hint text-[11px] text-[var(--muted)] mt-1 block font-medium">{t('kpi_active_rubrics')}</span>
         </div>
 
-        <div className="glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 group">
+        <div className="dashboard-stat glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 group">
           <div className="flex items-center justify-between">
             <span className="stat-label text-xs font-semibold text-[var(--muted)]">{t('kpi_shortlisted_pool')}</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -177,7 +194,7 @@ export default function DashboardClient({
           <span className="stat-hint text-[11px] text-[var(--muted)] mt-1 block font-medium">{t('kpi_passed_threshold')}</span>
         </div>
 
-        <div className="glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 group">
+        <div className="dashboard-stat glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 group">
           <div className="flex items-center justify-between">
             <span className="stat-label text-xs font-semibold text-[var(--muted)]">{t('active_audits')}</span>
             <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
