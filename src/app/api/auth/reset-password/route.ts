@@ -49,12 +49,13 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Atomic: mark token used only while setting the password, so a token
-    // cannot be replayed between the check above and this write.
+    // Atomic: set password + stamp passwordChangedAt (session-revocation
+    // marker) + consume the token. A token cannot be replayed between the
+    // check above and this write.
     const [, ] = await prisma.$transaction([
       prisma.user.update({
         where: { id: record.userId },
-        data: { passwordHash },
+        data: { passwordHash, passwordChangedAt: new Date() },
       }),
       prisma.passwordResetToken.update({
         where: { tokenHash },
@@ -67,7 +68,8 @@ export async function POST(req: Request) {
       actorId: record.userId,
       organizationId: record.user.organizationId,
       affectedRecordId: record.userId,
-      newValues: { via: 'password-reset-token' },
+      previousValues: { passwordChangedAt: record.user.passwordChangedAt?.toISOString() ?? null },
+      newValues: { via: 'password-reset-token', passwordChangedAt: new Date().toISOString() },
     });
 
     return NextResponse.json({ success: true });
