@@ -64,7 +64,9 @@ export async function GET(
       return {
         candidateId: app.candidate.id,
         applicationId: app.id,
-        candidateName: `${app.candidate.firstName} ${app.candidate.lastName}`,
+        candidateName: app.candidate.firstName && app.candidate.lastName
+          ? `${app.candidate.firstName} ${app.candidate.lastName}`
+          : undefined,
         candidateEmail: app.candidate.email,
         originalJob: app.job.title,
         matchScore: pastScore,
