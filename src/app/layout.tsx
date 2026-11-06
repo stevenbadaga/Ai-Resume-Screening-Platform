@@ -1,17 +1,11 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
-import Navigation from '@/components/Navigation';
-import UserNav from '@/components/UserNav';
-import NotificationBell from '@/components/NotificationBell';
+import AppShell from '@/components/AppShell';
 import Providers from '@/components/Providers';
-import { ThemeProvider, ThemeToggle } from '@/components/ThemeProvider';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { ToastProvider } from '@/components/Toast';
 import { LanguageProvider } from '@/lib/i18n/LanguageContext';
-import LanguageSelector from '@/components/LanguageSelector';
-const SupportWidget = dynamic(() => import('@/components/SupportWidget'));
-const CommandPalette = dynamic(() => import('@/components/CommandPalette'));
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -31,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={jakarta.variable} suppressHydrationWarning>
-      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans text-xs">
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans text-sm">
         {/* §9 Accessibility: keyboard users can jump past the navigation */}
         <a
           href="#main-content"
@@ -43,41 +37,7 @@ export default function RootLayout({
           <ThemeProvider>
             <LanguageProvider>
               <ToastProvider>
-                <div className="flex h-screen overflow-hidden">
-                  {/* Sidebar Navigation */}
-                  <Navigation />
-
-                  {/* Main Content Area */}
-                  <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    {/* Top Application Header */}
-                    <header className="h-12 shrink-0 bg-[var(--surface)]/75 backdrop-blur-xl backdrop-saturate-150 border-b border-[var(--border)] flex items-center justify-between px-3 sm:px-4 z-20">
-                      {/* Global Search & Command Trigger */}
-                      <div className="flex-1 max-w-sm mx-4 hidden md:block">
-                        <CommandPalette />
-                      </div>
-
-                      {/* Header Actions */}
-                      <div className="flex items-center gap-2">
-                        <LanguageSelector />
-                        <ThemeToggle />
-                        <NotificationBell />
-                        <div className="h-4 w-px bg-[var(--border)] mx-0.5" />
-                        <UserNav />
-                      </div>
-                    </header>
-
-                    {/* Scrollable Page Body */}
-                    <main
-                      id="main-content"
-                      className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-7 [contain:content]"
-                    >
-                      {children}
-                    </main>
-                  </div>
-                </div>
-
-                {/* Floating AI Copilot & Help Widget */}
-                <SupportWidget />
+                <AppShell>{children}</AppShell>
               </ToastProvider>
             </LanguageProvider>
           </ThemeProvider>
