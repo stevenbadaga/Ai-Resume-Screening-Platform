@@ -9,52 +9,81 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      # Serve only behind a host TLS reverse proxy; do not expose plain HTTP.
+      - "127.0.0.1:3000:3000"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
       - DIRECT_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
       - REDIS_URL=redis://redis:6379
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:?Set NEXTAUTH_URL to the public application origin}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?Set NEXTAUTH_SECRET in .env (generate with: openssl rand -base64 32)}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - BREVO_API_KEY=${BREVO_API_KEY:-}
+      - GMAIL_USER=${GMAIL_USER:-}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
       - EMAIL_FROM=${EMAIL_FROM:-}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - SUPABASE_RESUME_BUCKET=${SUPABASE_RESUME_BUCKET:-resumes}
       - SENTRY_DSN=${SENTRY_DSN:-}
       - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-}
-      - CLAMAV_HOST=${CLAMAV_HOST:-}
+      # Compose enables the scanner by default; the scanner fails closed if unavailable.
+      - CLAMAV_HOST=${CLAMAV_HOST:-clamav}
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      clamav:
         condition: service_started
-    command: sh -c "npx prisma migrate deploy && node server.js"
+      migrate:
+        condition: service_completed_successfully
+    command: ["node", "server.js"]
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   worker:
     build:
       context: .
       dockerfile: Dockerfile
+      target: worker
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-recruitai}
       - REDIS_URL=redis://redis:6379
-      - OPENAI_API_KEY=${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - SUPABASE_RESUME_BUCKET=${SUPABASE_RESUME_BUCKET:-resumes}
       - SENTRY_DSN=${SENTRY_DSN:-}
       - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-}
-      - CLAMAV_HOST=${CLAMAV_HOST:-}
+      - CLAMAV_HOST=${CLAMAV_HOST:-clamav}
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      clamav:
         condition: service_started
-    # The worker script must be executed
-    # Notice: In a standalone build, server.js runs the web server.
-    # To run the worker in production, we execute the tsx/node script.
-    # For robust production, it's compiled or run via node.
-    command: npx tsx src/lib/worker.ts
+      migrate:
+        condition: service_completed_successfully
 
   db:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
@@ -66,22 +95,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
 
-  # Optional document malware scanner (spec §6.4). The app enables ClamAV
-  # scanning by setting CLAMAV_HOST=clamav in .env; remove the variable to run
-  # signature-only scanning.
+  # Document malware scanner (spec §6.4). It is enabled by default for the
+  # Compose deployment. Do not publish the daemon port outside the private
+  # Compose network.
   clamav:
     image: clamav/clamav:latest
     restart: unless-stopped
-    ports:
-      - "3310:3310"
 
 volumes:
   pgdata:
