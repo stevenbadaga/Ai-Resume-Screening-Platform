@@ -177,7 +177,9 @@ export async function POST(
       newValues: {
         recommendation: data.recommendation,
         ratings: { tech: data.techRating, comm: data.commRating, problem: data.problemRating },
-        candidateName: `${application.candidate.firstName} ${application.candidate.lastName}`,
+        candidateName: application.candidate.firstName && application.candidate.lastName
+          ? `${application.candidate.firstName} ${application.candidate.lastName}`
+          : undefined,
         jobTitle: application.job.title
       }
     });
