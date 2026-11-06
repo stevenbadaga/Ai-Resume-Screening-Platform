@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type OpenAI from 'openai';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import {
   RECRUIT_AI_SYSTEM_PROMPT,
 } from '@/lib/supportKnowledge';
