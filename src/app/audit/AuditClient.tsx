@@ -12,20 +12,29 @@ interface PaginationInfo {
 
 interface AuditClientProps {
   events: any[];
-  filters?: { actor: string; action: string; from: string; to: string };
+  filters?: { actor: string; action: string; record: string; from: string; to: string };
   pagination?: PaginationInfo;
+  // §6.12: resolution result of the record search, shown so the operator can
+  // see how the searched id was interpreted before trusting the result set.
+  recordScope?: { type: string; matchCount: number };
 }
 
-export default function AuditClient({ events, filters = { actor: '', action: '', from: '', to: '' }, pagination }: AuditClientProps) {
+export default function AuditClient({
+  events,
+  filters = { actor: '', action: '', record: '', from: '', to: '' },
+  pagination,
+  recordScope,
+}: AuditClientProps) {
   const { t } = useLanguage();
   const router = useRouter();
 
-  // Spec §6.12: search the audit log by user, action type, and date range.
+  // Spec §6.12: search the audit log by user, candidate, application, job,
+  // action type, and date range.
   const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const params = new URLSearchParams();
-    for (const key of ['actor', 'action', 'from', 'to'] as const) {
+    for (const key of ['actor', 'action', 'record', 'from', 'to'] as const) {
       const value = String(form.get(key) ?? '').trim();
       if (value) params.set(key, value);
     }
@@ -98,6 +107,14 @@ export default function AuditClient({ events, filters = { actor: '', action: '',
             className={`${inputClass} w-40`}
           />
           <input
+            type="search"
+            name="record"
+            defaultValue={filters.record}
+            placeholder={t('audit_search_record')}
+            aria-label={t('audit_search_record_aria')}
+            className={`${inputClass} w-56 font-mono`}
+          />
+          <input
             type="date"
             name="from"
             defaultValue={filters.from}
@@ -117,7 +134,7 @@ export default function AuditClient({ events, filters = { actor: '', action: '',
           >
             {t('btn_search')}
           </button>
-          {filters.actor || filters.action || filters.from || filters.to ? (
+          {filters.actor || filters.action || filters.record || filters.from || filters.to ? (
             <button
               type="button"
               onClick={() => router.push('/audit')}
@@ -128,6 +145,22 @@ export default function AuditClient({ events, filters = { actor: '', action: '',
           ) : null}
         </form>
       </div>
+
+      {filters.record && recordScope ? (
+        <div
+          className={`px-3 py-1.5 text-[11px] font-mono rounded-lg border ${
+            recordScope.matchCount > 0
+              ? 'dark:bg-emerald-950/40 bg-emerald-50 dark:text-emerald-300 text-emerald-800 dark:border-emerald-800/60 border-emerald-200'
+              : 'dark:bg-rose-950/40 bg-rose-50 dark:text-rose-300 text-rose-700 dark:border-rose-800/60 border-rose-200'
+          }`}
+          role="status"
+        >
+          {t('audit_record_scope_badge')
+            .replace('{type}', recordScope.type)
+            .replace('{count}', String(recordScope.matchCount))}
+          {recordScope.matchCount === 0 ? ' — no matching events' : ''}
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-end">
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#17242B] bg-white border dark:border-[#30424A] border-slate-200 text-[11px] font-mono text-emerald-500 font-medium shadow-xs">
