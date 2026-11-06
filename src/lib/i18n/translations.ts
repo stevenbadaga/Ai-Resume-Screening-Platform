@@ -335,6 +335,7 @@ export interface TranslationDictionary {
 
   // Nav extras
   nav_settings: string;
+  nav_system_health: string;
   active_role: string;
   brand_tagline: string;
 
@@ -565,6 +566,12 @@ export interface TranslationDictionary {
   audit_search_actor_aria: string;
   audit_search_action: string;
   audit_search_action_aria: string;
+  filter_show_archived: string;
+  cprofile_archive_btn: string;
+  cprofile_restore_btn: string;
+  cprofile_archived_badge: string;
+  audit_search_record_aria: string;
+  audit_record_scope_badge: string;
   audit_from_date: string;
   audit_from_date_aria: string;
   audit_to_date: string;
@@ -1194,6 +1201,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_candidate_desc: 'Job Applicant: Application tracking, job directory & GDPR self-service privacy.',
 
     nav_settings: 'Workspace Settings',
+    nav_system_health: 'Workspace Settings Health',
     active_role: 'Active Role:',
     brand_tagline: 'Enterprise ATS',
 
@@ -1410,6 +1418,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     audit_search_actor_aria: 'Search audit log by actor email',
     audit_search_action: 'Action e.g. DECISION',
     audit_search_action_aria: 'Search audit log by action',
+    filter_show_archived: 'Show archived applications',
+    cprofile_archive_btn: 'Archive candidate',
+    cprofile_restore_btn: 'Restore from archive',
+    cprofile_archived_badge: 'Archived',
+    audit_search_record_aria: 'Search audit log by candidate, application, or job ID',
+    audit_record_scope_badge: 'Scope: {type} ({count} linked records)',
     audit_from_date: 'From date',
     audit_from_date_aria: 'From date',
     audit_to_date: 'To date',
@@ -2025,6 +2039,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_candidate_desc: 'Postulant : suivi des candidatures, offres et libre-service RGPD.',
 
     nav_settings: 'Paramètres de l’espace',
+    nav_system_health: 'Paramètres de l’espace Health',
     active_role: 'Rôle actif :',
     brand_tagline: 'ATS Entreprise',
 
@@ -2241,6 +2256,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     audit_search_actor_aria: 'Rechercher le journal par e-mail de l’acteur',
     audit_search_action: 'Action ex. DECISION',
     audit_search_action_aria: 'Rechercher le journal par action',
+    filter_show_archived: 'Afficher les candidatures archivées',
+    cprofile_archive_btn: 'Archiver le candidat',
+    cprofile_restore_btn: 'Restaurer des archives',
+    cprofile_archived_badge: 'Archivé',
+    audit_search_record_aria: 'Rechercher le journal par ID de candidat, candidature ou poste',
+    audit_record_scope_badge: 'Périmètre : {type} ({count} enregistrements liés)',
     audit_from_date: 'Date de début',
     audit_from_date_aria: 'Date de début',
     audit_to_date: 'Date de fin',
@@ -2856,6 +2877,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_candidate_desc: 'Postulante: seguimiento de solicitudes, directorio de empleos y autoservicio RGPD.',
 
     nav_settings: 'Configuración del espacio',
+    nav_system_health: 'Configuración del espacio Health',
     active_role: 'Rol activo:',
     brand_tagline: 'ATS Empresarial',
 
@@ -3072,6 +3094,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     audit_search_actor_aria: 'Buscar en el registro por correo del actor',
     audit_search_action: 'Acción p. ej. DECISION',
     audit_search_action_aria: 'Buscar en el registro por acción',
+    filter_show_archived: 'Mostrar solicitudes archivadas',
+    cprofile_archive_btn: 'Archivar candidato',
+    cprofile_restore_btn: 'Restaurar del archivo',
+    cprofile_archived_badge: 'Archivado',
+    audit_search_record_aria: 'Buscar en el registro por ID de candidato, solicitud o puesto',
+    audit_record_scope_badge: 'Alcance: {type} ({count} registros vinculados)',
     audit_from_date: 'Desde',
     audit_from_date_aria: 'Fecha inicial',
     audit_to_date: 'Hasta',
@@ -3687,6 +3715,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_candidate_desc: 'Bewerber: Bewerbungsverfolgung, Stellenverzeichnis und DSGVO-Selbstservice.',
 
     nav_settings: 'Arbeitsbereich-Einstellungen',
+    nav_system_health: 'Arbeitsbereich-Einstellungen Health',
     active_role: 'Aktive Rolle:',
     brand_tagline: 'Enterprise-ATS',
 
@@ -3903,6 +3932,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     audit_search_actor_aria: 'Audit-Log nach Actor-E-Mail durchsuchen',
     audit_search_action: 'Aktion z. B. DECISION',
     audit_search_action_aria: 'Audit-Log nach Aktion durchsuchen',
+    filter_show_archived: 'Archivierte Bewerbungen anzeigen',
+    cprofile_archive_btn: 'Kandidat archivieren',
+    cprofile_restore_btn: 'Aus dem Archiv wiederherstellen',
+    cprofile_archived_badge: 'Archiviert',
+    audit_search_record_aria: 'Audit-Log nach Kandidaten-, Bewerbungs- oder Stellen-ID durchsuchen',
+    audit_record_scope_badge: 'Bereich: {type} ({count} verknüpfte Datensätze)',
     audit_from_date: 'Von-Datum',
     audit_from_date_aria: 'Von-Datum',
     audit_to_date: 'Bis-Datum',
@@ -4215,17 +4250,17 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     nav_quick_apply: 'Reba Imyanya Ihari',
     nav_profile: 'Umwirondoro wanjye',
     profile_title: 'Umwirondoro wanjye',
-    profile_subtitle: 'Konti yawe, CV yawe nuko ujyira abakora akazi',
-    profile_saved_cv: 'CV ibitswe',
-    profile_no_cv: 'Nta CV ibitswe na none — shyiramo imwe kugira ngo usabe akazi ukanze rimwe.',
+    profile_subtitle: 'Konti yawe, CV yawe nuko ugaragarira abakoresha',
+    profile_saved_cv: 'CV yabitswe',
+    profile_no_cv: 'Nta CV yabitswe — shyiramo CV kugira ngo usabe akazi ukanze rimwe.',
     profile_upload_cv: 'Shyiraho CV',
     profile_replace_cv: 'Kora CV nshya',
     profile_remove_cv: 'Kuraho',
-    profile_one_click_hint: 'CV ibitswe ikoreshwa mu kusaba akazi ukanda rimwe. Buri gusaba kigira isuzuma ryaryo.',
+    profile_one_click_hint: 'CV ibitswe ikoreshwa mu gusaba akazi ukanze rimwe. Buri saba rigira isuzuma ryaryo.',
     profile_skills: 'Ubuhanga',
     profile_experience: "Incamake y'uburambe",
     profile_save: 'Bika umwirondoro',
-    profile_saved: 'Umwirondoro byabitswe',
+    profile_saved: 'Umwirondoro wabitswe',
 
     search_placeholder: 'Shakisha abakandida, akazi, igenzura...',
     notifications: 'Amatangazo',
@@ -4279,7 +4314,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     eval_title: 'Isuzuma ry’Umukandida',
     ocr_stream: 'Inyandiko Yakuwe muri CV',
     parsed_resume_doc: 'Impapuro z’Uburambe Zasesenguwe',
-    explainable_score: 'Amanota Asomwa neza',
+    explainable_score: 'Amanota Asobanuwe neza',
     deterministic_match: 'Isuzuma rishingiye ku bipimo nyabyo',
     overridden_badge: 'Yakosowe n’Umuntu',
     scored_criteria: 'Ibipimo Byasuzumwe',
@@ -4337,8 +4372,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     scorecard_modal_title: 'Tanga Amanota y’Ikizamini',
     scorecard_tech_rating: 'Ubumenyi mu Bya Tekiniki (1-5)',
     scorecard_comm_rating: 'Itumanaho n’Imikoranire (1-5)',
-    scorecard_problem_rating: 'Gukemura Ibibazo (1-5)',
-    scorecard_recommendation: 'Icyo Umusabiye',
+    scorecard_problem_rating: "Gukemura Ibibazo no gusesengura (1-5)",
+    scorecard_recommendation: ' Umusabiye',
     scorecard_notes: 'Ibyo Umunyamakuru Yabonye',
     scorecard_submit_btn: 'Bika Ikarita y’Amanota',
     scorecards_submitted_heading: 'Amanota y’Ibizamini Yatanzwe',
@@ -4349,7 +4384,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
 
     cprofile_status_label: 'Imiterere',
     cprofile_no_resume_text: 'Nta CV yanditse mu nyandiko isanzwe yisuzumwe muri iyi sagutanwa.',
-    cprofile_summary_fallback: 'Isuzuma rufasha rwa AI ryagereranijwe n’ibipimo byemewe byo gutanga akazi.',
+    cprofile_summary_fallback: 'Ifasha suzuma rya AI ryagereranijwe n’ibipimo byemewe byo gutanga akazi.',
     cprofile_active_badge: 'GIKORA',
     cprofile_interviewer_fallback: 'Ukora ikizamini',
     cprofile_scorecard_you: 'Uwe (uwakoresha ubu)',
@@ -4511,16 +4546,16 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     sign_in: 'Injira',
     session_enforced: 'Uburenganzira bwa role bugenzurwa bukaze.',
     role_admin_desc: 'Umuyobozi mukuru wa sisitemu: iteganyagaruka, pipeline y’abakandida n’imicungire y’abakozi.',
-    role_recruiter_desc: 'Umushinzwe gushakisha: pipeline ya ATS, guhindura amanota no gutanga amasezerano.',
+    role_recruiter_desc: 'Ushinzwe gushakisha: pipeline ya ATS, guhindura amanota no gutanga amasezerano.',
     role_hiring_manager_desc: 'Umuyobozi w’ishami: kureba abakandida b’ishami, imipaka n’iteganywa ry’ibizamini.',
     role_interviewer_desc: 'Usuzuma mu buryo bw’imikorere: gusuzuma abakandida, ibibazo no gutanga amanota.',
     role_auditor_desc: 'Umugenzuzi w’ibikorwa: kureba gusa amateka y’igenzura adashobora guhindurwa.',
     role_candidate_desc: 'Umukandida: gukurikirana ubusabe, reba imyanya n’ubwisanzure bwa RGPD.',
 
     nav_settings: 'Igenamiterere ry’urubuga',
+    nav_system_health: 'Igenamiterere ry’urubuga Health',
     active_role: 'Role ikora:',
-    brand_tagline: 'ATS ya Kigo',
-
+    brand_tagline: " ",
     workspace_overview: 'Ishusho rusange',
     btn_review_applications: 'Suzuma ubusabe',
     kpi_across_jobs: 'Ku myanya ikora',
@@ -4734,6 +4769,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     audit_search_actor_aria: 'Shakisha iteka kuri imeri y’uwakoze',
     audit_search_action: 'Ikorwa urugero DECISION',
     audit_search_action_aria: 'Shakisha iteka kuri ikikorwa',
+    filter_show_archived: 'Erekana ibikorerwa byihishijwe',
+    cprofile_archive_btn: 'Bika kandida mu bihisho',
+    cprofile_restore_btn: 'Kugarura bifura mu bihisho',
+    cprofile_archived_badge: 'Yihishojwe',
+    audit_search_record_aria: 'Shakisha ikobooko kuri ID ya kandida, ikipe, cyangwa kuwa',
+    audit_record_scope_badge: 'Umwanya: {type} ({count} amateka yahuje)',
     audit_from_date: 'Itariki y’itangiriro',
     audit_from_date_aria: 'Itariki y’itangiriro',
     audit_to_date: 'Itariki y’impera',
