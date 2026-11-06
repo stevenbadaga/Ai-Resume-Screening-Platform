@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { SupportedLanguage } from '@/lib/i18n/translations';
@@ -39,72 +39,199 @@ const SIGNUP_COPY: Record<SupportedLanguage, {
   rateLimitError: string;
   mailDomainError: string;
   disposableEmailError: string;
-}>
- = {
+  loadingText: string;
+}> = {
   en: {
-    title: 'Create your RecruitAI account', subtitle: 'Choose your workspace access to get started.', applicant: 'Job applicant', worker: 'Company staff',
-    candidateHeading: 'Candidate workspace', workerHeading: 'Recruiting workspace', candidateDescription: 'Apply for open positions, upload your CV, and track application status.', workerDescription: 'Review candidates, manage requisitions, and collaborate with your hiring team.',
-    company: 'Company or organization', companyPlaceholder: 'e.g. Codafriqa Tech Corp', role: 'Workspace role', firstName: 'First name', lastName: 'Last name', email: 'Email address', workEmail: 'Work email address', password: 'Password', passwordHint: 'Minimum 8 characters', create: 'Create account', creating: 'Creating account...', registerCandidate: 'Create applicant account', registerWorker: 'Join as', alreadyHaveAccount: 'Already have an account?', signIn: 'Sign in',    requiredError: 'Title and name fields are required.', failedError: 'Failed to create account.', registrationError: 'Registration failed. Please try again.',
-    staffRoleNote: 'Founding a new organization? You become its Admin. Joining an existing workspace? You start as a Recruiter — that workspace\'s Admin can adjust your role later.',
+    title: 'Create your RecruitAI account',
+    subtitle: 'Choose your workspace access to get started.',
+    applicant: 'Job applicant',
+    worker: 'Company staff',
+    candidateHeading: 'Candidate workspace',
+    workerHeading: 'Recruiting workspace',
+    candidateDescription: 'Apply for open positions, upload your CV, and track application status.',
+    workerDescription: 'Review candidates, manage requisitions, and collaborate with your hiring team.',
+    company: 'Company or organization',
+    companyPlaceholder: 'e.g. Codafriqa Tech Corp',
+    role: 'Workspace role',
+    firstName: 'First name',
+    lastName: 'Last name',
+    email: 'Email address',
+    workEmail: 'Work email address',
+    password: 'Password',
+    passwordHint: 'Minimum 8 characters',
+    create: 'Create account',
+    creating: 'Creating account...',
+    registerCandidate: 'Create applicant account',
+    registerWorker: 'Join as company staff',
+    alreadyHaveAccount: 'Already have an account?',
+    signIn: 'Sign in',
+    requiredError: 'Company and name fields are required.',
+    failedError: 'Failed to create account.',
+    registrationError: 'Registration failed. Please try again.',
+    staffRoleNote: "Founding a new organization? You become its Admin. Joining an existing workspace? You start as a Recruiter — that workspace's Admin can adjust your role later.",
     emailInvalidError: "That email address doesn't look valid. Check it for typos — a missing '@', stray spaces, or an incomplete domain — then try again.",
     emailExistsError: 'An account with this email already exists. Sign in instead — you can request a new verification code there.',
     rateLimitError: 'Too many attempts. Please wait a minute and try again.',
     mailDomainError: 'This email domain cannot receive mail. Check the address for typos.',
     disposableEmailError: 'Disposable email addresses are not allowed. Please use a permanent email address.',
+    loadingText: 'Loading…',
   },
   fr: {
-    title: 'Créer votre compte RecruitAI', subtitle: 'Choisissez votre accès à l’espace de travail pour commencer.', applicant: 'Candidat', worker: 'Personnel de l’entreprise',
-    candidateHeading: 'Espace candidat', workerHeading: 'Espace recrutement', candidateDescription: 'Postulez aux postes ouverts, téléversez votre CV et suivez vos candidatures.', workerDescription: 'Évaluez les candidats, gérez les postes et collaborez avec votre équipe.',
-    company: 'Entreprise ou organisation', companyPlaceholder: 'ex. Codafriqa Tech Corp', role: 'Rôle dans l’espace', firstName: 'Prénom', lastName: 'Nom', email: 'Adresse e-mail', workEmail: 'Adresse e-mail professionnelle', password: 'Mot de passe', passwordHint: '8 caractères minimum', create: 'Créer le compte', creating: 'Création du compte...', registerCandidate: 'Créer un compte candidat', registerWorker: 'Rejoindre comme', alreadyHaveAccount: 'Vous avez déjà un compte ?', signIn: 'Se connecter',    requiredError: 'Le titre et le nom sont requis.', failedError: 'Impossible de créer le compte.', registrationError: 'Échec de l’inscription. Réessayez.',
+    title: 'Créer votre compte RecruitAI',
+    subtitle: 'Choisissez votre accès à l’espace de travail pour commencer.',
+    applicant: 'Candidat',
+    worker: 'Personnel de l’entreprise',
+    candidateHeading: 'Espace candidat',
+    workerHeading: 'Espace recrutement',
+    candidateDescription: 'Postulez aux postes ouverts, téléversez votre CV et suivez vos candidatures.',
+    workerDescription: 'Évaluez les candidats, gérez les postes et collaborez avec votre équipe.',
+    company: 'Entreprise ou organisation',
+    companyPlaceholder: 'ex. Codafriqa Tech Corp',
+    role: 'Rôle dans l’espace',
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    email: 'Adresse e-mail',
+    workEmail: 'Adresse e-mail professionnelle',
+    password: 'Mot de passe',
+    passwordHint: '8 caractères minimum',
+    create: 'Créer le compte',
+    creating: 'Création du compte...',
+    registerCandidate: 'Créer un compte candidat',
+    registerWorker: 'Rejoindre comme personnel',
+    alreadyHaveAccount: 'Vous avez déjà un compte ?',
+    signIn: 'Se connecter',
+    requiredError: 'Le nom de l’entreprise et les noms sont requis.',
+    failedError: 'Impossible de créer le compte.',
+    registrationError: 'Échec de l’inscription. Réessayez.',
     staffRoleNote: 'Vous créez une nouvelle organisation ? Vous en devenez l’administrateur. Vous rejoignez un espace existant ? Vous commencez comme recruteur — l’administrateur peut ajuster votre rôle plus tard.',
     emailInvalidError: "Cette adresse e-mail ne semble pas valide. Vérifiez l'absence de fautes de frappe — un « @ » manquant, des espaces ou un domaine incomplet — puis réessayez.",
     emailExistsError: 'Un compte avec cette adresse e-mail existe déjà. Connectez-vous — vous pourrez y demander un nouveau code de vérification.',
     rateLimitError: 'Trop de tentatives. Veuillez patienter une minute et réessayer.',
     mailDomainError: 'Ce domaine e-mail ne peut pas recevoir de messages. Vérifiez l’adresse pour des fautes de frappe.',
     disposableEmailError: 'Les adresses e-mail jetables ne sont pas autorisées. Veuillez utiliser une adresse permanente.',
+    loadingText: 'Chargement…',
   },
   es: {
-    title: 'Crea tu cuenta de RecruitAI', subtitle: 'Elige tu acceso al espacio de trabajo para comenzar.', applicant: 'Candidato', worker: 'Personal de la empresa',
-    candidateHeading: 'Espacio del candidato', workerHeading: 'Espacio de selección', candidateDescription: 'Postúlate a puestos abiertos, sube tu CV y sigue el estado de tus solicitudes.', workerDescription: 'Evalúa candidatos, gestiona vacantes y colabora con tu equipo.',
-    company: 'Empresa u organización', companyPlaceholder: 'p. ej. Codafriqa Tech Corp', role: 'Rol en el espacio', firstName: 'Nombre', lastName: 'Apellidos', email: 'Correo electrónico', workEmail: 'Correo profesional', password: 'Contraseña', passwordHint: 'Mínimo 8 caracteres', create: 'Crear cuenta', creating: 'Creando cuenta...', registerCandidate: 'Crear cuenta de candidato', registerWorker: 'Unirse como', alreadyHaveAccount: '¿Ya tienes una cuenta?', signIn: 'Iniciar sesión',    requiredError: 'El nombre y el título son obligatorios.', failedError: 'No se pudo crear la cuenta.', registrationError: 'No se pudo completar el registro. Inténtalo de nuevo.',
+    title: 'Crea tu cuenta de RecruitAI',
+    subtitle: 'Elige tu acceso al espacio de trabajo para comenzar.',
+    applicant: 'Candidato',
+    worker: 'Personal de la empresa',
+    candidateHeading: 'Espacio del candidato',
+    workerHeading: 'Espacio de selección',
+    candidateDescription: 'Postúlate a puestos abiertos, sube tu CV y sigue el estado de tus solicitudes.',
+    workerDescription: 'Evalúa candidatos, gestiona vacantes y colabora con tu equipo.',
+    company: 'Empresa u organización',
+    companyPlaceholder: 'p. ej. Codafriqa Tech Corp',
+    role: 'Rol en el espacio',
+    firstName: 'Nombre',
+    lastName: 'Apellidos',
+    email: 'Correo electrónico',
+    workEmail: 'Correo profesional',
+    password: 'Contraseña',
+    passwordHint: 'Mínimo 8 caracteres',
+    create: 'Crear cuenta',
+    creating: 'Creando cuenta...',
+    registerCandidate: 'Crear cuenta de candidato',
+    registerWorker: 'Unirse como personal',
+    alreadyHaveAccount: '¿Ya tienes una cuenta?',
+    signIn: 'Iniciar sesión',
+    requiredError: 'La empresa y los nombres son obligatorios.',
+    failedError: 'No se pudo crear la cuenta.',
+    registrationError: 'No se pudo completar el registro. Inténtalo de nuevo.',
     staffRoleNote: '¿Crea una nueva organización? Será su administrador. ¿Se une a un espacio existente? Empieza como reclutador; el administrador puede ajustar su rol después.',
     emailInvalidError: 'Esa dirección de correo no parece válida. Revise si hay errores tipográficos — una «@» ausente, espacios o un dominio incompleto — e inténtelo de nuevo.',
     emailExistsError: 'Ya existe una cuenta con este correo. Inicie sesión — allí puede solicitar un nuevo código de verificación.',
     rateLimitError: 'Demasiados intentos. Espere un minuto e inténtelo de nuevo.',
     mailDomainError: 'Este dominio de correo no puede recibir mensajes. Revise la dirección por errores tipográficos.',
     disposableEmailError: 'No se permiten direcciones de correo desechables. Use una dirección permanente.',
+    loadingText: 'Cargando…',
   },
   de: {
-    title: 'RecruitAI-Konto erstellen', subtitle: 'Wählen Sie Ihren Arbeitsbereich-Zugang, um zu beginnen.', applicant: 'Bewerber', worker: 'Mitarbeiter',
-    candidateHeading: 'Bewerberbereich', workerHeading: 'Recruiting-Arbeitsbereich', candidateDescription: 'Bewerben Sie sich, laden Sie Ihren Lebenslauf hoch und verfolgen Sie Ihre Bewerbungen.', workerDescription: 'Prüfen Sie Kandidaten, verwalten Sie Stellen und arbeiten Sie mit Ihrem Team zusammen.',
-    company: 'Unternehmen oder Organisation', companyPlaceholder: 'z. B. Codafriqa Tech Corp', role: 'Arbeitsbereichsrolle', firstName: 'Vorname', lastName: 'Nachname', email: 'E-Mail-Adresse', workEmail: 'Geschäftliche E-Mail-Adresse', password: 'Passwort', passwordHint: 'Mindestens 8 Zeichen', create: 'Konto erstellen', creating: 'Konto wird erstellt...', registerCandidate: 'Bewerberkonto erstellen', registerWorker: 'Beitreten als', alreadyHaveAccount: 'Sie haben bereits ein Konto?', signIn: 'Anmelden',    requiredError: 'Titel und Name sind erforderlich.', failedError: 'Konto konnte nicht erstellt werden.', registrationError: 'Registrierung fehlgeschlagen. Bitte erneut versuchen.',
+    title: 'RecruitAI-Konto erstellen',
+    subtitle: 'Wählen Sie Ihren Arbeitsbereich-Zugang, um zu beginnen.',
+    applicant: 'Bewerber',
+    worker: 'Mitarbeiter',
+    candidateHeading: 'Bewerberbereich',
+    workerHeading: 'Recruiting-Arbeitsbereich',
+    candidateDescription: 'Bewerben Sie sich, laden Sie Ihren Lebenslauf hoch und verfolgen Sie Ihre Bewerbungen.',
+    workerDescription: 'Prüfen Sie Kandidaten, verwalten Sie Stellen und arbeiten Sie mit Ihrem Team zusammen.',
+    company: 'Unternehmen oder Organisation',
+    companyPlaceholder: 'z. B. Codafriqa Tech Corp',
+    role: 'Arbeitsbereichsrolle',
+    firstName: 'Vorname',
+    lastName: 'Nachname',
+    email: 'E-Mail-Adresse',
+    workEmail: 'Geschäftliche E-Mail-Adresse',
+    password: 'Passwort',
+    passwordHint: 'Mindestens 8 Zeichen',
+    create: 'Konto erstellen',
+    creating: 'Konto wird erstellt...',
+    registerCandidate: 'Bewerberkonto erstellen',
+    registerWorker: 'Als Mitarbeiter beitreten',
+    alreadyHaveAccount: 'Sie haben bereits ein Konto?',
+    signIn: 'Anmelden',
+    requiredError: 'Unternehmen und Namen sind erforderlich.',
+    failedError: 'Konto konnte nicht erstellt werden.',
+    registrationError: 'Registrierung fehlgeschlagen. Bitte erneut versuchen.',
     staffRoleNote: 'Neue Organisation? Sie werden deren Admin. Treten Sie einem bestehenden Arbeitsbereich bei? Sie starten als Recruiter — der Admin kann Ihre Rolle später anpassen.',
     emailInvalidError: 'Diese E-Mail-Adresse scheint nicht gültig zu sein. Prüfen Sie auf Tippfehler — fehlendes „@", Leerzeichen oder eine unvollständige Domain — und versuchen Sie es erneut.',
     emailExistsError: 'Ein Konto mit dieser E-Mail-Adresse existiert bereits. Melden Sie sich an — dort können Sie einen neuen Bestätigungscode anfordern.',
     rateLimitError: 'Zu viele Versuche. Bitte warten Sie eine Minute und versuchen Sie es erneut.',
     mailDomainError: 'Diese E-Mail-Domain kann keine Nachrichten empfangen. Prüfen Sie die Adresse auf Tippfehler.',
     disposableEmailError: 'Wegwerf-E-Mail-Adressen sind nicht erlaubt. Bitte verwenden Sie eine permanente Adresse.',
+    loadingText: 'Wird geladen…',
   },
   rw: {
-    title: 'Fungura konti ya RecruitAI', subtitle: 'Hitamo uburyo bwo gukoresha umwanya w’akazi utangire.', applicant: 'Usaba akazi', worker: 'Umukozi w’ikigo',
-    candidateHeading: 'Umwanya w’usaba akazi', workerHeading: 'Umwanya w’abashinzwe gushaka abakozi', candidateDescription: 'Saba imyanya ihari, shyiraho CV yawe kandi ukurikirane ubusabe bwawe.', workerDescription: 'Suzuma abakandida, ucunge imyanya kandi mukorere hamwe n’ikipe ishinzwe abakozi.',
-    company: 'Ikigo cyangwa umuryango', companyPlaceholder: 'urugero: Codafriqa Tech Corp', role: 'Inshingano mu mwanya w’akazi', firstName: 'Izina', lastName: 'Izina ry’umuryango', email: 'Aderesi ya imeyili', workEmail: 'Aderesi ya imeyili y’akazi', password: 'Ijambo ry’ibanga', passwordHint: 'Inyuguti 8 cyangwa zirenga', create: 'Fungura konti', creating: 'Konti iri gufungurwa...', registerCandidate: 'Fungura konti y’usaba akazi', registerWorker: 'Injira nka', alreadyHaveAccount: 'Usanzwe ufite konti?', signIn: 'Injira',    requiredError: 'Umutwe n’amazina birakenewe.', failedError: 'Konti ntiyafunguwe.', registrationError: 'Kwiyandikisha byanze. Ongera ugerageze.',
-    staffRoleNote: 'Ufungura ikigo gishya? Uzaba umuyobozi wacyo. Winjira umwanya usanzwe uhang? Utangira nka Recruiter — umuyobozi wacyo ashobora kubihindura nyuma.',
+    title: 'Fungura konti ya RecruitAI',
+    subtitle: 'Hitamo uburyo bwo gukoresha umwanya w’akazi utangire.',
+    applicant: 'Usaba akazi',
+    worker: 'Umukozi w’ikigo',
+    candidateHeading: 'Umwanya w’usaba akazi',
+    workerHeading: 'Umwanya w’abashinzwe gushaka abakozi',
+    candidateDescription: 'Saba imyanya ihari, shyiraho CV yawe kandi ukurikirane ubusabe bwawe.',
+    workerDescription: 'Suzuma abakandida, ucunge imyanya kandi mukorere hamwe n’ikipe ishinzwe abakozi.',
+    company: 'Ikigo cyangwa umuryango',
+    companyPlaceholder: 'urugero: Codafriqa Tech Corp',
+    role: 'Inshingano mu mwanya w’akazi',
+    firstName: 'Izina',
+    lastName: 'Izina ry’umuryango',
+    email: 'Aderesi ya imeyili',
+    workEmail: 'Aderesi ya imeyili y’akazi',
+    password: 'Ijambo ry’ibanga',
+    passwordHint: 'Inyuguti 8 cyangwa zirenga',
+    create: 'Fungura konti',
+    creating: 'Konti iri gufungurwa...',
+    registerCandidate: 'Fungura konti y’usaba akazi',
+    registerWorker: 'Injira nk’umukozi w’ikigo',
+    alreadyHaveAccount: 'Usanzwe ufite konti?',
+    signIn: 'Injira',
+    requiredError: 'Ikigo n’amazina birakenewe.',
+    failedError: 'Konti ntiyafunguwe.',
+    registrationError: 'Kwiyandikisha byanze. Ongera ugerageze.',
+    staffRoleNote: 'Ufungura ikigo gishya? Uzaba umuyobozi wacyo. Winjira umwanya usanzwe uhari? Utangira nka Recruiter — umuyobozi wacyo ashobora kubihindura nyuma.',
     emailInvalidError: 'Aderesi ya imeyili ntiyoneka nk’iy’ukuri. Isuzume amakosa yo kwandika — @ ibura, umwanya utariyo, cyangwa urudomo ruranganye —ongera ugerageze.',
-    emailExistsError: 'Hari konti ifite aderesi ya imeyili. Injira — ubwo ushobora kusaba kode nshya yo kwemeza.',
+    emailExistsError: 'Hari konti ifite aderesi ya imeyili. Injira — ubwo ushobora gusaba kode nshya yo kwemeza.',
     rateLimitError: 'Ongeraneza bwinshi. Tegereza umunota wongera ugerageze.',
-    mailDomainError: 'Iyi domain ya imeyili ntishobora yakira ubutumwa. Isuzume aderesi amakosa yo kwandika.',
-    disposableEmailError: 'Aderesi za imeyili zo gukoresha na rimwe ntizemera. Koresha aderesi ihorere.',
-  }
+    mailDomainError: 'Iyi domain ya imeyili ntishobora kwakira ubutumwa. Isuzume aderesi ku makosa yo kwandika.',
+    disposableEmailError: 'Aderesi za imeyili zo gukoresha rimwe gusa ntizemewe. Koresha aderesi ihoraho.',
+    loadingText: 'Birimo gupakura…',
+  },
 };
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { language } = useLanguage();
   const copy = SIGNUP_COPY[language];
 
-  // Account Type: 'candidate' (Applicant) vs 'worker' (Company Staff)
-  const [accountType, setAccountType] = useState<'candidate' | 'worker'>('candidate');
+  const initialAccountType =
+    searchParams.get('accountType') === 'worker' ||
+    searchParams.get('type') === 'worker' ||
+    searchParams.get('portal') === 'staff'
+      ? 'worker'
+      : 'candidate';
+
+  const [accountType, setAccountType] = useState<'candidate' | 'worker'>(initialAccountType);
   const [companyName, setCompanyName] = useState('');
 
   // Credentials
@@ -119,6 +246,12 @@ export default function SignupPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (accountType === 'worker' && !companyName.trim()) {
+      setError(copy.requiredError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -131,15 +264,12 @@ export default function SignupPage() {
           email,
           password,
           accountType,
-          companyName: accountType === 'worker' ? companyName : undefined,
-          role: accountType === 'worker' ? 'Recruiter' : 'Candidate'
-        })
+          companyName: accountType === 'worker' ? companyName.trim() : undefined,
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        // Map server outcomes to actionable prompts — especially the
-        // invalid-email case the user must be able to see and fix.
         const rawError: string = data?.error || copy.failedError;
         if (res.status === 400 && rawError.startsWith('Validation failed')) {
           setError(copy.emailInvalidError);
@@ -158,17 +288,13 @@ export default function SignupPage() {
         return;
       }
 
-      // Email verification is required (spec §6.1) — the account cannot sign
-      // in until the emailed 6-digit code is entered, so route to sign-in with
-      // a notice instead of attempting an auto sign-in. The API reports
-      // whether the verification email was ACTUALLY delivered (emailDelivered)
-      // — pass it through so the sign-in page shows an honest delivery-failure
-      // notice instead of a dead-end "check your inbox".
       const emailDelivered = data?.emailDelivered !== false;
-      router.push(`/auth/signin?registered=1${emailDelivered ? '' : '&emailDelivery=failed'}`);
+      const portalParam = accountType === 'worker' ? '&portal=staff' : '';
+      const deliveryParam = emailDelivered ? '' : '&emailDelivery=failed';
+      router.push(`/auth/signin?registered=1${portalParam}${deliveryParam}`);
       router.refresh();
     } catch (err: any) {
-      setError(err.message || copy.registrationError);
+      setError(err?.message || copy.registrationError);
     } finally {
       setLoading(false);
     }
@@ -190,13 +316,21 @@ export default function SignupPage() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg text-xs font-semibold text-center max-w-md mx-auto border" style={{ backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))', borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)', color: 'var(--danger)' }}>
+        <div
+          role="alert"
+          className="p-3 rounded-lg text-xs font-semibold text-center max-w-md mx-auto border"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
+            borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)',
+            color: 'var(--danger)',
+          }}
+        >
           ⚠️ {error}
         </div>
       )}
 
-      {/* Account Type Classification Switcher */}
-      <div className="max-w-md mx-auto segmented !flex w-full grid grid-cols-2 p-1">
+      {/* Segmented Switcher */}
+      <div className="segmented max-w-xs mx-auto">
         <button
           type="button"
           onClick={() => setAccountType('candidate')}
@@ -240,7 +374,7 @@ export default function SignupPage() {
         <form onSubmit={handleRegister} className="space-y-3.5">
           {/* Worker Specific Fields: Company Name and Staff Role */}
           {accountType === 'worker' && (
-                  <div className="space-y-3 p-3.5 rounded-lg bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)]">
+            <div className="space-y-3 p-3.5 rounded-lg bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)]">
               <div>
                 <label className="field-label !mb-1">
                   {copy.company} *
@@ -304,14 +438,14 @@ export default function SignupPage() {
 
           {/* Password */}
           <div>
-              <label className="field-label !mb-1">{copy.password} *</label>
+            <label className="field-label !mb-1">{copy.password} *</label>
             <input
               type="password"
               required
-                minLength={8}
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-                placeholder={copy.passwordHint}
+              placeholder={copy.passwordHint}
               className="field"
             />
           </div>
@@ -334,11 +468,31 @@ export default function SignupPage() {
 
         <div className="pt-2 text-center text-xs text-[var(--muted)] border-t border-[var(--border)]">
           {copy.alreadyHaveAccount}{' '}
-          <Link href="/auth/signin" className="link">
+          <Link
+            href={`/auth/signin?portal=${accountType === 'worker' ? 'staff' : 'applicant'}`}
+            className="link font-bold"
+          >
             {copy.signIn} &rarr;
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+function SignupLoading() {
+  const { language } = useLanguage();
+  return (
+    <div className="min-h-[85vh] flex items-center justify-center text-xs text-[var(--muted)]">
+      {SIGNUP_COPY[language].loadingText}
+    </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupLoading />}>
+      <SignupForm />
+    </Suspense>
   );
 }
