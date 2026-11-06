@@ -169,7 +169,10 @@ export async function POST(
       to: application.candidate.email,
       template: 'INTERVIEW_INVITATION',
       data: {
-        candidateName: `${application.candidate.firstName} ${application.candidate.lastName}`.trim(),
+        candidateName:
+          application.candidate.firstName && application.candidate.lastName
+            ? `${application.candidate.firstName} ${application.candidate.lastName}`.trim()
+            : undefined,
         jobTitle: application.job.title,
         schedule: data.scheduledAt.toISOString(),
         timezone,
@@ -319,7 +322,9 @@ export async function PATCH(
     });
     let rescheduleDelivered: boolean | undefined;
     if (rescheduleApp) {
-      const candidateName = `${rescheduleApp.application.candidate.firstName} ${rescheduleApp.application.candidate.lastName}`.trim();
+      const candidateName = rescheduleApp.application.candidate.firstName && rescheduleApp.application.candidate.lastName
+        ? `${rescheduleApp.application.candidate.firstName} ${rescheduleApp.application.candidate.lastName}`.trim()
+        : undefined;
       const rescheduleEmail = await sendRecordedEmail({
         to: rescheduleApp.application.candidate.email,
         template: 'INTERVIEW_RESCHEDULED',
