@@ -165,6 +165,15 @@ export function permissionsForRoleName(roleName: string): string[] {
   return grants ? [...grants] : [];
 }
 
+export function isPermission(value: string): value is Permission {
+  return (Object.values(Permission) as string[]).includes(value);
+}
+
+export function effectivePermissionsForRole(roleName: string, custom: readonly string[] = []): Permission[] {
+  const base = permissionsForRoleName(roleName).filter(isPermission);
+  return [...new Set([...base, ...custom.filter(isPermission)])];
+}
+
 /** Roles granted the given permission (useful for tests and UI hints). */
 export function rolesWithPermission(permission: Permission): readonly ApplicationRole[] {
   return [...ROLE_SETS[permission]].sort();
