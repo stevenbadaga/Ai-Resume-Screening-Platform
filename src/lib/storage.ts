@@ -14,6 +14,7 @@
  */
 
 import path from 'path';
+import { randomUUID } from 'crypto';
 
 export type StorageBackend = 'supabase' | 'local';
 
@@ -41,6 +42,30 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
+export function getStorageStatusSummary(): {
+  backend: StorageBackend;
+  configured: boolean;
+  bucket?: string;
+  path?: string;
+  mode: 'cloud' | 'local';
+} {
+  if (isSupabaseConfigured()) {
+    return {
+      backend: 'supabase',
+      configured: true,
+      bucket: process.env.SUPABASE_RESUME_BUCKET || 'resumes',
+      mode: 'cloud',
+    };
+  }
+
+  return {
+    backend: 'local',
+    configured: false,
+    path: path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_PATH || './uploads'),
+    mode: 'local',
+  };
+}
+
 const RESUME_BUCKET = process.env.SUPABASE_RESUME_BUCKET || 'resumes';
 
 async function getSupabaseAdmin() {
@@ -52,10 +77,10 @@ async function getSupabaseAdmin() {
   );
 }
 
-/** Safe, unique object key: uuid-prefixed, filename sanitized (§6.4). */
+/** Collision-resistant key: timestamp + UUID + sanitized filename (§6.4). */
 export function buildObjectKey(originalName: string): string {
   const safe = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
-  return `resumes/${Date.now()}-${safe}`;
+  return `resumes/${Date.now()}-${randomUUID()}-${safe}`;
 }
 
 /** Uploads bytes to the private cloud bucket. Throws on failure (no fakes). */
@@ -110,7 +135,7 @@ export async function getObject(reference: string): Promise<FetchedObject> {
   const { isPathWithinUploads } = await import('@/lib/validation');
   const filePath = path.isAbsolute(reference)
     ? reference
-    : path.resolve(process.cwd(), reference);
+    : path.resolve(/*turbopackIgnore: true*/ process.cwd(), reference);
   if (!isPathWithinUploads(filePath)) {
     throw new Error('Invalid file reference');
   }
@@ -135,7 +160,7 @@ export async function deleteObject(reference: string): Promise<void> {
   const { isPathWithinUploads } = await import('@/lib/validation');
   const filePath = path.isAbsolute(reference)
     ? reference
-    : path.resolve(process.cwd(), reference);
+    : path.resolve(/*turbopackIgnore: true*/ process.cwd(), reference);
   if (!isPathWithinUploads(filePath)) return;
   await fs.unlink(filePath).catch(() => undefined);
 }
