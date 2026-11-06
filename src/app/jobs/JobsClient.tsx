@@ -36,11 +36,13 @@ interface Props {
   filters?: JobFilters;
   myApplications?: Record<string, MyApplicationInfo>;
   hasSavedResume?: boolean;
+  isAuthenticated?: boolean;
+  permissions?: string[];
 }
 
 const STATUS_OPTIONS = ['DRAFT', 'REVIEW', 'OPEN', 'CLOSED', 'ARCHIVED'];
 
-export default function JobsClient({ initialJobs, userRole = 'Candidate', pagination, filters, myApplications: initialMyApplications, hasSavedResume: initialHasSavedResume }: Props) {
+export default function JobsClient({ initialJobs, userRole = 'Candidate', pagination, filters, myApplications: initialMyApplications, hasSavedResume: initialHasSavedResume, isAuthenticated = true, permissions = [] }: Props) {
   const [jobs, setJobs] = useState<any[]>(initialJobs);
   const [myApplications, setMyApplications] = useState<Record<string, MyApplicationInfo>>(initialMyApplications ?? {});
   const [hasSavedResume, setHasSavedResume] = useState<boolean>(initialHasSavedResume ?? false);
@@ -66,7 +68,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
   const { showToast } = useToast();
   const { t } = useLanguage();
 
-  const isStaff = roleCapabilities.canManageJobs(userRole);
+  const isStaff = permissions.includes('jobs:manage') || roleCapabilities.canManageJobs(userRole);
 
   // One-click apply (candidates with a saved CV on their profile): the
   // application re-enters the standard intake pipeline with the stored
@@ -338,6 +340,25 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
     }
   };
 
+  const handleArchiveJob = async (job: any) => {
+    try {
+      const res = await fetch(`/api/jobs/${job.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ARCHIVED' }),
+      });
+      if (res.ok) {
+        setJobs((current) => current.map((j) => (j.id === job.id ? { ...j, status: 'ARCHIVED' } : j)));
+        showToast(t('toast_requisition_archived') || `${job.title} archived`, 'success', t('toast_requisition_archived_title') || 'Requisition Archived');
+      } else {
+        const err = await res.json().catch(() => null);
+        showToast(err?.error || t('toast_archive_failed') || 'Failed to archive requisition', 'error');
+      }
+    } catch {
+      showToast(t('toast_network_archive') || 'Network error archiving requisition', 'error');
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-[1440px] mx-auto">
       {/* Top Header */}
@@ -376,21 +397,23 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
             type="search"
             name="q"
             defaultValue={filters.q}
-            placeholder={t('jobs_search_placeholder')}
+            placeholder={isStaff ? t('jobs_search_placeholder') : 'Search open roles by title or keyword...'}
             className="field !w-64"
             aria-label={t('aria_search_requisitions')}
           />
-          <select
-            name="status"
-            defaultValue={filters.status}
-            className="field !w-auto font-medium"
-            aria-label={t('aria_filter_status')}
-          >
-            <option value="ALL">{t('filter_all_statuses')}</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+          {isStaff && (
+            <select
+              name="status"
+              defaultValue={filters.status}
+              className="field !w-auto font-medium"
+              aria-label={t('aria_filter_status')}
+            >
+              <option value="ALL">{t('filter_all_statuses')}</option>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          )}
           <select
             name="department"
             defaultValue={filters.department}
@@ -531,6 +554,15 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                         {t('btn_close')}
                       </button>
                     )}
+                    {isStaff && job.status === 'CLOSED' && (
+                      <button
+                        onClick={() => handleArchiveJob(job)}
+                        title="Archive requisition"
+                        className="btn btn-secondary !px-2 !py-1 !text-[11px]"
+                      >
+                        {t('btn_archive') || 'Archive'}
+                      </button>
+                    )}
                     {isStaff && (job.status === 'DRAFT' || job.status === 'REVIEW') ? (
                       <button
                         onClick={() => handlePublishJob(job)}
@@ -550,6 +582,13 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                           </span>
                         )}
                       </span>
+                    ) : !isAuthenticated && job.status === 'OPEN' ? (
+                      <Link
+                        href={`/auth/signin?callbackUrl=${encodeURIComponent(`/jobs/${job.id}/apply`)}`}
+                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
+                      >
+                        Sign in to apply &rarr;
+                      </Link>
                     ) : !isStaff && job.status === 'OPEN' && hasSavedResume ? (
                       <button
                         onClick={() => handleOneClickApply(job)}
