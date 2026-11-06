@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
           feedback: payload.feedback as string | undefined,
           subject: payload.subject as string | undefined,
           body: payload.body as string | undefined,
+          organizationName: (payload.organizationName as string) || (payload.orgName as string) || undefined,
         },
         applicationId: comm.applicationId ?? undefined,
       },
