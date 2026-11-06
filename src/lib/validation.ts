@@ -174,7 +174,9 @@ export const ALLOWED_ROLES = ['Admin', 'Recruiter', 'HiringManager', 'Interviewe
 
 export const teamInviteSchema = z.object({
   email: emailSchema,
+  name: z.string().trim().max(120).optional(),
   roleName: z.enum(ALLOWED_ROLES),
+  permissions: z.array(z.string()).max(32).optional(),
 });
 
 export const teamRoleSchema = z.object({
