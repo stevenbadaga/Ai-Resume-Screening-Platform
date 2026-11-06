@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { buildObjectKey, contentTypeFromKey, deleteObject } from '@/lib/storage';
+import { buildObjectKey, contentTypeFromKey, deleteObject, getStorageStatusSummary } from '@/lib/storage';
 
 describe('storage abstraction (cloud-first, §6.4)', () => {
   it('builds unique, sanitized object keys under the resumes/ prefix', () => {
     const key = buildObjectKey('My CV (final).pdf');
     expect(key.startsWith('resumes/')).toBe(true);
-    expect(key).toMatch(/resumes\/\d+-My_CV__final_\.pdf$/);
-    // Two calls never collide (timestamp prefix)
+    expect(key).toMatch(/resumes\/\d+-[0-9a-f-]+-My_CV__final_\.pdf$/);
+    // Two calls never collide, even within the same millisecond.
     const other = buildObjectKey('My CV (final).pdf');
     expect(key).not.toBe(other);
   });
@@ -31,5 +31,25 @@ describe('storage abstraction (cloud-first, §6.4)', () => {
   it('silently ignores deleting a legacy path outside uploads (no local writes)', async () => {
     // Must not throw and must not touch anything outside the sandbox.
     await expect(deleteObject('/etc/passwd')).resolves.toBeUndefined();
+  });
+
+  it('reports the active storage backend for operational health checks', () => {
+    const previousUrl = process.env.SUPABASE_URL;
+    const previousKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    try {
+      process.env.SUPABASE_URL = 'https://example.supabase.co';
+      process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key';
+      const summary = getStorageStatusSummary();
+      expect(summary.backend).toBe('supabase');
+      expect(summary.configured).toBe(true);
+      expect(summary.bucket).toBe('resumes');
+    } finally {
+      if (previousUrl === undefined) delete process.env.SUPABASE_URL;
+      else process.env.SUPABASE_URL = previousUrl;
+
+      if (previousKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      else process.env.SUPABASE_SERVICE_ROLE_KEY = previousKey;
+    }
   });
 });
