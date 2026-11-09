@@ -16,7 +16,7 @@ const rawDatabaseUrl =
 if (!rawDatabaseUrl) {
   throw new Error(
     'DATABASE_URL is not set — the application cannot reach its database. ' +
-      'Copy .env.example to .env and configure a PostgreSQL connection string.'
+      'Configure DATABASE_URL in your environment (.env).'
   );
 }
 

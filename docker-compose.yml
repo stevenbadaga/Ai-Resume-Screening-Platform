@@ -1,7 +1,7 @@
 version: '3.8'
 
-# All secrets/credentials come from the .env file next to this compose file
-# (see .env.example). No hardcoded secrets — compose interpolates ${VAR} from .env.
+# All secrets/credentials come from the .env file next to this compose file.
+# No hardcoded secrets — compose interpolates ${VAR} from .env.
 
 services:
   app:
