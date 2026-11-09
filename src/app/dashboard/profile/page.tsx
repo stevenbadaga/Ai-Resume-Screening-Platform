@@ -25,6 +25,7 @@ export default async function ProfilePage() {
     select: {
       name: true,
       email: true,
+      phone: true,
       createdAt: true,
       organization: { select: { name: true } },
       departmentRestrictions: true,
@@ -38,6 +39,7 @@ export default async function ProfilePage() {
       select: {
         firstName: true,
         lastName: true,
+        phone: true,
         skills: true,
         experience: true,
         profileResumeName: true,
@@ -51,17 +53,20 @@ export default async function ProfilePage() {
     candidate = c ? JSON.parse(JSON.stringify(c)) : null;
   }
 
+  const effectivePhone = candidate?.phone ?? user?.phone ?? null;
+
   return (
     <ProfileClient
       account={{
         name: user?.name ?? null,
         email,
+        phone: effectivePhone,
         role,
         organizationName: user?.organization?.name ?? null,
         memberSince: user?.createdAt ? user.createdAt.toISOString() : null,
         departmentRestrictions: user?.departmentRestrictions ?? [],
       }}
-      candidate={candidate}
+      candidate={candidate ? { ...candidate, phone: effectivePhone } : null}
     />
   );
 }

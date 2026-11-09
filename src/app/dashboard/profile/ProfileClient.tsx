@@ -6,6 +6,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 interface AccountInfo {
   name: string | null;
   email: string;
+  phone?: string | null;
   role: string;
   organizationName: string | null;
   memberSince: string | null;
@@ -15,6 +16,7 @@ interface AccountInfo {
 interface CandidateInfo {
   firstName: string;
   lastName: string;
+  phone?: string | null;
   skills: string | null; // JSON string
   experience: string | null; // JSON string
   profileResumeName: string | null;
@@ -43,6 +45,7 @@ export default function ProfileClient({ account, candidate }: Props) {
 
   // ── Editable profile state ──
   const [name, setName] = useState(account.name ?? '');
+  const [phone, setPhone] = useState(candidate?.phone ?? account.phone ?? '');
   const initialSkills: string[] = (() => {
     if (!candidate?.skills) return [];
     try {
@@ -101,6 +104,7 @@ export default function ProfileClient({ account, candidate }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim() || undefined,
+          phone: phone.trim() || null,
           skills: isCandidate ? skills : undefined,
           experience: isCandidate ? experience : undefined,
         }),
@@ -185,16 +189,32 @@ export default function ProfileClient({ account, candidate }: Props) {
             {initials}
           </div>
           <div className="flex-1 space-y-3">
-            <div>
-              <label htmlFor="profile-name" className="field-label">{t('profile_display_name')}</label>
-              <input
-                id="profile-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t('profile_name_placeholder')}
-                className="field"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="profile-name" className="field-label">{t('profile_display_name')}</label>
+                <input
+                  id="profile-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('profile_name_placeholder')}
+                  className="field"
+                />
+              </div>
+              <div>
+                <label htmlFor="profile-phone" className="field-label">{t('profile_phone_number')}</label>
+                <input
+                  id="profile-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t('profile_phone_placeholder')}
+                  className="field"
+                />
+                <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] mt-1">
+                  {t('profile_phone_hint')}
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="chip chip-accent">{account.role}</span>
@@ -251,7 +271,11 @@ export default function ProfileClient({ account, candidate }: Props) {
             {savedResume.name ? (
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[var(--accent-soft)] p-3.5">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xl" aria-hidden="true">📄</span>
+                  <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-[var(--foreground)] truncate">{savedResume.name}</p>
                     <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-mono">
@@ -286,7 +310,11 @@ export default function ProfileClient({ account, candidate }: Props) {
                 disabled={cvBusy}
                 className="w-full rounded-xl border-2 border-dashed border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] p-6 text-center transition cursor-pointer"
               >
-                <span className="text-2xl block" aria-hidden="true">📄</span>
+                <div className="w-10 h-10 mx-auto rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center mb-1.5">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
                 <p className="text-xs font-bold text-[var(--foreground)] mt-1.5">
                   {t('profile_upload_cv')}
                 </p>

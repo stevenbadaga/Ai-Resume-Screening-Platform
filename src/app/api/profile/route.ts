@@ -17,6 +17,7 @@ import { z } from 'zod/v4';
 // (the profile editor sends structured arrays/strings). Size-capped.
 const selfProfileSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
+  phone: z.string().trim().max(50).optional().nullable(),
   skills: z.unknown().optional(),
   experience: z.unknown().optional(),
 });
@@ -49,6 +50,7 @@ export async function GET() {
       select: {
         name: true,
         email: true,
+        phone: true,
         createdAt: true,
         organization: { select: { id: true, name: true } },
         roles: { select: { name: true } },
@@ -59,6 +61,7 @@ export async function GET() {
       id: user.id,
       email: user.email,
       name: userRecord?.name ?? user.name ?? null,
+      phone: userRecord?.phone ?? null,
       role: user.role,
       organizationName: userRecord?.organization?.name ?? null,
       memberSince: userRecord?.createdAt ?? null,
@@ -83,6 +86,7 @@ export async function GET() {
         id: true,
         firstName: true,
         lastName: true,
+        phone: true,
         skills: true,
         experience: true,
         profileResumeRef: true,
@@ -95,13 +99,17 @@ export async function GET() {
       },
     });
 
+    const effectivePhone = candidate?.phone ?? userRecord?.phone ?? null;
+
     return NextResponse.json({
       profile: {
         ...base,
+        phone: effectivePhone,
         candidate: candidate
           ? {
               id: candidate.id,
               name: `${candidate.firstName} ${candidate.lastName}`.trim(),
+              phone: effectivePhone,
               skills: parseJsonField(candidate.skills),
               experience: parseJsonField(candidate.experience),
               savedResume: candidate.profileResumeRef
@@ -137,13 +145,16 @@ export async function PUT(req: NextRequest) {
     const { data, error } = validateBody(selfProfileSchema, body);
     if (error) return error;
 
-    // Account display name applies to every role.
-    if (data.name !== undefined) {
-      await prisma.user.update({ where: { id: user.id }, data: { name: data.name } });
+    // Account display name and phone apply to user account.
+    const userUpdates: Record<string, unknown> = {};
+    if (data.name !== undefined) userUpdates.name = data.name;
+    if (data.phone !== undefined) userUpdates.phone = data.phone?.trim() || null;
+    if (Object.keys(userUpdates).length > 0) {
+      await prisma.user.update({ where: { id: user.id }, data: userUpdates });
     }
 
-    // Skills/experience belong to the candidate's self-service profile only.
-    if (user.role === 'Candidate' && (data.skills !== undefined || data.experience !== undefined)) {
+    // Candidate profile data: skills, experience, and candidate phone.
+    if (user.role === 'Candidate' && (data.skills !== undefined || data.experience !== undefined || data.phone !== undefined)) {
       const candidate = await prisma.candidate.findFirst({ where: { email: user.email } });
       if (!candidate) {
         // A candidate account without an intake Candidate row yet — create one
@@ -154,6 +165,7 @@ export async function PUT(req: NextRequest) {
             firstName: parts[0] || user.email.split('@')[0],
             lastName: parts.slice(1).join(' ') || '(candidate)',
             email: user.email,
+            phone: data.phone !== undefined ? (data.phone?.trim() || null) : undefined,
             consentGiven: false,
             tags: ['SELF_PROFILE'],
             skills: data.skills !== undefined ? JSON.stringify(data.skills ?? null) : undefined,
@@ -166,26 +178,29 @@ export async function PUT(req: NextRequest) {
           actorId: user.id,
           organizationId: user.organizationId,
           affectedRecordId: created.id,
-          newValues: { source: 'self-service profile' },
+          newValues: { source: 'self-service profile', phone: data.phone },
         });
       } else {
-        const previous = { skills: candidate.skills, experience: candidate.experience };
-        await prisma.candidate.update({
-          where: { id: candidate.id },
-          data: {
-            skills: data.skills !== undefined ? JSON.stringify(data.skills ?? null) : undefined,
-            experience:
-              data.experience !== undefined ? JSON.stringify(data.experience ?? null) : undefined,
-          },
-        });
-        await logAuditEvent({
-          action: 'CANDIDATE_PROFILE_UPDATED',
-          actorId: user.id,
-          organizationId: user.organizationId,
-          affectedRecordId: candidate.id,
-          previousValues: previous,
-          newValues: { skills: data.skills, experience: data.experience },
-        });
+        const previous = { skills: candidate.skills, experience: candidate.experience, phone: candidate.phone };
+        const candidateUpdates: Record<string, unknown> = {};
+        if (data.skills !== undefined) candidateUpdates.skills = JSON.stringify(data.skills ?? null);
+        if (data.experience !== undefined) candidateUpdates.experience = JSON.stringify(data.experience ?? null);
+        if (data.phone !== undefined) candidateUpdates.phone = data.phone?.trim() || null;
+
+        if (Object.keys(candidateUpdates).length > 0) {
+          await prisma.candidate.update({
+            where: { id: candidate.id },
+            data: candidateUpdates,
+          });
+          await logAuditEvent({
+            action: 'CANDIDATE_PROFILE_UPDATED',
+            actorId: user.id,
+            organizationId: user.organizationId,
+            affectedRecordId: candidate.id,
+            previousValues: previous,
+            newValues: { skills: data.skills, experience: data.experience, phone: data.phone },
+          });
+        }
       }
     }
 
