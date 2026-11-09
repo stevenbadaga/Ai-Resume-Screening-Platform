@@ -540,6 +540,9 @@ export interface TranslationDictionary {
   profile_workspace_account: string;
   profile_display_name: string;
   profile_name_placeholder: string;
+  profile_phone_number: string;
+  profile_phone_placeholder: string;
+  profile_phone_hint: string;
   profile_member_since: string;
   profile_department_access: string;
   profile_applications_count: string;
@@ -1393,6 +1396,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_workspace_account: 'Workspace account',
     profile_display_name: 'Display name',
     profile_name_placeholder: 'Your full name',
+    profile_phone_number: 'Phone number',
+    profile_phone_placeholder: '+1 (555) 000-0000',
+    profile_phone_hint: 'Included automatically on one-click applications.',
     profile_member_since: '· member since {date}',
     profile_department_access: 'Department access:',
     profile_applications_count: '{count} applications',
@@ -2231,6 +2237,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_workspace_account: 'Compte de l’espace',
     profile_display_name: 'Nom affiché',
     profile_name_placeholder: 'Votre nom complet',
+    profile_phone_number: 'Numéro de téléphone',
+    profile_phone_placeholder: '+33 6 00 00 00 00',
+    profile_phone_hint: 'Inclus automatiquement lors de la candidature en un clic.',
     profile_member_since: '· membre depuis le {date}',
     profile_department_access: 'Accès départements :',
     profile_applications_count: '{count} candidatures',
@@ -3069,6 +3078,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_workspace_account: 'Cuenta del espacio',
     profile_display_name: 'Nombre visible',
     profile_name_placeholder: 'Tu nombre completo',
+    profile_phone_number: 'Número de teléfono',
+    profile_phone_placeholder: '+34 600 000 000',
+    profile_phone_hint: 'Incluido automáticamente en postulaciones de un clic.',
     profile_member_since: '· miembro desde {date}',
     profile_department_access: 'Acceso a departamentos:',
     profile_applications_count: '{count} solicitudes',
@@ -3907,6 +3919,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_workspace_account: 'Arbeitsbereich-Konto',
     profile_display_name: 'Anzeigename',
     profile_name_placeholder: 'Ihr vollständiger Name',
+    profile_phone_number: 'Telefonnummer',
+    profile_phone_placeholder: '+49 151 00000000',
+    profile_phone_hint: 'Wird bei 1-Klick-Bewerbungen automatisch übermittelt.',
     profile_member_since: '· Mitglied seit {date}',
     profile_department_access: 'Abteilungszugriff:',
     profile_applications_count: '{count} Bewerbungen',
@@ -4744,6 +4759,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_workspace_account: 'Konti y’ikigega',
     profile_display_name: 'Izina ryerekanwa',
     profile_name_placeholder: 'Izina ryawe ryuzuye',
+    profile_phone_number: 'Nimero ya telefone',
+    profile_phone_placeholder: '+250 780 000 000',
+    profile_phone_hint: 'Ijyana mu buryo bwikora mu gusaba kanda rimwe.',
     profile_member_since: '· umunyamuryango kuva {date}',
     profile_department_access: 'Uburenganzira ku mashami:',
     profile_applications_count: 'Ubusabe {count}',
