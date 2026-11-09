@@ -75,8 +75,8 @@ export async function PATCH(req: Request) {
       const stageLabels: Record<string, string> = {
         SHORTLISTED: 'Shortlisted for Review',
         INTERVIEW_SCHEDULED: 'Invited to Technical Interview',
-        OFFERED: 'Job Offer Extended 🎉',
-        HIRED: 'Hired & Offer Accepted! 🚀',
+        OFFERED: 'Job Offer Extended',
+        HIRED: 'Hired & Offer Accepted',
         REJECTED: 'Application Status Update'
       };
 

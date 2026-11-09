@@ -34,6 +34,7 @@ export default function CandidateProfileClient({
   const [overrideReason, setOverrideReason] = useState('');
   const [submittingOverride, setSubmittingOverride] = useState(false);
   const [blindMode, setBlindMode] = useState(true);
+  const [resumeViewTab, setResumeViewTab] = useState<'text' | 'original'>('text');
 
   // Interview Questions Generation State
   const [generatingQuestions, setGeneratingQuestions] = useState(false);
@@ -171,7 +172,7 @@ export default function CandidateProfileClient({
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => {
       cancelled = true;
     };
@@ -194,6 +195,7 @@ export default function CandidateProfileClient({
     : `${app.candidate?.firstName || t('cprofile_applicant_fallback')} ${app.candidate?.lastName || ''}`;
 
   const candidateEmail = blindMode ? '••••••@protected.id' : app.candidate?.email;
+  const candidatePhone = blindMode ? '••••••••••••' : (app.candidate?.phone || null);
 
   const handleRecalibrateScore = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -523,6 +525,9 @@ export default function CandidateProfileClient({
           </div>
           <p className="text-[11px] dark:text-slate-400 text-slate-500 font-mono">
             {app.job?.title} &bull; {app.job?.department} &bull; {candidateEmail}
+            {candidatePhone && (
+              <span> &bull; {candidatePhone}</span>
+            )}
           </p>
         </div>
 
@@ -534,7 +539,6 @@ export default function CandidateProfileClient({
               disabled={rerunningScreening}
               className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs disabled:opacity-60"
             >
-              <span>🔁</span>
               <span>{rerunningScreening ? t('btn_screening_queued') : t('btn_rerun_screening')}</span>
             </button>
           )}
@@ -547,7 +551,6 @@ export default function CandidateProfileClient({
               }}
               className="px-2.5 py-1.5 dark:bg-[#17242B] bg-white dark:hover:bg-[#1F2E37] hover:bg-slate-50 dark:border-[#30424A] border-slate-200 border dark:text-slate-200 text-slate-700 text-xs font-medium rounded-lg transition flex items-center gap-1 shadow-xs"
             >
-              <span>✉</span>
               <span>{t('btn_message_candidate')}</span>
             </button>
           )}
@@ -559,13 +562,12 @@ export default function CandidateProfileClient({
             </span>
             {isArchived ? (
               <span className="chip !text-[10px] font-mono font-bold uppercase tracking-wider !text-amber-600 dark:!text-amber-400">
-                🗄 {t('cprofile_archived_badge')}
+                {t('cprofile_archived_badge').replace(/^🗄\s*/, '')}
               </span>
             ) : null}
           </div>
 
-          {/* 7. Archive/Restore (§6.3): lifecycle action with reason capture —
-              keeps all records, removes nothing, fully audited server-side. */}
+          {/* 7. Archive/Restore (§6.3): lifecycle action with reason capture */}
           {canMakeDecisions && (
             <button
               onClick={handleToggleArchive}
@@ -573,7 +575,6 @@ export default function CandidateProfileClient({
               className={`btn btn-secondary btn-sm !text-xs ${isArchived ? 'text-slate-600 dark:text-slate-300' : 'text-amber-700 dark:text-amber-300'}`}
               title={isArchived ? 'Restore the candidate and all their applications to the active pipeline' : 'Archive the candidate and all their applications (records stay intact)'}
             >
-              <span>🗄</span>
               <span>{archiving ? '…' : isArchived ? t('cprofile_restore_btn') : t('cprofile_archive_btn')}</span>
             </button>
           )}
@@ -588,7 +589,6 @@ export default function CandidateProfileClient({
               className="btn btn-secondary btn-sm !text-xs"
               title="Compose and preview candidate communication"
             >
-              <span>✉</span>
               <span>{t('btn_message_candidate')}</span>
             </button>
           )}
@@ -600,7 +600,6 @@ export default function CandidateProfileClient({
               className="btn btn-secondary btn-sm !text-xs"
               title="Generate customized behavioral and technical interview questions based on CV gaps"
             >
-              <span>🤖</span>
               <span>{t('btn_ai_questions')}</span>
             </button>
           )}
@@ -612,7 +611,6 @@ export default function CandidateProfileClient({
               className="btn btn-secondary btn-sm !text-xs font-bold text-teal-600 dark:text-teal-400"
               title="Submit structured scorecard evaluation"
             >
-              <span>📝</span>
               <span>{t('btn_scorecard')}</span>
             </button>
           )}
@@ -624,7 +622,6 @@ export default function CandidateProfileClient({
               className="btn btn-secondary btn-sm !text-xs font-semibold"
               title="Schedule structured interview session with conflict check"
             >
-              <span>📅</span>
               <span>{t('btn_schedule')}</span>
             </Link>
           )}
@@ -636,7 +633,6 @@ export default function CandidateProfileClient({
               className="btn btn-secondary btn-sm !text-xs text-amber-700 dark:text-amber-300"
               title="Override score with mandatory human rationale"
             >
-              <span>✏</span>
               <span>{t('btn_recalibrate')}</span>
             </button>
           )}
@@ -650,7 +646,6 @@ export default function CandidateProfileClient({
                   className="btn btn-secondary btn-sm !text-xs font-bold text-amber-600"
                   title="Return application to review status"
                 >
-                  <span>↺</span>
                   <span>Return to Review</span>
                 </button>
               ) : isOffered ? (
@@ -660,7 +655,6 @@ export default function CandidateProfileClient({
                     className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
                     title="Confirm candidate acceptance and mark as Hired"
                   >
-                    <span>✓</span>
                     <span>Mark as Hired</span>
                   </button>
                   <button
@@ -668,13 +662,12 @@ export default function CandidateProfileClient({
                     className="btn btn-danger btn-sm !text-xs"
                     title="Record candidate decline or rescission"
                   >
-                    <span>✕</span>
                     <span>Decline / Rescind</span>
                   </button>
                 </>
               ) : isHired ? (
                 <span className="chip chip-success font-bold text-xs">
-                  🎉 Hired
+                  Hired
                 </span>
               ) : isWithdrawn ? (
                 <span className="chip font-bold text-xs text-[var(--muted)]">
@@ -687,7 +680,6 @@ export default function CandidateProfileClient({
                     className="btn btn-secondary btn-sm !text-xs"
                     title="Place candidate on temporary hold"
                   >
-                    <span>⏸</span>
                     <span>Hold</span>
                   </button>
                   <button
@@ -695,7 +687,6 @@ export default function CandidateProfileClient({
                     className="btn btn-danger btn-sm !text-xs"
                     title="Record human rejection decision with rationale"
                   >
-                    <span>✕</span>
                     <span>{t('decision_action_reject')}</span>
                   </button>
                   <button
@@ -703,7 +694,6 @@ export default function CandidateProfileClient({
                     className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
                     title="Extend formal job offer"
                   >
-                    <span>🚀</span>
                     <span>{t('btn_extend_offer')}</span>
                   </button>
                 </>
@@ -714,7 +704,6 @@ export default function CandidateProfileClient({
                     className="btn btn-secondary btn-sm !text-xs"
                     title="Place candidate on talent hold"
                   >
-                    <span>⏸</span>
                     <span>Hold</span>
                   </button>
                   <button
@@ -722,7 +711,6 @@ export default function CandidateProfileClient({
                     className="btn btn-danger btn-sm !text-xs"
                     title="Reject application with documented reason"
                   >
-                    <span>✕</span>
                     <span>{t('decision_action_reject')}</span>
                   </button>
                   <button
@@ -730,7 +718,6 @@ export default function CandidateProfileClient({
                     className="btn btn-primary btn-sm !text-xs font-bold"
                     title="Shortlist candidate for interview progression"
                   >
-                    <span>⭐</span>
                     <span>{t('decision_action_shortlist')}</span>
                   </button>
                 </>
@@ -756,25 +743,110 @@ export default function CandidateProfileClient({
 
       {/* SPLIT-SCREEN RESUME & RUBRIC VIEW */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Parsed Resume (7 Cols) */}
+        {/* Left Column: Parsed Resume / Original Document (7 Cols) */}
         <div className="lg:col-span-7 dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-4 sm:p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 dark:border-[#30424A] border-[#D8D2C6] border-b">
-            <h2 className="text-sm font-semibold dark:text-white text-slate-900 flex items-center gap-1.5">
-              <span>📄</span>
-              <span>{t('parsed_resume_doc')}</span>
-            </h2>
-            <span className="text-[10px] font-mono dark:text-slate-400 text-slate-500">{t('ocr_stream')}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 dark:border-[#30424A] border-[#D8D2C6] border-b">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold dark:text-white text-slate-900">
+                {t('parsed_resume_doc').replace(/^📄\s*/, '')}
+              </h2>
+              <div className="flex items-center rounded-lg border dark:border-[#30424A] border-slate-200 p-0.5 text-[11px] font-medium bg-slate-100 dark:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={() => setResumeViewTab('text')}
+                  className={`px-2 py-0.5 rounded transition ${resumeViewTab === 'text'
+                      ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 font-bold shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  Parsed Text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResumeViewTab('original')}
+                  className={`px-2 py-0.5 rounded transition ${resumeViewTab === 'original'
+                      ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 font-bold shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  Document Viewer
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <a
+                href={`/api/resumes/${app.resumeDocument?.id || app.id}?view=inline`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1"
+                title="Open resume document in a new browser tab"
+              >
+                <span>View Fullscreen</span>
+                <span>&rarr;</span>
+              </a>
+              <span className="text-slate-300 dark:text-slate-600">&bull;</span>
+              <a
+                href={`/api/resumes/${app.resumeDocument?.id || app.id}?download=1`}
+                className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:underline"
+                title="Download original CV file"
+              >
+                Download CV
+              </a>
+            </div>
           </div>
 
-          <div className="dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A]/40 border-slate-200 border rounded-lg p-4 font-mono text-xs dark:text-slate-300 text-slate-800 leading-relaxed max-h-[560px] overflow-y-auto whitespace-pre-wrap selection:bg-teal-500/20">
-            {highlightedSnippet && (
-              <div className="mb-3 p-2.5 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-300 font-sans text-xs flex items-center justify-between">
-                <span>🎯 {t('locate_evidence')}: <em>"{highlightedSnippet}"</em></span>
-                <button onClick={() => setHighlightedSnippet(null)} className="text-teal-400 hover:text-white font-bold ml-2">✕</button>
-              </div>
-            )}
-            {renderResumeWithHighlight(app.resumeDocument?.extractedText || app.resumeText || '', highlightedSnippet)}
-          </div>
+          {resumeViewTab === 'original' ? (
+            <div className="rounded-lg overflow-hidden border dark:border-[#30424A]/40 border-slate-200 bg-slate-100 dark:bg-slate-950">
+              <iframe
+                src={`/api/resumes/${app.resumeDocument?.id || app.id}?view=inline`}
+                className="w-full h-[580px] border-0"
+                title="Resume Document Preview"
+              />
+            </div>
+          ) : (
+            <div className="dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A]/40 border-slate-200 border rounded-lg p-4 font-mono text-xs dark:text-slate-300 text-slate-800 leading-relaxed max-h-[580px] overflow-y-auto whitespace-pre-wrap selection:bg-teal-500/20">
+              {highlightedSnippet && (
+                <div className="mb-3 p-2.5 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-300 font-sans text-xs flex items-center justify-between">
+                  <span>Target Evidence: <em>"{highlightedSnippet}"</em></span>
+                  <button
+                    onClick={() => setHighlightedSnippet(null)}
+                    className="text-teal-400 hover:text-white font-bold ml-2 text-sm leading-none"
+                    aria-label="Clear highlight"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
+              {app.resumeDocument?.extractedText || app.resumeText ? (
+                renderResumeWithHighlight(app.resumeDocument?.extractedText || app.resumeText || '', highlightedSnippet)
+              ) : (
+                <div className="p-8 text-center space-y-3 font-sans">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    No parsed text available yet.
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    The uploaded CV document is safely stored. You can inspect it directly in the Document Viewer or download the file.
+                  </p>
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setResumeViewTab('original')}
+                      className="btn btn-primary btn-sm !text-xs font-semibold"
+                    >
+                      Open Document Viewer
+                    </button>
+                    <a
+                      href={`/api/resumes/${app.resumeDocument?.id || app.id}?download=1`}
+                      className="btn btn-secondary btn-sm !text-xs"
+                    >
+                      Download Original CV
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Column: AI Rubric Breakdown & Interview Scorecards (5 Cols) */}
@@ -868,13 +940,12 @@ export default function CandidateProfileClient({
                           {run.createdAt ? new Date(run.createdAt).toLocaleString() : ''}
                         </span>
                       </div>
-                      <span className={`shrink-0 font-semibold ${
-                        run.status === 'COMPLETED'
+                      <span className={`shrink-0 font-semibold ${run.status === 'COMPLETED'
                           ? 'text-emerald-500'
                           : run.status === 'FAILED'
                             ? 'text-rose-500'
                             : 'text-amber-500'
-                      }`}>
+                        }`}>
                         {statusLabel}
                       </span>
                     </div>
@@ -900,11 +971,10 @@ export default function CandidateProfileClient({
                     <h4 className="text-xs font-semibold dark:text-white text-slate-900">{crit.category}</h4>
                     <p className="text-[10px] dark:text-slate-400 text-slate-500">{crit.criterionDescription}</p>
                   </div>
-                  <span className={`text-xs font-bold font-mono shrink-0 px-2 py-0.5 rounded-md ${
-                    crit.score === 'MATCH' || Number(crit.score) >= 4 ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30' :
-                    crit.score === 'PARTIAL' || Number(crit.score) >= 2 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/30' :
-                    'bg-rose-500/10 text-rose-500 border border-rose-500/30'
-                  }`}>
+                  <span className={`text-xs font-bold font-mono shrink-0 px-2 py-0.5 rounded-md ${crit.score === 'MATCH' || Number(crit.score) >= 4 ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30' :
+                      crit.score === 'PARTIAL' || Number(crit.score) >= 2 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/30' :
+                        'bg-rose-500/10 text-rose-500 border border-rose-500/30'
+                    }`}>
                     {crit.score}
                   </span>
                 </div>
@@ -925,7 +995,7 @@ export default function CandidateProfileClient({
                   >
                     "{crit.quotedEvidence}"
                     <span className="block text-[9px] text-teal-600 dark:text-teal-400 mt-0.5 not-italic font-sans font-semibold">
-                      🔍 {t('locate_evidence')} &rarr;
+                      {t('locate_evidence').replace(/^🔍\s*/, '')} &rarr;
                     </span>
                   </button>
                 )}
@@ -954,13 +1024,12 @@ export default function CandidateProfileClient({
                     <div className="font-semibold dark:text-white text-slate-900">
                       {sc.interviewer?.name || sc.interviewer?.email || t('cprofile_interviewer_fallback')}
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                      sc.recommendation === 'STRONG_HIRE' || sc.recommendation === 'HIRE'
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${sc.recommendation === 'STRONG_HIRE' || sc.recommendation === 'HIRE'
                         ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30'
                         : sc.recommendation === 'LEAN_HIRE'
-                        ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
-                        : 'bg-rose-500/15 text-rose-500 border border-rose-500/30'
-                    }`}>
+                          ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
+                          : 'bg-rose-500/15 text-rose-500 border border-rose-500/30'
+                      }`}>
                       {sc.recommendation}
                     </span>
                   </div>
@@ -989,7 +1058,9 @@ export default function CandidateProfileClient({
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-xl w-full shadow-2xl space-y-3.5 max-h-[85vh] overflow-y-auto text-xs">
             <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="text-base">🤖</span>
+                <div className="w-7 h-7 rounded-lg bg-teal-500/15 text-teal-400 flex items-center justify-center font-mono font-bold text-xs">
+                  AI
+                </div>
                 <div>
                   <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('qp_questions')}</h3>
                   <p className="text-[10px] dark:text-slate-400 text-slate-500">{t('cprofile_questions_targeting')}</p>
@@ -1019,9 +1090,12 @@ export default function CandidateProfileClient({
                         </span>
                         <button
                           onClick={() => handleCopyQuestion(questionText)}
-                          className="text-[10px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-mono font-semibold"
+                          className="text-[10px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-mono font-semibold inline-flex items-center gap-1"
                         >
-                          📋 {t('cprofile_copy_btn')}
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                          </svg>
+                          <span>{t('cprofile_copy_btn')}</span>
                         </button>
                       </div>
 
@@ -1050,7 +1124,13 @@ export default function CandidateProfileClient({
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-md w-full shadow-xl space-y-3 dark:text-slate-200 text-slate-800 text-xs">
             <div className="flex items-center justify-between pb-2 dark:border-[#30424A] border-slate-100 border-b">
               <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('scorecard_modal_title')}</h3>
-              <button onClick={() => setShowScorecardModal(false)} className="text-slate-400 hover:text-white">✕</button>
+              <button
+                onClick={() => setShowScorecardModal(false)}
+                className="text-slate-400 hover:text-white text-sm leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
             </div>
 
             <form onSubmit={handleSubmitScorecard} className="space-y-3">
@@ -1164,12 +1244,12 @@ export default function CandidateProfileClient({
                   onChange={(e) => setSelectedDecision(e.target.value as any)}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 border dark:border-[#30424A] border-slate-200 rounded-lg p-2 font-medium"
                 >
-                  <option value="SHORTLIST">⭐ {t('decision_action_shortlist')}</option>
-                  <option value="ADVANCE">📅 {t('decision_action_advance')}</option>
-                  <option value="HOLD">⏸ {t('decision_action_hold')}</option>
-                  <option value="REJECT">✕ {t('decision_action_reject')}</option>
-                  <option value="WITHDRAW">↩ {t('decision_action_withdraw')}</option>
-                  <option value="REVIEW">🔍 {t('decision_action_review')}</option>
+                  <option value="SHORTLIST">{t('decision_action_shortlist').replace(/^[^\w\s]+\s*/, '')}</option>
+                  <option value="ADVANCE">{t('decision_action_advance').replace(/^[^\w\s]+\s*/, '')}</option>
+                  <option value="HOLD">{t('decision_action_hold').replace(/^[^\w\s]+\s*/, '')}</option>
+                  <option value="REJECT">{t('decision_action_reject').replace(/^[^\w\s]+\s*/, '')}</option>
+                  <option value="WITHDRAW">{t('decision_action_withdraw').replace(/^[^\w\s]+\s*/, '')}</option>
+                  <option value="REVIEW">{t('decision_action_review').replace(/^[^\w\s]+\s*/, '')}</option>
                 </select>
               </div>
 
@@ -1182,10 +1262,10 @@ export default function CandidateProfileClient({
                 >
                   {reasonCatalog.length > 0
                     ? reasonCatalog.map((r) => (
-                        <option key={r.code} value={r.code}>
-                          {r.label}
-                        </option>
-                      ))
+                      <option key={r.code} value={r.code}>
+                        {r.label}
+                      </option>
+                    ))
                     : (
                       <>
                         <option value="QUALIFICATIONS_MATCH">{t('cprofile_reason_qualifications_match')}</option>
@@ -1242,7 +1322,13 @@ export default function CandidateProfileClient({
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-lg w-full shadow-xl space-y-3 text-xs dark:text-slate-200 text-slate-800">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('message_modal_title')}</h3>
-              <button onClick={() => setShowMessageModal(false)} className="text-slate-400">✕</button>
+              <button
+                onClick={() => setShowMessageModal(false)}
+                className="text-slate-400 hover:text-white text-sm leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
             </div>
 
             <p className="text-[11px] dark:text-slate-400 text-slate-500">{t('message_modal_hint')}</p>
