@@ -61,10 +61,10 @@ const SUBJECT_MAP: Record<EmailTemplateType, (data: EmailPayload['data']) => str
   INTERVIEW_INVITATION: (d) => `Interview Invitation: ${d.jobTitle ?? ''} — RecruitAI`,
   INTERVIEW_RESCHEDULED: (d) => `Interview Rescheduled: ${d.jobTitle ?? ''} — RecruitAI`,
   INTERVIEW_CANCELLED: (d) => `Interview Cancelled: ${d.jobTitle ?? ''} — RecruitAI`,
-  OFFER_LETTER: (d) => `Official Job Offer: ${d.jobTitle ?? ''} — RecruitAI 🎉`,
+  OFFER_LETTER: (d) => `Official Job Offer: ${d.jobTitle ?? ''} — RecruitAI`,
   REJECTION_FEEDBACK: (d) => `Update regarding your application for ${d.jobTitle ?? ''} — RecruitAI`,
   RECRUITER_MESSAGE: (d) => `${d.subject ?? 'A message about your application'} — RecruitAI`,
-  TEAM_INVITATION: () => `You have been invited to join a team on RecruitAI`,
+  TEAM_INVITATION: (d) => `You have been invited to join ${d.organizationName || d.orgName || 'a workspace'} on RecruitAI`,
   PASSWORD_RESET: () => `Reset your RecruitAI password`,
   EMAIL_VERIFICATION: () => `Verify your email address — RecruitAI`,
   EMAIL_VERIFICATION_CODE: (d) => `Your verification code: ${d.verificationCode ?? ''} — RecruitAI`,
@@ -121,19 +121,25 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
       // recruiter's preview is used verbatim (sent via customHtmlBody).
       body += `${data.body ?? ''}`;
       break;
-    case 'TEAM_INVITATION':
-      body += `<p>You have been invited to join a recruitment workspace on RecruitAI.</p>`;
-      const org = safe(data.organizationName ?? data.orgName ?? '');
-      body += `<p>You have been invited to join the <strong>${org}</strong> workspace on RecruitAI.</p>`;
+    case 'TEAM_INVITATION': {
+      const org = safe(data.organizationName ?? data.orgName ?? 'RecruitAI');
+      const roleStr = data.newRole ? ` as a <strong>${safe(data.newRole)}</strong>` : '';
+      body += `<p>You have been invited to join the <strong>${org}</strong> workspace on RecruitAI${roleStr}.</p>`;
+      body += `<p>An account has been created for your email. You can sign in using the temporary credentials below:</p>`;
       if (data.tempPassword) {
-        body += `<p>Your account has been created. To set up your own password, sign in with the temporary credential below, then choose a new password when prompted:</p>
-          <p style="font-size: 32px; letter-spacing: 8px; font-weight: 700; font-family: monospace; color: #0f766e;">${safe(data.tempPassword)}</p>
-          <p>This temporary credential is for your first login only. You will be asked to choose your own password immediately.</p>`;
+        body += `<div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 18px 0;">
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #475569;"><strong>Temporary Sign-in Password:</strong></p>
+          <p style="margin: 0; font-size: 24px; letter-spacing: 3px; font-weight: 700; font-family: monospace; color: #0f766e; background: #ffffff; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-block;">${safe(data.tempPassword)}</p>
+        </div>`;
       }
       if (data.joinLink) {
-        body += `<p><a href="${safe(data.joinLink)}">Sign in here</a></p>`;
+        body += `<p style="margin: 22px 0 16px 0;">
+          <a href="${safe(data.joinLink)}" style="background-color: #0f766e; color: #ffffff; font-weight: 600; font-size: 14px; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block;">Sign In to Workspace &rarr;</a>
+        </p>`;
       }
+      body += `<p style="font-size: 12px; color: #64748b; margin-top: 16px;">This temporary credential is for your first login only. You will be prompted to choose a permanent password immediately upon signing in.</p>`;
       break;
+    }
     case 'EMAIL_VERIFICATION':
       body += `<p>Please confirm your email address to activate your account.</p>
         ${data.joinLink ? `<p><a href="${safe(data.joinLink)}">Verify my email address</a></p>` : ''}`;

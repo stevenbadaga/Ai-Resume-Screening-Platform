@@ -51,52 +51,90 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
-    }
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      include: { roles: true }
+    });
+
+    let userId: string;
+    let userAccessStatus: string;
+    let isResend = false;
 
     // Spec §5: create a cryptographically random temporary password for the
     // invited account. It is hashed immediately (never stored plaintext) and
     // delivered ONLY inside the invite email (single-use, short-lived path).
-    // The Admin never sees it — there is no "show me the password" endpoint.
     const tempPassword = randomBytes(18).toString('base64url').slice(0, 16);
     const passwordHash = await bcrypt.hash(tempPassword, 12);
 
-    // Create the invited user record
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        name: name || null,
-        passwordHash,
-        accessStatus: 'INVITED',
-        mustChangePassword: true,
-        customPermissions: requestedPermissions,
-        organizationId: auth.user.organizationId,
-        roles: {
-          connect: { id: role.id }
-        }
-      }
-    });
+    if (existing) {
+      const isCandidate = existing.roles.length === 0 || existing.roles.some((r) => r.name === 'Candidate');
+      const isSameOrg = existing.organizationId === auth.user.organizationId;
+      const isAlreadyActiveStaff = isSameOrg && existing.accessStatus === 'ACTIVE' && !isCandidate;
 
-    // Send invite email with the temporary credential and a first-login
-    // instruction. The temp password is single-use: the recipient must set their
-    // own password on first login (POST /api/auth/first-login), after which the
-    // temporary credential is invalidated (mustChangePassword cleared + new
-    // passwordChangedAt stamped).
+      if (isAlreadyActiveStaff) {
+        return NextResponse.json(
+          { error: 'This user is already an active staff member in your workspace.' },
+          { status: 400 }
+        );
+      }
+
+      // Existing user is either in INVITED status, or a candidate transitioning to staff.
+      // Re-issue a fresh temporary password and re-send the invitation email.
+      isResend = true;
+      const updatedUser = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          name: name || existing.name,
+          passwordHash,
+          accessStatus: 'INVITED',
+          mustChangePassword: true,
+          customPermissions: requestedPermissions,
+          organizationId: auth.user.organizationId || existing.organizationId,
+          roles: {
+            set: [{ id: role.id }]
+          }
+        }
+      });
+      userId = updatedUser.id;
+      userAccessStatus = updatedUser.accessStatus;
+    } else {
+      // Create the invited user record
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          name: name || null,
+          passwordHash,
+          accessStatus: 'INVITED',
+          mustChangePassword: true,
+          customPermissions: requestedPermissions,
+          organizationId: auth.user.organizationId,
+          roles: {
+            connect: { id: role.id }
+          }
+        }
+      });
+      userId = newUser.id;
+      userAccessStatus = newUser.accessStatus;
+    }
+
+    // Send invite email with the temporary credential and a first-login instruction.
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const organization = await prisma.organization.findUnique({
-      where: { id: auth.user.organizationId },
-      select: { name: true },
-    });
+    const organization = auth.user.organizationId
+      ? await prisma.organization.findUnique({
+          where: { id: auth.user.organizationId },
+          select: { name: true },
+        })
+      : null;
+
     const delivery = await sendRecordedEmail({
       to: email,
       template: 'TEAM_INVITATION',
       data: {
-        candidateName: name || 'there',
+        candidateName: name || email.split('@')[0],
         joinLink: `${baseUrl}/auth/signin`,
         tempPassword,
-        organizationName: organization?.name ?? '',
+        newRole: role.name,
+        organizationName: organization?.name ?? 'RecruitAI Workspace',
       },
       senderId: auth.user.id
     });
@@ -104,10 +142,11 @@ export async function POST(req: NextRequest) {
     // SECURITY: return a safe subset — never the raw Prisma user record.
     return NextResponse.json({
       success: true,
+      resent: isResend,
       user: {
-        id: newUser.id,
-        email: newUser.email,
-        accessStatus: newUser.accessStatus,
+        id: userId,
+        email,
+        accessStatus: userAccessStatus,
         roleName: role.name
       },
       emailDelivered: delivery.delivered,
