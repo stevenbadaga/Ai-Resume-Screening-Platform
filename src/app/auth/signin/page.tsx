@@ -331,8 +331,8 @@ function SignInForm() {
 
   const initialPortal =
     searchParams.get('portal') === 'staff' ||
-    searchParams.get('accountType') === 'worker' ||
-    searchParams.get('type') === 'worker'
+      searchParams.get('accountType') === 'worker' ||
+      searchParams.get('type') === 'worker'
       ? 'staff'
       : 'applicant';
 
@@ -615,28 +615,23 @@ function SignInForm() {
               <button
                 type="button"
                 onClick={() => setPortalType('applicant')}
-                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
-                  portalType === 'applicant' ? 'active' : ''
-                }`}
+                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 font-semibold ${portalType === 'applicant' ? 'active' : ''
+                  }`}
               >
-                <span aria-hidden="true">🧑‍💼</span>
                 <span>{copy.applicantTab}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPortalType('staff')}
-                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
-                  portalType === 'staff' ? 'active' : ''
-                }`}
+                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 font-semibold ${portalType === 'staff' ? 'active' : ''
+                  }`}
               >
-                <span aria-hidden="true">🏢</span>
                 <span>{copy.staffTab}</span>
               </button>
             </div>
 
-            <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] flex items-center gap-2.5 text-left">
-              <span className="text-xl" aria-hidden="true">{portalType === 'applicant' ? '📄' : '🏢'}</span>
+            <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] text-left">
               <div>
                 <h3 className="font-bold text-[var(--foreground)] text-xs">
                   {portalType === 'applicant' ? copy.applicantBadge : copy.staffBadge}
@@ -775,11 +770,10 @@ function SignInForm() {
                 placeholder={portalType === 'applicant' ? copy.applicantPlaceholder : copy.staffPlaceholder}
                 aria-invalid={emailFormatError || undefined}
                 aria-describedby={emailFormatError ? 'signin-email-format-error' : undefined}
-                className={`w-full field !rounded-lg !px-4 !py-2.5 ${
-                  emailFormatError
+                className={`w-full field !rounded-lg !px-4 !py-2.5 ${emailFormatError
                     ? '!border-[var(--danger)]'
                     : ''
-                }`}
+                  }`}
               />
               {emailFormatError && (
                 <p
@@ -812,9 +806,9 @@ function SignInForm() {
                   type="button"
                   onClick={() => setShowPassword((visible) => !visible)}
                   aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1.5 rounded-md text-[10px] font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] focus:outline-none"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-[11px] font-semibold text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)] focus:outline-none"
                 >
-                  {showPassword ? '🙈' : '👁'}
+                  {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
             </div>

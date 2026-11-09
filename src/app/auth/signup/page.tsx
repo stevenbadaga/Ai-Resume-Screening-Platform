@@ -334,22 +334,20 @@ function SignupForm() {
         <button
           type="button"
           onClick={() => setAccountType('candidate')}
-          className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
+          className={`!py-2 !px-3 flex items-center justify-center gap-1.5 font-semibold ${
             accountType === 'candidate' ? 'active' : ''
           }`}
         >
-          <span aria-hidden="true">🧑‍💼</span>
           <span>{copy.applicant}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setAccountType('worker')}
-          className={`!py-2 !px-3 flex items-center justify-center gap-1.5 ${
+          className={`!py-2 !px-3 flex items-center justify-center gap-1.5 font-semibold ${
             accountType === 'worker' ? 'active' : ''
           }`}
         >
-          <span aria-hidden="true">🏢</span>
           <span>{copy.worker}</span>
         </button>
       </div>
@@ -357,8 +355,7 @@ function SignupForm() {
       {/* Registration Card Form */}
       <div className="panel-raised rounded-2xl max-w-xl mx-auto p-6 sm:p-7 space-y-4 text-xs">
         {/* Type Context Header */}
-        <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] flex items-center gap-2.5">
-          <span className="text-xl" aria-hidden="true">{accountType === 'candidate' ? '📄' : '🏢'}</span>
+        <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] text-left">
           <div>
             <h3 className="font-bold text-[var(--foreground)] text-xs">
               {accountType === 'candidate' ? copy.candidateHeading : copy.workerHeading}
@@ -390,7 +387,7 @@ function SignupForm() {
               </div>
 
               <p className="text-[10px] text-[var(--muted)] leading-relaxed">
-                👑 {copy.staffRoleNote}
+                {copy.staffRoleNote}
               </p>
             </div>
           )}
@@ -455,7 +452,6 @@ function SignupForm() {
             disabled={loading}
             className="w-full !py-2.5 btn btn-primary !font-semibold"
           >
-            <span aria-hidden="true">✨</span>
             <span>
               {loading
                 ? copy.creating

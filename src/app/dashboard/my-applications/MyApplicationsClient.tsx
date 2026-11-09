@@ -130,12 +130,12 @@ export default function MyApplicationsClient({
             <div className="flex flex-wrap gap-2 mt-2">
               {shortlistedCount > 0 && (
                 <span className="chip chip-success !text-[10px] font-bold">
-                  ★ {shortlistedCount} {t('personalized_shortlisted') || 'Applications Shortlisted'}
+                  {shortlistedCount} {t('personalized_shortlisted') || 'Applications Shortlisted'}
                 </span>
               )}
               {interviewingCount > 0 && (
                 <span className="chip chip-info !text-[10px] font-bold">
-                  📅 {interviewingCount} {t('personalized_interviewing') || 'Interviews in Progress'}
+                  {interviewingCount} {t('personalized_interviewing') || 'Interviews in Progress'}
                 </span>
               )}
             </div>
@@ -143,7 +143,6 @@ export default function MyApplicationsClient({
         </div>
 
         <Link href="/jobs" className="btn btn-primary self-start sm:self-auto font-bold shadow-xs">
-          <span aria-hidden="true">💼</span>
           <span>{t('nav_quick_apply') || 'Browse Open Roles'}</span>
         </Link>
       </div>
@@ -152,9 +151,15 @@ export default function MyApplicationsClient({
       {initialApplications.length > 0 && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--surface-muted)]/50 p-3 rounded-xl border border-[var(--border)]">
           <div className="relative flex-1 max-w-sm">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--muted)] pointer-events-none">
-              🔍
-            </span>
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--muted)] pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="text"
               value={search}
@@ -200,7 +205,11 @@ export default function MyApplicationsClient({
       {/* Applications List */}
       {initialApplications.length === 0 ? (
         <div className="panel p-12 text-center space-y-4">
-          <span className="text-4xl block" aria-hidden="true">📮</span>
+          <div className="w-12 h-12 mx-auto rounded-full bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)]">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
           <h3 className="font-bold text-[var(--foreground)] text-base">
             {t('my_apps_empty') || 'No Applications Submitted Yet'}
           </h3>
@@ -347,12 +356,12 @@ export default function MyApplicationsClient({
                   <div className="flex items-center gap-3">
                     {app.job?.location && (
                       <span className="text-[11px] text-[var(--muted)]">
-                        📍 {app.job.location}
+                        {app.job.location}
                       </span>
                     )}
                     {app.job?.employmentType && (
                       <span className="text-[11px] text-[var(--muted)]">
-                        💼 {app.job.employmentType}
+                        {app.job.employmentType}
                       </span>
                     )}
                   </div>

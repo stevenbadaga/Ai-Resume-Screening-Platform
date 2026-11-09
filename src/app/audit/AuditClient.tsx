@@ -203,7 +203,7 @@ export default function AuditClient({
                           ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30'
                           : 'bg-teal-600/20 text-teal-400 border border-teal-500/30'
                       }`}>
-                        {isAI ? '🤖' : (actorName[0]?.toUpperCase() || 'U')}
+                        {isAI ? 'AI' : (actorName[0]?.toUpperCase() || 'U')}
                       </div>
                       <div>
                         <p className="font-semibold dark:text-white text-slate-900 text-xs leading-tight">

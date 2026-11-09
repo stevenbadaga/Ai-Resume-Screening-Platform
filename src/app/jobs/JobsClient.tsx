@@ -470,15 +470,14 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                       <span className="chip">{job.department}</span>
                     </div>
                     <span
-                      className={`chip shrink-0 ${
-                        job.status === 'OPEN'
+                      className={`chip shrink-0 ${job.status === 'OPEN'
                           ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
                           : job.status === 'DRAFT'
-                          ? 'text-amber-600 dark:text-amber-400 border-amber-500/40'
-                          : job.status === 'CLOSED'
-                          ? 'text-[var(--coral)] border-[color-mix(in_srgb,var(--coral)_40%,transparent)]'
-                          : ''
-                      }`}
+                            ? 'text-amber-600 dark:text-amber-400 border-amber-500/40'
+                            : job.status === 'CLOSED'
+                              ? 'text-[var(--coral)] border-[color-mix(in_srgb,var(--coral)_40%,transparent)]'
+                              : ''
+                        }`}
                     >
                       ● {(job.status || 'DRAFT').toUpperCase()}
                     </span>
@@ -546,13 +545,22 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                       </button>
                     )}
                     {isStaff && job.status === 'OPEN' && (
-                      <button
-                        onClick={() => handleCloseJob(job)}
-                        title={t('aria_close_requisition')}
-                        className="btn btn-danger !px-2 !py-1 !text-[11px]"
-                      >
-                        {t('btn_close')}
-                      </button>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Link
+                          href={`/jobs/${job.id}/apply`}
+                          className="btn btn-secondary !px-2 !py-1 !text-[11px]"
+                          title="View requisition or submit an application"
+                        >
+                          Apply / View &rarr;
+                        </Link>
+                        <button
+                          onClick={() => handleCloseJob(job)}
+                          title={t('aria_close_requisition')}
+                          className="btn btn-danger !px-2 !py-1 !text-[11px]"
+                        >
+                          {t('btn_close')}
+                        </button>
+                      </div>
                     )}
                     {isStaff && job.status === 'CLOSED' && (
                       <button
@@ -590,14 +598,23 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                         Sign in to apply &rarr;
                       </Link>
                     ) : !isStaff && job.status === 'OPEN' && hasSavedResume ? (
-                      <button
-                        onClick={() => handleOneClickApply(job)}
-                        disabled={applyingJobId === job.id}
-                        title={t('aria_apply_instant')}
-                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
-                      >
-                        {applyingJobId === job.id ? t('btn_applying') : t('btn_one_click_apply')}
-                      </button>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => handleOneClickApply(job)}
+                          disabled={applyingJobId === job.id}
+                          title={t('aria_apply_instant')}
+                          className="btn btn-primary !px-2.5 !py-1 !text-[11px] inline-flex items-center gap-1 shadow-sm font-semibold"
+                        >
+                          <span>{applyingJobId === job.id ? t('btn_applying') : t('btn_one_click_apply').replace(/^⚡\s*/, '')}</span>
+                        </button>
+                        <Link
+                          href={`/jobs/${job.id}/apply`}
+                          className="btn btn-secondary !px-2.5 !py-1 !text-[11px] inline-flex items-center gap-1 hover:border-[var(--accent)] font-medium"
+                          title="Apply with a tailored or different resume"
+                        >
+                          <span>{t('apply_role') || 'Apply with Custom CV'} &rarr;</span>
+                        </Link>
+                      </div>
                     ) : job.status === 'OPEN' ? (
                       <Link
                         href={`/jobs/${job.id}/apply`}
@@ -624,7 +641,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
               <h3 className="text-sm font-bold text-[var(--foreground)]">
                 {t('edit_rubric_title').replace('{title}', editingJob.title)}
               </h3>
-              <button onClick={() => setEditModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)]" aria-label={t('aria_close_dialog')}>✕</button>
+              <button onClick={() => setEditModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)] text-sm leading-none" aria-label={t('aria_close_dialog')}>&times;</button>
             </div>
 
             {editingJob.rubrics?.[0]?.status === 'APPROVED' && (
@@ -681,9 +698,9 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                     <button
                       type="button"
                       onClick={() => setEditCriteria(editCriteria.filter((_, i) => i !== idx))}
-                      className="text-[var(--coral)] hover:opacity-75 p-1" aria-label={t('aria_remove_criterion')}
+                      className="text-[var(--coral)] hover:opacity-75 p-1 text-sm leading-none" aria-label={t('aria_remove_criterion')}
                     >
-                      ✕
+                      &times;
                     </button>
                   </div>
                   {/* §6.2: minimum threshold + acceptable evidence per criterion */}
@@ -751,7 +768,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                 <h3 className="text-sm font-bold text-[var(--foreground)]">{t('rubric_preview_title')}</h3>
                 <p className="text-[10px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">{previewJob.title} &bull; {previewJob.department}</p>
               </div>
-              <button onClick={() => setPreviewModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)]" aria-label="Close dialog">✕</button>
+              <button onClick={() => setPreviewModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)] text-sm leading-none" aria-label="Close dialog">&times;</button>
             </div>
 
             <div className="space-y-3">
@@ -809,7 +826,7 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
           <div className="panel p-5 max-w-lg w-full space-y-3.5 max-h-[90vh] overflow-y-auto text-xs">
             <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
               <h3 className="text-sm font-bold text-[var(--foreground)]">{t('create_job_modal_title')}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)]" aria-label={t('aria_close_dialog')}>✕</button>
+              <button onClick={() => setIsModalOpen(false)} className="text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] hover:text-[var(--foreground)] text-sm leading-none" aria-label={t('aria_close_dialog')}>&times;</button>
             </div>
 
             <form onSubmit={handleCreateJob} className="space-y-3">

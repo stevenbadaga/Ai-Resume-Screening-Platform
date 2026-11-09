@@ -272,36 +272,33 @@ export default function CandidatesClient({
         <button
           type="button"
           onClick={() => setQuickFilter('ALL')}
-          className={`px-2.5 py-1 rounded-lg font-medium transition ${
-            quickFilter === 'ALL'
-              ? 'bg-[var(--accent)] text-white shadow-xs font-bold'
-              : 'bg-[var(--surface-muted)] text-[var(--foreground)] hover:bg-[var(--border)]'
-          }`}
+          className={`px-2.5 py-1 rounded-lg font-medium transition ${quickFilter === 'ALL'
+            ? 'bg-[var(--accent)] text-white shadow-xs font-bold'
+            : 'bg-[var(--surface-muted)] text-[var(--foreground)] hover:bg-[var(--border)]'
+            }`}
         >
           All Candidates ({applications.length})
         </button>
         <button
           type="button"
           onClick={() => setQuickFilter('NEEDS_REVIEW')}
-          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
-            quickFilter === 'NEEDS_REVIEW'
-              ? 'bg-amber-600 text-white shadow-xs font-bold'
-              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
-          }`}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${quickFilter === 'NEEDS_REVIEW'
+            ? 'bg-amber-600 text-white shadow-xs font-bold'
+            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
+            }`}
         >
-          <span>⚠️ Needs Review</span>
+          <span>Needs Review</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">{reviewCount}</span>
         </button>
         <button
           type="button"
           onClick={() => setQuickFilter('TOP_MATCH')}
-          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
-            quickFilter === 'TOP_MATCH'
-              ? 'bg-emerald-600 text-white shadow-xs font-bold'
-              : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
-          }`}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${quickFilter === 'TOP_MATCH'
+            ? 'bg-emerald-600 text-white shadow-xs font-bold'
+            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
+            }`}
         >
-          <span>⭐ Top Matches (≥80%)</span>
+          <span>Top Matches (≥80%)</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
             {applications.filter((a) => (Number(a.screeningRuns?.[0]?.effectiveResult ?? a.screeningRuns?.[0]?.totalResult) || 0) >= 80).length}
           </span>
@@ -309,13 +306,12 @@ export default function CandidatesClient({
         <button
           type="button"
           onClick={() => setQuickFilter('ZERO_SCORE')}
-          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
-            quickFilter === 'ZERO_SCORE'
-              ? 'bg-rose-600 text-white shadow-xs font-bold'
-              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
-          }`}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${quickFilter === 'ZERO_SCORE'
+            ? 'bg-rose-600 text-white shadow-xs font-bold'
+            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
+            }`}
         >
-          <span>❌ Required Failed (0%)</span>
+          <span>Required Failed (0%)</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
             {applications.filter((a) => a.screeningRuns?.length && (Number(a.screeningRuns?.[0]?.effectiveResult ?? a.screeningRuns?.[0]?.totalResult) || 0) === 0).length}
           </span>
@@ -323,13 +319,12 @@ export default function CandidatesClient({
         <button
           type="button"
           onClick={() => setQuickFilter('INTERVIEW')}
-          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
-            quickFilter === 'INTERVIEW'
-              ? 'bg-sky-600 text-white shadow-xs font-bold'
-              : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20'
-          }`}
+          className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${quickFilter === 'INTERVIEW'
+            ? 'bg-sky-600 text-white shadow-xs font-bold'
+            : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20'
+            }`}
         >
-          <span>📅 Interviewing</span>
+          <span>Interviewing</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
             {applications.filter((a) => (a.stage || a.status || '').toUpperCase().includes('INTERVIEW')).length}
           </span>
@@ -446,7 +441,6 @@ export default function CandidatesClient({
                   className="chip chip-info !cursor-pointer hover:brightness-95 transition flex items-center gap-1 font-bold"
                   title="Compare selected candidates side-by-side against the approved rubric"
                 >
-                  <span>⚖</span>
                   <span>{t('bulk_compare') || `Compare Selected (${selectedIds.size})`}</span>
                 </Link>
               )}
@@ -507,9 +501,20 @@ export default function CandidatesClient({
                       </td>
                       <td className="font-mono font-bold text-[var(--accent)] text-xs tabular-nums">{score}%</td>
                       <td className="text-right">
-                        <Link href={`/candidates/${app.id}`} className="btn btn-secondary btn-sm">
-                          {t('view_details')} <span aria-hidden="true">&rarr;</span>
-                        </Link>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <a
+                            href={`/api/resumes/${app.resumeDocument?.id || app.id}?view=inline`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary btn-sm"
+                            title="View CV in a new tab"
+                          >
+                            View CV
+                          </a>
+                          <Link href={`/candidates/${app.id}`} className="btn btn-secondary btn-sm">
+                            {t('view_details')} <span aria-hidden="true">&rarr;</span>
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );

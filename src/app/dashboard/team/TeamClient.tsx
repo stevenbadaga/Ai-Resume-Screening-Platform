@@ -85,6 +85,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Recruiter');
   const [inviting, setInviting] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState<string | null>(null);
 
   // User deletion state
   const [deleteTargetUser, setDeleteTargetUser] = useState<any | null>(null);
@@ -92,6 +93,36 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
 
   const { showToast } = useToast();
   const { t } = useLanguage();
+
+  const handleResendInvite = async (user: any) => {
+    if (resendingEmail) return;
+    setResendingEmail(user.email);
+    try {
+      const res = await fetch('/api/team/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name || '',
+          roleName: user.roles?.[0]?.name || 'Recruiter',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.emailDelivered) {
+          showToast(`Invitation email with fresh sign-in details sent to ${user.email}.`, 'success', 'Invitation Dispatched');
+        } else {
+          showToast(`Account updated, but email delivery failed: ${data.emailError || 'SMTP error'}.`, 'warning', 'Email Issue');
+        }
+      } else {
+        showToast(data.error || 'Failed to resend invitation.', 'error');
+      }
+    } catch {
+      showToast('Network error while resending invitation.', 'error');
+    } finally {
+      setResendingEmail(null);
+    }
+  };
 
   const handleConfirmDelete = async () => {
     if (!deleteTargetUser || deletingUser) return;
@@ -248,11 +279,12 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
       const data = await res.json();
       if (res.ok) {
         setUsers((prev) => [
-          ...prev,
+          ...prev.filter((u) => u.email.toLowerCase() !== inviteEmail.toLowerCase()),
           {
-            id: 'invited-' + Date.now(),
+            id: data.user?.id || 'invited-' + Date.now(),
             name: inviteName || 'Invited Staff Member',
             email: inviteEmail,
+            accessStatus: 'INVITED',
             roles: [{ name: inviteRole, permissions: ['INVITED'] }]
           }
         ]);
@@ -260,7 +292,15 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         setInviteName('');
         setInviteEmail('');
         setInvitePermissions([]);
-        showToast(t('toast_invited').replace('{email}', inviteEmail), 'success', t('toast_invited_title'));
+        if (data.emailDelivered) {
+          showToast(t('toast_invited').replace('{email}', inviteEmail), 'success', t('toast_invited_title'));
+        } else {
+          showToast(
+            `Member account created, but email delivery failed: ${data.emailError || 'Email service error'}. You can resend the invite anytime.`,
+            'warning',
+            'Email Delivery Warning'
+          );
+        }
       } else {
         showToast(data.error || t('toast_invite_failed'), 'error');
       }
@@ -371,7 +411,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <span>🏢 {t('tab_internal_staff')}</span>
+          <span>{t('tab_internal_staff').replace(/^🏢\s*/, '')}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-teal-950 bg-teal-50 border dark:border-teal-800/60 border-teal-200">
             {staffMembers.length}
           </span>
@@ -385,7 +425,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          <span>📄 {t('tab_external_candidates')}</span>
+          <span>{t('tab_external_candidates').replace(/^📄\s*/, '')}</span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-[#17242B] bg-slate-100 border dark:border-[#30424A] border-slate-200">
             {candidateAccounts.length}
           </span>
@@ -395,7 +435,10 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
       {/* Notice Banner */}
       <div className="p-3 rounded-xl dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border flex items-center justify-between text-xs dark:text-slate-300 text-slate-700">
         <div className="flex items-center gap-2">
-          <span className="text-base">{activeTab === 'staff' ? '🏢' : '📄'}</span>
+          <span className="font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider text-[10px]">
+            {activeTab === 'staff' ? 'Workspace Staff' : 'External Applicants'}
+          </span>
+          <span className="text-slate-400 dark:text-slate-500">&bull;</span>
           <span>
             {activeTab === 'staff'
               ? t('team_notice_staff')
@@ -487,6 +530,16 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                     <td className="p-3 text-right">
                       {isStaff ? (
                         <div className="flex items-center justify-end gap-1.5">
+                          {user.accessStatus === 'INVITED' && (
+                            <button
+                              onClick={() => handleResendInvite(user)}
+                              disabled={resendingEmail === user.email}
+                              className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded text-xs font-semibold transition disabled:opacity-50"
+                              title="Generate a fresh temporary password and resend invitation email"
+                            >
+                              {resendingEmail === user.email ? 'Sending...' : 'Resend Invite'}
+                            </button>
+                          )}
                           <button
                             onClick={() => handleOpenEdit(user)}
                             className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
@@ -544,7 +597,13 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
             <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
               <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('team_edit_role_title')}</h3>
-              <button onClick={() => setEditingUser(null)} className="text-slate-400">✕</button>
+              <button
+                onClick={() => setEditingUser(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
             </div>
 
             <div className="space-y-1">                <p className="font-semibold dark:text-white text-slate-900">{editingUser.name || t('team_user_fallback')}</p>
@@ -607,7 +666,13 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
             <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
               <h3 className="text-sm font-bold dark:text-white text-slate-900">{t('team_invite_title')}</h3>
-              <button onClick={() => setShowInviteModal(false)} className="text-slate-400">✕</button>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
             </div>
 
             <form onSubmit={handleInvite} className="space-y-3">
@@ -684,11 +749,14 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="dark:bg-[#17242B] bg-[#FFFDF8] dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-3.5 text-xs">
             <div className="flex items-center justify-between pb-2 border-b dark:border-[#30424A] border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="text-base">⚠️</span>
-                <h3 className="text-sm font-bold dark:text-white text-slate-900">Remove Team Member</h3>
-              </div>
-              <button onClick={() => setDeleteTargetUser(null)} className="text-slate-400">✕</button>
+              <h3 className="text-sm font-bold dark:text-white text-slate-900">Remove Team Member</h3>
+              <button
+                onClick={() => setDeleteTargetUser(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
             </div>
 
             <div className="space-y-2.5 text-slate-600 dark:text-slate-300">
