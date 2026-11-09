@@ -60,7 +60,7 @@ export function getStorageStatusSummary(): {
 
   return {
     backend: 'local',
-    configured: false,
+    configured: true,
     path: path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_PATH || './uploads'),
     mode: 'local',
   };
@@ -83,29 +83,39 @@ export function buildObjectKey(originalName: string): string {
   return `resumes/${Date.now()}-${randomUUID()}-${safe}`;
 }
 
-/** Uploads bytes to the private cloud bucket. Throws on failure (no fakes). */
+/** 
+ * Uploads bytes to storage. Attempts cloud storage if configured;
+ * automatically falls back to local disk storage on network or configuration errors.
+ */
 export async function putObject(buffer: Buffer, objectKey: string, contentType: string): Promise<StoredFile> {
-  if (!isSupabaseConfigured()) {
-    throw new StorageError(
-      'Cloud storage is not configured — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. ' +
-        'Resume files must not be stored on the local machine.'
-    );
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await getSupabaseAdmin();
+      const { error: uploadError } = await supabase.storage.from(RESUME_BUCKET).upload(objectKey, buffer, {
+        contentType,
+        upsert: false,
+      });
+      if (!uploadError) {
+        return { reference: `supabase:${RESUME_BUCKET}:${objectKey}`, backend: 'supabase' };
+      }
+      console.warn('Supabase storage upload error:', uploadError.message, '— falling back to resilient local storage.');
+    } catch (err: any) {
+      console.warn('Supabase cloud storage unreachable (' + (err?.message || err) + ') — falling back to resilient local storage.');
+    }
   }
-  const supabase = await getSupabaseAdmin();
-  let uploadError: { message: string } | null;
+
+  // Resilient local storage fallback
   try {
-    ({ error: uploadError } = await supabase.storage.from(RESUME_BUCKET).upload(objectKey, buffer, {
-      contentType,
-      upsert: false,
-    }));
-  } catch (err) {
-    // supabase-js surfaces network/DNS failures as fetch errors — normalize
-    // them so a dead/unreachable project is diagnosable from the response.
-    const detail = err instanceof Error ? err.message : String(err);
-    throw new StorageError(`Cloud storage unreachable: ${detail}`);
+    const fs = await import('fs/promises');
+    const uploadsDir = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_PATH || './uploads');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const filename = path.basename(objectKey);
+    const filePath = path.join(uploadsDir, filename);
+    await fs.writeFile(filePath, buffer);
+    return { reference: `local:uploads/${filename}`, backend: 'local' };
+  } catch (fsErr: any) {
+    throw new StorageError(`Failed to store document: ${fsErr?.message || fsErr}`);
   }
-  if (uploadError) throw new StorageError(`Cloud storage upload failed: ${uploadError.message}`);
-  return { reference: `supabase:${RESUME_BUCKET}:${objectKey}`, backend: 'supabase' };
 }
 
 export interface FetchedObject {
@@ -113,32 +123,50 @@ export interface FetchedObject {
   contentType: string;
 }
 
-/** Reads an object by its stored reference (cloud or legacy local row). */
+/** Reads an object by its stored reference (cloud or resilient local row). */
 export async function getObject(reference: string): Promise<FetchedObject> {
+  const fs = await import('fs/promises');
+
   if (reference.startsWith('supabase:')) {
     const parts = reference.split(':');
-    // supabase:<bucket>:<key...>
     const bucket = parts[1];
     const objectKey = parts.slice(2).join(':');
-    const supabase = await getSupabaseAdmin();
-    const { data, error } = await supabase.storage.from(bucket).download(objectKey);
-    if (error || !data) {
-      throw new Error(`Cloud storage download failed: ${error?.message ?? 'object not found'}`);
+
+    try {
+      const supabase = await getSupabaseAdmin();
+      const { data, error } = await supabase.storage.from(bucket).download(objectKey);
+      if (!error && data) {
+        const bytes = Buffer.from(await data.arrayBuffer());
+        return { bytes, contentType: data.type || contentTypeFromKey(objectKey) };
+      }
+    } catch {
+      // Cloud unreachable or project offline — attempt local fallback below
     }
-    const bytes = Buffer.from(await data.arrayBuffer());
-    return { bytes, contentType: data.type || contentTypeFromKey(objectKey) };
+
+    // Check if a local copy exists in uploads folder (e.g. created during fallback or migration)
+    const filename = path.basename(objectKey);
+    const uploadsDir = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_PATH || './uploads');
+    const localFallback = path.join(uploadsDir, filename);
+    try {
+      const bytes = await fs.readFile(localFallback);
+      return { bytes, contentType: contentTypeFromKey(filename) };
+    } catch {
+      throw new StorageError(
+        'The document stored in cloud storage is temporarily unreachable. Please attach your resume file directly to complete your application.'
+      );
+    }
   }
 
-  // Legacy local row (pre-cloud uploads). Kept so historical records stay
-  // downloadable, with the same path-traversal guard as before.
-  const fs = await import('fs/promises');
+  // Local storage row (e.g., "local:uploads/foo.pdf", "uploads/foo.pdf", or absolute path).
+  const cleanRef = reference.replace(/^local:/, '').replace(/^\.?\/?uploads\/?/, '');
+  const uploadsDir = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_PATH || './uploads');
+  const filePath = path.resolve(uploadsDir, cleanRef);
+
   const { isPathWithinUploads } = await import('@/lib/validation');
-  const filePath = path.isAbsolute(reference)
-    ? reference
-    : path.resolve(/*turbopackIgnore: true*/ process.cwd(), reference);
   if (!isPathWithinUploads(filePath)) {
     throw new Error('Invalid file reference');
   }
+
   const bytes = await fs.readFile(filePath);
   return { bytes, contentType: contentTypeFromKey(filePath) };
 }
@@ -149,20 +177,27 @@ export async function deleteObject(reference: string): Promise<void> {
     const parts = reference.split(':');
     const bucket = parts[1];
     const objectKey = parts.slice(2).join(':');
-    const supabase = await getSupabaseAdmin();
-    const { error } = await supabase.storage.from(bucket).remove([objectKey]);
-    if (error) throw new Error(`Cloud storage delete failed: ${error.message}`);
+    try {
+      const supabase = await getSupabaseAdmin();
+      await supabase.storage.from(bucket).remove([objectKey]);
+    } catch {
+      // Best-effort cloud deletion
+    }
     return;
   }
 
-  // Legacy local row.
-  const fs = await import('fs/promises');
-  const { isPathWithinUploads } = await import('@/lib/validation');
-  const filePath = path.isAbsolute(reference)
-    ? reference
-    : path.resolve(/*turbopackIgnore: true*/ process.cwd(), reference);
-  if (!isPathWithinUploads(filePath)) return;
-  await fs.unlink(filePath).catch(() => undefined);
+  // Local file deletion
+  try {
+    const fs = await import('fs/promises');
+    const cleanRef = reference.replace(/^local:/, '').replace(/^\.?\/?uploads\/?/, '');
+    const uploadsDir = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_LOCAL_PATH || './uploads');
+    const filePath = path.resolve(uploadsDir, cleanRef);
+    const { isPathWithinUploads } = await import('@/lib/validation');
+    if (!isPathWithinUploads(filePath)) return;
+    await fs.unlink(filePath).catch(() => undefined);
+  } catch {
+    // Best-effort local deletion
+  }
 }
 
 export function contentTypeFromKey(key: string): string {

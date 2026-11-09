@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import path from 'path';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { safeErrorResponse, validateFileMagicBytes } from '@/lib/validation';
 import { scanDocumentForMalware } from '@/lib/malwareScan';
-import { putObject, buildObjectKey, contentTypeFromKey, deleteObject, StorageError } from '@/lib/storage';
+import { putObject, getObject, buildObjectKey, contentTypeFromKey, deleteObject, StorageError } from '@/lib/storage';
 import { logEvent } from '@/lib/observability';
 
 /**
@@ -151,6 +152,41 @@ export async function POST(req: NextRequest) {
     }
     console.error('Profile resume upload error:', error);
     return safeErrorResponse('Failed to save CV');
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { user } = auth;
+
+    const candidate = await prisma.candidate.findFirst({ where: { email: user.email } });
+    if (!candidate?.profileResumeRef) {
+      return NextResponse.json({ error: 'No saved CV found' }, { status: 404 });
+    }
+
+    const { bytes: file, contentType: detectedType } = await getObject(candidate.profileResumeRef);
+    const referenceTail = candidate.profileResumeRef.split('/').pop() || candidate.profileResumeRef;
+    const cleanExt = path.extname(referenceTail).toLowerCase() || '.pdf';
+    const contentTypeHeader = detectedType || contentTypeFromKey(referenceTail) || 'application/pdf';
+
+    const url = new URL(req.url);
+    const forceDownload = url.searchParams.get('download') === '1';
+    const dispositionType = forceDownload ? 'attachment' : 'inline';
+    const safeName = (candidate.profileResumeName || `${candidate.firstName}_${candidate.lastName}_CV`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+
+    return new NextResponse(new Uint8Array(file), {
+      headers: {
+        'Content-Type': contentTypeHeader,
+        'Content-Disposition': `${dispositionType}; filename="${safeName.endsWith(cleanExt) ? safeName : safeName + cleanExt}"`,
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
+  } catch (error) {
+    console.error('Profile resume download error:', error);
+    return safeErrorResponse('Failed to download saved resume');
   }
 }
 
