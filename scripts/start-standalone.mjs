@@ -7,6 +7,9 @@ import { pathToFileURL } from 'node:url';
 // server entry point.
 nextEnv.loadEnvConfig(process.cwd());
 
+// Enforce listening on 0.0.0.0 so Render and cloud container routers can reach the app
+process.env.HOSTNAME = '0.0.0.0';
+
 const serverPath = resolve(process.cwd(), '.next/standalone/server.js');
 const standalonePath = resolve(process.cwd(), '.next/standalone');
 await mkdir(resolve(standalonePath, '.next'), { recursive: true });
