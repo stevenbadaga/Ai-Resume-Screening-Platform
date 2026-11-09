@@ -36,6 +36,7 @@ model User {
   id                      String                   @id @default(uuid())
   email                   String                   @unique
   name                    String?
+  phone                   String?
   passwordHash            String?
   accessStatus            String                   @default("ACTIVE") // ACTIVE, SUSPENDED, INVITED
   emailVerifiedAt         DateTime? // NULL = email not yet verified (spec §6.1: only valid emails)
@@ -123,6 +124,7 @@ model Candidate {
   firstName               String
   lastName                String
   email                   String
+  phone                   String?
   // Spec §6.3: candidates and their applications are archivable records —
   // archived records stay queryable for audit/history but leave the active
   // pipeline and analytics surfaces until restored.
