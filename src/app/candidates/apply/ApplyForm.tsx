@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
-export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: string, title: string }[]; candidateProfile?: { firstName?: string; lastName?: string; email?: string; savedCv?: { name: string; size: number; uploadedAt: string } | null } | null }) {
+export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: string, title: string }[]; candidateProfile?: { firstName?: string; lastName?: string; email?: string; phone?: string; savedCv?: { name: string; size: number; uploadedAt: string } | null } | null }) {
   const { t } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
   const [status, setStatus] = useState<{ text: string; error: boolean } | null>(null);
@@ -16,6 +16,7 @@ export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: stri
   const prefillFirstName = candidateProfile?.firstName || '';
   const prefillLastName = candidateProfile?.lastName || '';
   const prefillEmail = candidateProfile?.email || '';
+  const prefillPhone = candidateProfile?.phone || '';
   const savedCv = candidateProfile?.savedCv;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,53 +138,94 @@ export default function ApplyForm({ jobs, candidateProfile }: { jobs: { id: stri
           )}
         </div>
 
-        {/* Resume upload with option to use saved CV */}
+        {/* Phone number */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('profile_phone_number')}</label>
+          <input 
+            name="phone" 
+            type="tel" 
+            className="input-field" 
+            placeholder={t('profile_phone_placeholder')} 
+            defaultValue={prefillPhone}
+          />
+        </div>
+
+        {/* Resume upload with option to use saved CV or upload new */}
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('apply_legacy_resume')}</label>
           <div style={{ border: '2px dashed var(--border)', borderRadius: '0.5rem', padding: '1.5rem', textAlign: 'center', backgroundColor: 'var(--surface-muted)', transition: 'border-color 0.2s' }}>
-            {savedCv && !usingSavedCv ? (
-              <>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📄</div>
-                <p style={{ fontWeight: 500, marginBottom: '0.25rem' }}>{savedCv.name}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                  {t('apply_personalized_saved_cv')}
-                </p>
-                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}>
+            {savedCv ? (
+              <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: usingSavedCv ? '2px solid var(--accent)' : '1px solid var(--border)', backgroundColor: usingSavedCv ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--surface)', cursor: 'pointer' }}>
                   <input 
                     type="radio" 
-                    name="useSavedCv" 
-                    value="yes" 
+                    name="cvChoice" 
                     checked={usingSavedCv} 
-                    onChange={() => setUsingSavedCv(true)} 
-                    className="sr-only"
+                    onChange={() => { setUsingSavedCv(true); setSelectedFile(null); }} 
+                    style={{ accentColor: 'var(--accent)' }}
                   />
-                  {t('apply_use_saved_cv')}
+                  <div>
+                    <span style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem' }}>
+                      {t('apply_use_saved_cv')?.replace(/^⚡\s*/, '') || 'Use saved profile CV'} ({savedCv.name})
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {t('apply_personalized_saved_cv') || 'Apply instantly with the CV already saved on your candidate profile'}
+                    </span>
+                  </div>
                 </label>
-              </>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: !usingSavedCv ? '2px solid var(--accent)' : '1px solid var(--border)', backgroundColor: !usingSavedCv ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--surface)', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="cvChoice" 
+                    checked={!usingSavedCv} 
+                    onChange={() => setUsingSavedCv(false)} 
+                    style={{ accentColor: 'var(--accent)' }}
+                  />
+                  <div>
+                    <span style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem' }}>
+                      {t('apply_upload_different')?.replace(/^📄\s*/, '') || 'Upload a custom/tailored resume for this role'}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Choose a new PDF or DOCX file to submit specifically for this position
+                    </span>
+                  </div>
+                </label>
+
+                {usingSavedCv && (
+                  <input type="hidden" name="useProfileResume" value="true" />
+                )}
+              </div>
             ) : null}
-            <input 
-              name="resume" 
-              type="file" 
-              accept=".pdf,.docx" 
-              onChange={handleFileChange}
-              className="input-field" 
-              style={{ padding: '0.5rem' }}
-              required={!savedCv || !usingSavedCv}
-            />
-            {fileError && (
-              <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-400">
-                ⚠️ {fileError}
-              </p>
-            )}
-            {selectedFile && !fileError && (
-              <div className="mt-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between">
-                <span>📄 {selectedFile.name} ({(selectedFile.size / 1024).toFixed(0)} KB)</span>
-                <span>✅ Format verified</span>
+
+            {!usingSavedCv && (
+              <div>
+                <input 
+                  name="resume" 
+                  type="file" 
+                  accept=".pdf,.docx" 
+                  onChange={handleFileChange}
+                  className="input-field" 
+                  style={{ padding: '0.5rem' }}
+                  required={!usingSavedCv}
+                />
+                {fileError && (
+                  <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                    {fileError}
+                  </p>
+                )}
+                {selectedFile && !fileError && (
+                  <div className="mt-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between">
+                    <span>{selectedFile.name} ({(selectedFile.size / 1024).toFixed(0)} KB)</span>
+                    <span className="font-mono text-[11px] uppercase tracking-wider">Verified</span>
+                  </div>
+                )}
               </div>
             )}
+            
             {savedCv && usingSavedCv && (
-              <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', fontWeight: 500 }}>
-                ✓ {t('apply_personalized_using_saved_cv')}
+              <p style={{ fontSize: '0.8rem', color: 'var(--accent)', marginTop: '0.5rem', fontWeight: 600 }}>
+                Ready to submit using saved CV: <strong>{savedCv.name}</strong>
               </p>
             )}
           </div>

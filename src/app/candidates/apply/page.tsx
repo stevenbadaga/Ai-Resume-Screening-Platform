@@ -18,19 +18,29 @@ export default async function ApplyPage() {
   // Personalization: pre-fill form with saved candidate profile data
   let candidateProfile: any = null;
   let savedCv: any = null;
+  let userPhone = '';
   if (userEmail) {
-    candidateProfile = await prisma.candidate.findFirst({
-      where: { email: userEmail },
-      select: {
-        firstName: true,
-        lastName: true,
-        skills: true,
-        experience: true,
-        profileResumeName: true,
-        profileResumeSize: true,
-        profileResumeUploadedAt: true,
-      },
-    });
+    const [cand, userRec] = await Promise.all([
+      prisma.candidate.findFirst({
+        where: { email: userEmail },
+        select: {
+          firstName: true,
+          lastName: true,
+          phone: true,
+          skills: true,
+          experience: true,
+          profileResumeName: true,
+          profileResumeSize: true,
+          profileResumeUploadedAt: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { email: userEmail },
+        select: { phone: true },
+      }),
+    ]);
+    candidateProfile = cand;
+    userPhone = cand?.phone || userRec?.phone || '';
     savedCv = candidateProfile?.profileResumeName ? {
       name: candidateProfile.profileResumeName,
       size: candidateProfile.profileResumeSize,
@@ -43,10 +53,11 @@ export default async function ApplyPage() {
       <div className="glass-panel" style={{ maxWidth: '600px', width: '100%', padding: '3rem' }}>
         <ApplyForm 
           jobs={jobs} 
-          candidateProfile={candidateProfile && savedCv ? {
+          candidateProfile={candidateProfile ? {
             firstName: candidateProfile.firstName || '',
             lastName: candidateProfile.lastName || '',
             email: userEmail || '',
+            phone: userPhone,
             savedCv: savedCv,
           } : null}
         />

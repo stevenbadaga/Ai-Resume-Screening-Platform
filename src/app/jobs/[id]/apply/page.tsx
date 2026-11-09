@@ -41,6 +41,7 @@ export default function ApplyJobPage() {
   // profile — the application then reuses it instead of a per-form upload.
   const [savedResume, setSavedResume] = useState<{ name: string; size: number | null } | null>(null);
   const [useSavedCv, setUseSavedCv] = useState(false);
+  const [showStaffForm, setShowStaffForm] = useState(false);
 
   const userRole = (session?.user as any)?.role || 'Candidate';
   const isInternalStaff = ['Admin', 'Recruiter', 'HiringManager', 'Interviewer', 'ComplianceAuditor', 'Auditor'].includes(userRole);
@@ -58,7 +59,7 @@ export default function ApplyJobPage() {
     }
   }, [session]);
 
-  // Load the candidate's saved CV (if any) so the form can offer one-click
+  // Load the candidate's saved CV and phone (if any) so the form can offer one-click
   // submission straight from their profile.
   useEffect(() => {
     async function fetchSavedResume() {
@@ -66,7 +67,12 @@ export default function ApplyJobPage() {
         const res = await fetch('/api/profile');
         if (!res.ok) return;
         const data = await res.json();
-        const saved = data?.profile?.candidate?.savedResume;
+        const profile = data?.profile;
+        const cand = profile?.candidate;
+        if (cand?.phone || profile?.phone) {
+          setPhone(cand?.phone || profile?.phone);
+        }
+        const saved = cand?.savedResume;
         if (saved?.name) {
           setSavedResume({ name: saved.name, size: saved.size ?? null });
           setUseSavedCv(true);
@@ -189,7 +195,11 @@ export default function ApplyJobPage() {
       <div className="max-w-2xl mx-auto py-10 space-y-4">
         {breadcrumb}
         <div className="panel p-10 text-center space-y-3">
-          <span className="text-3xl block" aria-hidden="true">🧭</span>
+          <div className="w-12 h-12 mx-auto rounded-full bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center text-[var(--muted)]">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
           <h1 className="h-page">{t('apply_job_missing_title')}</h1>
           <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_65%,transparent)] max-w-md mx-auto leading-relaxed">
             {t('apply_job_missing_desc')}
@@ -225,20 +235,31 @@ export default function ApplyJobPage() {
           )}
         </div>
 
-        {/* Internal staff see guidance instead of the application form */}
-        {isInternalStaff ? (
+        {/* Internal staff see guidance with option to proceed as internal applicant */}
+        {isInternalStaff && !showStaffForm ? (
           <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] p-6 space-y-3 text-center">
-            <span className="text-3xl block" aria-hidden="true">🏢</span>
+            <div className="w-12 h-12 mx-auto rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)]">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
             <h2 className="text-sm font-bold text-[var(--foreground)]">
               {t('apply_staff_title')} ({userRole})
             </h2>
             <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_65%,transparent)] max-w-md mx-auto leading-relaxed">
               {t('apply_staff_desc')}
             </p>
-            <div className="pt-2">
-              <Link href="/candidates" className="btn btn-primary">
+            <div className="pt-2 flex items-center justify-center gap-3">
+              <Link href="/candidates" className="btn btn-secondary">
                 {t('pipeline_title')} &rarr;
               </Link>
+              <button
+                type="button"
+                onClick={() => setShowStaffForm(true)}
+                className="btn btn-primary"
+              >
+                Apply as Internal Candidate &rarr;
+              </button>
             </div>
           </div>
         ) : success ? (
@@ -246,7 +267,11 @@ export default function ApplyJobPage() {
             role="status"
             className="rounded-xl border border-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-[var(--accent-soft)] p-6 text-center space-y-2"
           >
-            <span className="text-3xl block" aria-hidden="true">✨</span>
+            <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
             <h2 className="text-base font-bold text-[var(--foreground)]">
               {t('success')}
             </h2>
@@ -350,10 +375,14 @@ export default function ApplyJobPage() {
                     onChange={() => setUseSavedCv(true)}
                     className="w-4 h-4 accent-[var(--accent)]"
                   />
-                  <span className="text-xl" aria-hidden="true">📄</span>
+                  <div className="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
                   <span className="min-w-0">
                     <span className="block text-xs font-bold text-[var(--foreground)] truncate">
-                      {t('apply_use_saved_cv')} — {savedResume.name}
+                      {t('apply_use_saved_cv').replace(/^⚡\s*/, '')} &bull; {savedResume.name}
                     </span>
                     <span className="block text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">
                       {t('apply_from_profile')}
@@ -370,9 +399,13 @@ export default function ApplyJobPage() {
                     onChange={() => setUseSavedCv(false)}
                     className="w-4 h-4 accent-[var(--accent)]"
                   />
-                  <span className="text-xl" aria-hidden="true">📎</span>
+                  <div className="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--muted)] shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                  </div>
                   <span className="text-xs font-bold text-[var(--foreground)]">
-                    {t('apply_upload_different')}
+                    {t('apply_upload_different').replace(/^📄\s*/, '')}
                   </span>
                 </label>
               </fieldset>
@@ -410,7 +443,11 @@ export default function ApplyJobPage() {
                   htmlFor="resumeFile"
                   className="cursor-pointer block space-y-1.5"
                 >
-                  <span className="text-2xl block" aria-hidden="true">📄</span>
+                  <div className="w-10 h-10 mx-auto rounded-full bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] mb-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
                   <p className="text-xs font-bold text-[var(--foreground)]">
                     {resumeFile
                       ? resumeFile.name
