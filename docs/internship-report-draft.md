@@ -10,7 +10,7 @@ P.O. Box 2461, Kigali, Rwanda | www.auca.ac.rw | info@auca.ac.rw
 **STUDENT ID:** 26119
 **INTERNSHIP PERIOD:** 17th August – 16th October, 2026
 **HOST ORGANIZATION:** CODAFRIQA — AI-Driven Technology & Engineering for Africa
-**INDUSTRY SUPERVISOR:** IRANKUNDA BADAGA Steven
+**SUPERVISOR:** IRANKUNDA BADAGA Steven
 
 # DECLARATION
 
@@ -47,46 +47,19 @@ May God richly bless you all!
 
 # ABBREVIATIONS
 
-| Abbreviation | Meaning |
-|---|---|
-| AI | Artificial Intelligence |
-| API | Application Programming Interface |
-| ATS | Applicant Tracking System |
-| AUCA | Adventist University of Central Africa |
-| CI/CD | Continuous Integration / Continuous Deployment |
-| CORS | Cross-Origin Resource Sharing |
-| CRUD | Create, Read, Update, Delete |
-| CSP | Content Security Policy |
-| CSS | Cascading Style Sheets |
-| DBMS | Database Management System |
-| DOCX | Microsoft Word OpenXML Document |
-| DOM | Document Object Model |
-| GDPR | General Data Protection Regulation |
-| HTML | HyperText Markup Language |
-| HTTP | Hypertext Transfer Protocol |
-| IM | Information Management |
-| IT | Information Technology |
-| JSON | JavaScript Object Notation |
-| JWT | JSON Web Token |
-| LLM | Large Language Model |
-| MFA | Multi-Factor Authentication |
-| MIME | Multipurpose Internet Mail Extensions |
-| MVC | Model-View-Controller |
-| NLP | Natural Language Processing |
-| ORM | Object-Relational Mapping |
-| PDF | Portable Document Format |
-| RBAC | Role-Based Access Control |
-| RDBMS | Relational Database Management System |
-| REST | Representational State Transfer |
-| SaaS | Software as a Service |
-| SQL | Structured Query Language |
-| SSR | Server-Side Rendering |
-| UI | User Interface |
-| URI | Uniform Resource Identifier |
-| URL | Uniform Resource Locator |
-| UX | User Experience |
-| WCAG | Web Content Accessibility Guidelines |
-| XSS | Cross-Site Scripting |
+| Abbreviation | Meaning | Abbreviation | Meaning |
+|---|---|---|---|
+| **AI** | Artificial Intelligence | **JWT** | JSON Web Token |
+| **API** | Application Programming Interface | **LLM** | Large Language Model |
+| **ATS** | Applicant Tracking System | **MFA** | Multi-Factor Authentication |
+| **AUCA** | Adventist University of Central Africa | **NLP** | Natural Language Processing |
+| **CI/CD** | Continuous Integration / Deployment | **ORM** | Object-Relational Mapping |
+| **CORS** | Cross-Origin Resource Sharing | **PDF** | Portable Document Format |
+| **CRUD** | Create, Read, Update, Delete | **RBAC** | Role-Based Access Control |
+| **CSP** | Content Security Policy | **REST** | Representational State Transfer |
+| **CSS** | Cascading Style Sheets | **SQL** | Structured Query Language |
+| **DBMS** | Database Management System | **UI/UX** | User Interface / User Experience |
+| **GDPR** | General Data Protection Regulation | **WCAG** | Web Content Accessibility Guidelines |
 
 # TABLE OF CONTENTS
 
@@ -95,55 +68,60 @@ May God richly bless you all!
 - ACKNOWLEDGEMENT ................................................................ iii
 - ABBREVIATIONS ................................................................... iv
 - TABLE OF CONTENTS ............................................................... v
-- LIST OF FIGURES ................................................................. vi
+- LIST OF FIGURES ................................................................. vii
 - CHAPTER I: GENERAL INTRODUCTION ................................................. 1
   - 1.1 Introduction .............................................................. 1
   - 1.2 Objectives of the Internship .............................................. 1
   - 1.3 Significance of the Internship ............................................ 2
-- CHAPTER II: OVERVIEW OF THE HOST ORGANIZATION ................................... 3
-  - 2.1 Historical Background of CODAFRIQA ........................................ 3
-  - 2.2 Vision and Mission ........................................................ 3
-  - 2.3 Core Values and Strategic Objectives ...................................... 3
-  - 2.4 Software Engineering & AI Systems Division ................................ 4
-- CHAPTER III: TASK DESCRIPTION AND INTERNSHIP EXPERIENCE ......................... 5
-  - 3.1 Roles and Responsibilities ................................................ 5
+- CHAPTER II: OVERVIEW OF THE HOST ORGANIZATION ................................... 4
+  - 2.1 Historical Background of CODAFRIQA ........................................ 4
+  - 2.2 Vision and Mission ........................................................ 4
+  - 2.3 Core Values and Strategic Objectives ...................................... 4
+  - 2.4 Software Engineering & AI Systems Division ................................ 5
+- CHAPTER III: TASK DESCRIPTION AND INTERNSHIP EXPERIENCE ......................... 6
+  - 3.1 Roles and Responsibilities ................................................ 6
   - 3.2 Tools and Technologies Used ............................................... 6
-  - 3.3 Tasks Completed ........................................................... 6
-  - 3.4 Application Development ................................................... 7
-    - 3.4.1 The Login and Multi-Factor Authentication Portal ...................... 8
-    - 3.4.2 The Role-Based Recruitment Dashboard .................................. 9
-    - 3.4.3 Job Requisition Creation and Application Intake ....................... 10
-    - 3.4.4 Candidate Pipeline Tracking with Multi-Stage Filters ................. 11
-    - 3.4.5 Requisition Detail and Approved Screening Rubric ...................... 12
-    - 3.4.6 Split-Screen Resume Evaluation with Verbatim Evidence ................. 13
-    - 3.4.7 Recruiter Decision Workflow with Mandatory Written Rationale ......... 14
-    - 3.4.8 Candidate Comparison Matrix with Blind Screening Mode ................. 15
-    - 3.4.9 Interview Scheduling with Conflict Detection .......................... 16
-    - 3.4.10 Independent Structured Interview Scorecard ........................... 17
-    - 3.4.11 Team User Management with RBAC Matrix ................................ 18
-    - 3.4.12 Tamper-Evident Audit Ledger and System Health ........................ 19
-- CHAPTER IV: CHALLENGES AND CONCLUSION ............................................ 20
-  - 4.1 Challenges Faced .......................................................... 20
-  - 4.2 Lessons Learnt ............................................................ 21
-  - 4.3 Conclusion ................................................................ 22
-  - 4.4 Recommendations ........................................................... 22
-- REFERENCES ...................................................................... 23
-- APPENDICES ...................................................................... 24
+  - 3.3 Milestone-by-Milestone Implementation Details ............................. 8
+  - 3.4 Application Development ................................................... 10
+    - 3.4.1 The Login and Multi-Factor Authentication Portal ...................... 12
+    - 3.4.2 The Role-Based Recruitment Dashboard .................................. 13
+    - 3.4.3 Job Requisition Creation and Application Intake ....................... 14
+    - 3.4.4 Candidate Pipeline Tracking with Multi-Stage Filters .................. 15
+    - 3.4.5 Requisition Detail and Approved Screening Rubric ...................... 16
+    - 3.4.6 Split-Screen Resume Evaluation with Verbatim Evidence ................. 17
+    - 3.4.7 Recruiter Decision Workflow with Mandatory Written Rationale .......... 18
+    - 3.4.8 Candidate Comparison Matrix with Blind Screening Mode ................. 19
+    - 3.4.9 Interview Scheduling with Conflict Detection .......................... 20
+    - 3.4.10 Independent Structured Interview Scorecard ........................... 21
+    - 3.4.11 Team User Management with RBAC Matrix ................................ 22
+    - 3.4.12 Tamper-Evident Audit Ledger and System Health ........................ 23
+- CHAPTER IV: CHALLENGES AND CONCLUSION ............................................ 24
+  - 4.1 Challenges Faced .......................................................... 24
+  - 4.2 Solutions and Workarounds Adopted ......................................... 24
+  - 4.3 Lessons Learnt and Skills Acquired ......................................... 25
+  - 4.4 Conclusion ................................................................ 26
+  - 4.5 Recommendations ........................................................... 26
+- REFERENCES ...................................................................... 27
+- APPENDICES ...................................................................... 28
+  - Appendix A: Primary Relational Database Schema Entities ....................... 28
+  - Appendix B: Automated Test Suite Execution Summary ............................ 29
+  - Appendix C: System Operations Runbook and Deployment Configuration ............ 30
 
 # LIST OF FIGURES
 
-1. Figure 1: The RecruitAI login and multi-factor authentication (2FA) portal. ............................ 8
-2. Figure 2: Role-based recruitment dashboard showing hiring metrics and pending actions. ................. 9
-3. Figure 3: Job requisition creation and external candidate application intake portal. .................... 10
-4. Figure 4: Candidate pipeline tracking and Kanban stage filter board. ................................... 11
-5. Figure 5: Requisition detail view with approved criteria rubrics and weighting rules. ................. 12
-6. Figure 6: Split-screen resume evaluation with verbatim textual evidence citations. .................... 13
-7. Figure 7: Recruiter decision workflow with mandatory written rationale and reason codes. .............. 14
-8. Figure 8: Candidate comparison matrix with blind screening toggle and side-by-side evaluation. ........ 15
-9. Figure 9: Interview scheduling interface with calendar integration and conflict detection. ............. 16
-10. Figure 10: Independent structured interview scorecard and rubric-based competency ratings. .......... 17
-11. Figure 11: Team user management console with RBAC role assignments and permission preview. ........... 18
-12. Figure 12: Tamper-evident audit ledger and system health monitoring console. ......................... 19
+1. Figure 1: High-level application architecture of the AI Resume Screening Platform. ................. 11
+2. Figure 2: The RecruitAI login and multi-factor authentication (2FA) portal. ........................ 12
+3. Figure 3: Role-based recruitment dashboard showing hiring metrics and pending actions. ............. 13
+4. Figure 4: Job requisition creation and external candidate application intake portal. ................ 14
+5. Figure 5: Candidate pipeline tracking and Kanban stage filter board. ............................... 15
+6. Figure 6: Requisition detail view with approved criteria rubrics and weighting rules. ............. 16
+7. Figure 7: Split-screen resume evaluation with verbatim textual evidence citations. ................ 17
+8. Figure 8: Recruiter decision workflow with mandatory written rationale and reason codes. .......... 18
+9. Figure 9: Candidate comparison matrix with blind screening toggle and side-by-side evaluation. .... 19
+10. Figure 10: Interview scheduling interface with calendar integration and conflict detection. ........ 20
+11. Figure 11: Independent structured interview scorecard and rubric-based competency ratings. ...... 21
+12. Figure 12: Team user management console with RBAC role assignments and permission preview. ....... 22
+13. Figure 13: Tamper-evident audit ledger and system health monitoring console. ..................... 23
 
 # CHAPTER I: GENERAL INTRODUCTION
 
@@ -352,7 +330,7 @@ The internship followed a structured nine-week development plan aligned with COD
 
 The AI Resume Screening Platform (RecruitAI) was engineered as an enterprise-grade, human-centered Applicant Tracking System (ATS) designed to streamline talent acquisition while preserving human accountability, transparency, and data privacy. Developed to address severe operational bottlenecks and unconstrained algorithmic bias in modern hiring, the platform combines modern web engineering, distributed background queueing, explainable natural language processing, and cryptographic auditability.
 
-![Figure 0: High-level application architecture of the AI Resume Screening Platform.](../Logbook&Report/Deliverables/screenshots/architecture.png)
+![Figure 1: High-level application architecture of the AI Resume Screening Platform.](../Logbook&Report/Deliverables/screenshots/architecture.png)
 
 The application follows a decoupled multi-tier architecture:
 - **Presentation Layer:** Built with Next.js 16 and React 19, utilizing Tailwind CSS for a consistent, accessible design system following WCAG 2.1 AA guidelines.
@@ -364,7 +342,7 @@ The following subsections examine the twelve core subsystems implemented during 
 
 ### 3.4.1 The Login and Multi-Factor Authentication Portal
 
-![Figure 1: The RecruitAI login and multi-factor authentication (2FA) portal.](../Logbook&Report/Deliverables/screenshots/login-mfa.png)
+![Figure 2: The RecruitAI login and multi-factor authentication (2FA) portal.](../Logbook&Report/Deliverables/screenshots/login-mfa.png)
 
 The Login Portal serves as the primary gateway into the RecruitAI platform, safeguarding sensitive candidate personal data and internal recruitment deliberations through multi-tiered authentication controls:
 
@@ -375,7 +353,7 @@ The Login Portal serves as the primary gateway into the RecruitAI platform, safe
 
 ### 3.4.2 The Role-Based Recruitment Dashboard
 
-![Figure 2: Role-based recruitment dashboard showing hiring metrics and pending actions.](../Logbook&Report/Deliverables/screenshots/dashboard.png)
+![Figure 3: Role-based recruitment dashboard showing hiring metrics and pending actions.](../Logbook&Report/Deliverables/screenshots/dashboard.png)
 
 Following authentication, users are directed to a personalized role-based dashboard that provides real-time visibility into hiring pipelines, SLA deadlines, and pending review actions:
 
@@ -386,7 +364,7 @@ Following authentication, users are directed to a personalized role-based dashbo
 
 ### 3.4.3 Job Requisition Creation and Application Intake Portal
 
-![Figure 3: Job requisition creation and external candidate application intake portal.](../Logbook&Report/Deliverables/screenshots/jobs-intake.png)
+![Figure 4: Job requisition creation and external candidate application intake portal.](../Logbook&Report/Deliverables/screenshots/jobs-intake.png)
 
 The Intake Management subsystem governs the opening of structured job requisitions and candidate application submissions:
 
@@ -397,7 +375,7 @@ The Intake Management subsystem governs the opening of structured job requisitio
 
 ### 3.4.4 Candidate Pipeline Tracking with Multi-Stage Filters
 
-![Figure 4: Candidate pipeline tracking and Kanban stage filter board.](../Logbook&Report/Deliverables/screenshots/pipeline.png)
+![Figure 5: Candidate pipeline tracking and Kanban stage filter board.](../Logbook&Report/Deliverables/screenshots/pipeline.png)
 
 The Candidate Pipeline board acts as the central command interface for recruitment teams, visualizing the flow of talent across progressive hiring stages:
 
@@ -408,7 +386,7 @@ The Candidate Pipeline board acts as the central command interface for recruitme
 
 ### 3.4.5 Requisition Detail and Approved Screening Rubric
 
-![Figure 5: Requisition detail view with approved criteria rubrics and weighting rules.](../Logbook&Report/Deliverables/screenshots/rubric.png)
+![Figure 6: Requisition detail view with approved criteria rubrics and weighting rules.](../Logbook&Report/Deliverables/screenshots/rubric.png)
 
 To eliminate subjective and inconsistent screening, RecruitAI mandates that all resume assessments be grounded in pre-approved, versioned criteria rubrics:
 
@@ -419,7 +397,7 @@ To eliminate subjective and inconsistent screening, RecruitAI mandates that all 
 
 ### 3.4.6 Split-Screen Resume Evaluation with Verbatim Evidence
 
-![Figure 6: Split-screen resume evaluation with verbatim textual evidence citations.](../Logbook&Report/Deliverables/screenshots/evidence-assessment.png)
+![Figure 7: Split-screen resume evaluation with verbatim textual evidence citations.](../Logbook&Report/Deliverables/screenshots/evidence-assessment.png)
 
 The platform's core algorithmic innovation is its explainable, evidence-based AI assessment engine, presented via a side-by-side split-screen interface:
 
@@ -430,7 +408,7 @@ The platform's core algorithmic innovation is its explainable, evidence-based AI
 
 ### 3.4.7 Recruiter Decision Workflow with Mandatory Written Rationale
 
-![Figure 7: Recruiter decision workflow with mandatory written rationale and reason codes.](../Logbook&Report/Deliverables/screenshots/decisions.png)
+![Figure 8: Recruiter decision workflow with mandatory written rationale and reason codes.](../Logbook&Report/Deliverables/screenshots/decisions.png)
 
 Human accountability is enforced at every milestone where candidate status changes occur:
 
@@ -441,7 +419,7 @@ Human accountability is enforced at every milestone where candidate status chang
 
 ### 3.4.8 Candidate Comparison Matrix with Blind Screening Mode
 
-![Figure 8: Candidate comparison matrix with blind screening toggle and side-by-side evaluation.](../Logbook&Report/Deliverables/screenshots/compare.png)
+![Figure 9: Candidate comparison matrix with blind screening toggle and side-by-side evaluation.](../Logbook&Report/Deliverables/screenshots/compare.png)
 
 When selecting finalists for interview panels, recruiters utilize an interactive side-by-side comparison matrix:
 
@@ -452,7 +430,7 @@ When selecting finalists for interview panels, recruiters utilize an interactive
 
 ### 3.4.9 Interview Scheduling with Conflict Detection
 
-![Figure 9: Interview scheduling interface with calendar integration and conflict detection.](../Logbook&Report/Deliverables/screenshots/interview-scheduling.png)
+![Figure 10: Interview scheduling interface with calendar integration and conflict detection.](../Logbook&Report/Deliverables/screenshots/interview-scheduling.png)
 
 The interview management module streamlines panel coordination while avoiding calendar conflicts:
 
@@ -463,7 +441,7 @@ The interview management module streamlines panel coordination while avoiding ca
 
 ### 3.4.10 Independent Structured Interview Scorecard
 
-![Figure 10: Independent structured interview scorecard and rubric-based competency ratings.](../Logbook&Report/Deliverables/screenshots/scorecard.png)
+![Figure 11: Independent structured interview scorecard and rubric-based competency ratings.](../Logbook&Report/Deliverables/screenshots/scorecard.png)
 
 RecruitAI replaces unstructured post-interview impressions with standardized, competency-based scorecards:
 
@@ -474,7 +452,7 @@ RecruitAI replaces unstructured post-interview impressions with standardized, co
 
 ### 3.4.11 Team User Management with RBAC Matrix
 
-![Figure 11: Team user management console with RBAC role assignments and permission preview.](../Logbook&Report/Deliverables/screenshots/team-rbac.png)
+![Figure 12: Team user management console with RBAC role assignments and permission preview.](../Logbook&Report/Deliverables/screenshots/team-rbac.png)
 
 Security administration is managed through a centralized user directory and permission configuration console:
 
@@ -485,7 +463,7 @@ Security administration is managed through a centralized user directory and perm
 
 ### 3.4.12 Tamper-Evident Audit Ledger and System Health
 
-![Figure 12: Tamper-evident audit ledger and system health monitoring console.](../Logbook&Report/Deliverables/screenshots/audit-health.png)
+![Figure 13: Tamper-evident audit ledger and system health monitoring console.](../Logbook&Report/Deliverables/screenshots/audit-health.png)
 
 Compliance and system reliability are continuously verified through the audit ledger and telemetry console:
 
@@ -545,17 +523,10 @@ The project demonstrated that artificial intelligence, when engineered with stri
 
 ## 4.5 Recommendations
 
-Based on my observations and engineering experience during the internship, I respectfully offer the following recommendations:
+Based on the practical experience gained during the attachment, the following modest observations are noted:
 
-### Recommendations to CODAFRIQA
-1. **Real-Time Collaborative Reviewing:** Implement WebSocket-based real-time synchronization (e.g., using Socket.io or Supabase Realtime) across the recruiter workspace, allowing multiple hiring team members to review candidates and leave live comments simultaneously.
-2. **Multilingual Resume Extraction:** Expand the document parsing and AI evaluation models to natively support regional African languages (such as Kinyarwanda, French, and Swahili) to enhance the platform’s regional market applicability across East and Central Africa.
-3. **Automated Continuous Integration Deployment:** Establish automated GitHub Actions CI/CD workflows that automatically deploy verified pull requests to isolated staging environments upon passing all test suites.
-
-### Recommendations to the Adventist University of Central Africa (AUCA)
-1. **Curriculum Alignment with Modern Frameworks:** Incorporate modern, industry-standard web frameworks (such as Next.js, React, and TypeScript) and ORM tools (such as Prisma) into the practical programming and web development curricula.
-2. **Dedicated Coursework in Applied AI Ethics & Data Privacy:** Introduce specialized modules on AI ethics, responsible machine learning, and international data protection laws (such as GDPR and Rwanda’s Data Protection Law) within the Information Management program to prepare students for modern software governance challenges.
-3. **Expanded Industry Partnerships:** Strengthen institutional collaboration with innovative technology firms like CODAFRIQA to create ongoing internship, guest lecturing, and graduate placement opportunities for AUCA students.
+- **For CODAFRIQA:** Continued exploration of regional language adaptations as the platform scales across African markets.
+- **For AUCA:** Continued support for industry-partnered software engineering and information management attachments.
 
 # REFERENCES
 
@@ -574,124 +545,30 @@ Based on my observations and engineering experience during the internship, I res
 
 ## Appendix A: Primary Relational Database Schema Entities
 
-```prisma
-// Core schema definitions from prisma/schema.prisma
+The AI Resume Screening Platform database architecture was modeled and deployed in PostgreSQL 16 using Prisma ORM. The relational model enforces strict multi-tenant data isolation, referential integrity, and cascading security controls across all core entities:
 
-model Organization {
-  id          String       @id @default(uuid())
-  name        String
-  slug        String       @unique
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  users       User[]
-  jobs        Job[]
-  candidates  Candidate[]
-}
-
-model User {
-  id             String        @id @default(uuid())
-  email          String        @unique
-  passwordHash   String
-  fullName       String
-  role           Role          @default(RECRUITER)
-  organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  decisions      Decision[]
-  scorecards     Scorecard[]
-  auditLogs      AuditLog[]
-  createdAt      DateTime      @default(now())
-}
-
-enum Role {
-  ADMIN
-  RECRUITER
-  HIRING_MANAGER
-  INTERVIEWER
-  AUDITOR
-  CANDIDATE
-}
-
-model Job {
-  id             String        @id @default(uuid())
-  title          String
-  department     String
-  status         JobStatus     @default(DRAFT)
-  organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  rubrics        Rubric[]
-  applications   Application[]
-  createdAt      DateTime      @default(now())
-}
-
-model Rubric {
-  id          String        @id @default(uuid())
-  jobId       String
-  job         Job           @relation(fields: [jobId], references: [id])
-  version     Int           @default(1)
-  isApproved  Boolean       @default(false)
-  criteria    Criterion[]
-  createdAt   DateTime      @default(now())
-}
-
-model Criterion {
-  id          String        @id @default(uuid())
-  rubricId    String
-  rubric      Rubric        @relation(fields: [rubricId], references: [id])
-  title       String
-  description String
-  weight      Float
-  isMandatory Boolean       @default(false)
-  evaluations CriterionAssessment[]
-}
-
-model Application {
-  id          String        @id @default(uuid())
-  jobId       String
-  job         Job           @relation(fields: [jobId], references: [id])
-  candidateId String
-  candidate   Candidate     @relation(fields: [candidateId], references: [id])
-  stage       Stage         @default(APPLIED)
-  assessments Assessment[]
-  decisions   Decision[]
-  interviews  Interview[]
-  createdAt   DateTime      @default(now())
-}
-
-model Assessment {
-  id            String                @id @default(uuid())
-  applicationId String
-  application   Application           @relation(fields: [applicationId], references: [id])
-  rubricVersion Int
-  overallScore  Float
-  summary       String
-  criteria      CriterionAssessment[]
-  createdAt     DateTime              @default(now())
-}
-
-model CriterionAssessment {
-  id           String      @id @default(uuid())
-  assessmentId String
-  assessment   Assessment  @relation(fields: [assessmentId], references: [id])
-  criterionId  String
-  criterion    Criterion   @relation(fields: [criterionId], references: [id])
-  score        Float
-  evidenceQuote String
-  uncertainty  Boolean     @default(false)
-}
-
-model Decision {
-  id            String      @id @default(uuid())
-  applicationId String
-  application   Application @relation(fields: [applicationId], references: [id])
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  decisionType  DecisionType
-  reason        String
-  previousStage Stage
-  newStage      Stage
-  createdAt     DateTime    @default(now())
-}
-```
+| Entity Name | Primary Key | Key Attributes & Foreign Relationships | Functional Description in System |
+|---|---|---|---|
+| **Organization** | id (UUID) | 
+ame, slug (unique), createdAt, updatedAt | Multi-tenant workspace boundary isolating enterprise recruitment accounts. |
+| **User** | id (UUID) | email (unique), passwordHash, 
+ole, organizationId | Authenticated actors enforcing Role-Based Access Control (RBAC). |
+| **Job** | id (UUID) | 	itle, department, status, organizationId | Job requisition tracking vacancies, application pipelines, and rubrics. |
+| **Rubric** | id (UUID) | jobId, version, status, createdAt | Version-controlled evaluation rubrics defining weights and requirements. |
+| **Criterion** | id (UUID) | 
+ubricId, label, weight, 
+equired, category | Granular competency criteria against which resumes are evaluated. |
+| **Candidate** | id (UUID) | fullName, email, phone, organizationId | Candidate demographic profile and ingested resume document links. |
+| **Application** | id (UUID) | candidateId, jobId, stage, matchScore | Active application tracker managing pipeline progression and status. |
+| **Assessment** | id (UUID) | applicationId, score, verbatimQuotes, model | Explainable AI evaluation output with direct textual citations. |
+| **Decision** | id (UUID) | applicationId, deciderId, 
+ationale, 
+easonCode | Recruiter's formal hiring decision requiring mandatory written rationale. |
+| **Scorecard** | id (UUID) | applicationId, interviewerId, 
+atings, 
+otes | Independent structured interview evaluation submitted by interviewers. |
+| **AuditLog** | id (UUID) | userId, action, 
+esource, ipAddress, 	imestamp | Tamper-evident ledger logging all security and recruitment actions. |
 
 ## Appendix B: Automated Test Suite Execution Summary
 
@@ -707,25 +584,15 @@ The platform was subjected to extensive automated testing to ensure regression r
 | **Accessibility Tests** | Axe-core, Playwright | 4 | 22 | 22 | Zero Violations |
 | **Security Audits** | npm audit, OWASP ZAP | 2 | 18 | 18 | Zero High/Crit |
 
-## Appendix C: System Runbook and Deployment Configuration
+## Appendix C: System Operations Runbook and Deployment Configuration
 
-```bash
-# Production Container Deployment Runbook (extract from operations-runbook.md)
+The platform was containerized and staged using Docker and Docker Compose for reproducible production deployment. The operational procedure is structured into five sequential phases:
 
-# 1. Clone repository and verify environment variables
-git clone https://github.com/codafriqa/ai-resume-screening.git
-cd ai-resume-screening
-cp .env.example .env.production
-
-# 2. Build multi-stage Docker container
-docker compose -f docker-compose.prod.yml build
-
-# 3. Apply database migrations
-npx prisma migrate deploy
-
-# 4. Start production services (Web server, PostgreSQL, Redis, Worker)
-docker compose -f docker-compose.prod.yml up -d
-
-# 5. Verify system health
-curl -f http://localhost:3000/api/health
-```
+| Step | Deployment Phase | Executed Procedure / Command | Verification & Acceptance Standard |
+|---|---|---|---|
+| **1** | **Repository & Environment** | cp .env.example .env.production | Validate JWT secrets, database connection string, Redis URL, and allowed origins. |
+| **2** | **Container Image Build** | docker compose -f docker-compose.prod.yml build | Multi-stage Docker build producing optimized, unprivileged Next.js standalone image. |
+| **3** | **Database Migration** | 
+px prisma migrate deploy | Execute Prisma migrations against PostgreSQL 16 to initialize schema and indexes. |
+| **4** | **Multi-Service Startup** | docker compose -f docker-compose.prod.yml up -d | Launch web service (port 3000), PostgreSQL (port 5432), Redis, and BullMQ worker. |
+| **5** | **Health & Readiness Check** | curl -f http://localhost:3000/api/health | Verify HTTP 200 OK response with database, queue, and memory status operational. |

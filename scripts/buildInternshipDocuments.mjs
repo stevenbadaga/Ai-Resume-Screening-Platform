@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { PDFParse } from 'pdf-parse';
@@ -26,7 +27,9 @@ import {
 } from 'docx';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const deliverables = path.join(root, 'Logbook&Report', 'Deliverables');
+const deliverables = fsSync.existsSync(path.join(root, 'Logbook&Report', 'Deliverables'))
+  ? path.join(root, 'Logbook&Report', 'Deliverables')
+  : path.resolve(root, '..', 'Logbook&Report', 'Deliverables');
 const docs = [
   {
     markdown: 'docs/internship-report-draft.md',
@@ -54,7 +57,9 @@ const palette = {
 };
 
 async function extractUniversityLogo(prefix) {
-  const referenceDir = path.join(root, 'Logbook&Report');
+  const referenceDir = fsSync.existsSync(path.join(root, 'Logbook&Report'))
+    ? path.join(root, 'Logbook&Report')
+    : path.resolve(root, '..', 'Logbook&Report');
   const filename = (await fs.readdir(referenceDir)).find((name) => name.startsWith(prefix) && name.endsWith('.pdf'));
   if (!filename) throw new Error(`Missing school reference PDF matching ${prefix}`);
   const parser = new PDFParse({ data: await fs.readFile(path.join(referenceDir, filename)) });
@@ -373,6 +378,19 @@ function parseMarkdownBlocks(markdown) {
   while (index < lines.length) {
     const line = lines[index].trim();
     if (!line || line === '---') { index += 1; continue; }
+    if (line.startsWith('```')) {
+      const lang = line.slice(3).trim();
+      const codeLines = [];
+      index += 1;
+      while (index < lines.length && !lines[index].trim().startsWith('```')) {
+        codeLines.push(lines[index++]);
+      }
+      if (index < lines.length && lines[index].trim().startsWith('```')) {
+        index += 1;
+      }
+      blocks.push({ type: 'code', lang, text: codeLines.join('\n') });
+      continue;
+    }
     const image = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (image) { blocks.push({ type: 'image', alt: image[1], src: image[2] }); index += 1; continue; }
     if (line.startsWith('>')) {
@@ -446,10 +464,16 @@ function docxTable(rows, isSummary = false) {
   let widths;
   if (isSummary) {
     widths = [11, 25, 7, 7, 8, 21, 21];
+  } else if (rows[0]?.some((c) => /Assessment Areas|Rating Scale/i.test(c))) {
+    widths = [7, 48, 28, 17];
+  } else if (rows[0]?.some((c) => /Abbreviation/i.test(c))) {
+    widths = [14, 36, 14, 36];
+  } else if (rows[0]?.some((c) => /Entity Name/i.test(c))) {
+    widths = [16, 14, 34, 36];
+  } else if (rows[0]?.some((c) => /Deployment Phase|Procedure/i.test(c))) {
+    widths = [8, 24, 34, 34];
   } else if (columnCount === 2) {
     widths = [72, 28];
-  } else if (columnCount === 4) {
-    widths = [7, 48, 28, 17];
   } else {
     widths = Array(columnCount).fill(Math.floor(100 / columnCount));
   }
@@ -505,6 +529,16 @@ function buildCoverParagraphs(doc, coverText, fields) {
   return cover;
 }
 
+function resolveImagePath(src) {
+  const p1 = path.resolve(root, 'docs', src);
+  if (fsSync.existsSync(p1)) return p1;
+  const p2 = path.resolve('D:/Xkl/Logbook&Report/Deliverables/screenshots', path.basename(src));
+  if (fsSync.existsSync(p2)) return p2;
+  const p3 = path.resolve(deliverables, 'screenshots', path.basename(src));
+  if (fsSync.existsSync(p3)) return p3;
+  return p1;
+}
+
 function docxBodyParagraph(block, doc) {
   const { level, text } = block;
   if (block.type === 'heading') {
@@ -528,11 +562,19 @@ function docxBodyParagraph(block, doc) {
     const placeholder = /\[[^\]]+\]/.test(text);
     return new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { before: 0, after: 95, line: 275 }, children: runsFromInline(text, { size: 21, color: placeholder ? palette.gray : palette.ink }) });
   }
+  if (block.type === 'code') {
+    return block.text.split('\n').map((codeLine) => new Paragraph({
+      spacing: { before: 0, after: 20, line: 200 },
+      shading: { fill: 'F3F4F6', type: ShadingType.CLEAR },
+      indent: { left: 240, right: 240 },
+      children: [new TextRun({ text: codeLine, font: 'Consolas', size: 17, color: '1F2937' })],
+    }));
+  }
   if (block.type === 'quote') {
     return new Paragraph({ shading: { fill: palette.lighterBlue, type: ShadingType.CLEAR }, indent: { left: 180, right: 180 }, spacing: { before: 100, after: 130 }, children: runsFromInline(block.text, { italics: true, size: 18, color: palette.gray }) });
   }
   if (block.type === 'image') {
-    const imagePath = path.resolve(root, 'docs', block.src);
+    const imagePath = resolveImagePath(block.src);
     return fs.readFile(imagePath).then((data) => [
       new Paragraph({ alignment: AlignmentType.CENTER, keepNext: true, children: [new ImageRun({ data, transformation: { width: 590, height: 350 }, type: 'png' })] }),
       new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 140 }, children: runsFromInline(block.alt, { italics: true, size: 18, color: palette.gray }) }),
@@ -552,69 +594,77 @@ function docxBodyParagraph(block, doc) {
   return new Paragraph({ text: '' });
 }
 
-function markdownToHtml(markdown, doc) {
-  const { coverText, body, detailFields } = splitCover(markdown, doc);
-  const blocks = parseMarkdownBlocks(body);
-  let html = '';
-  for (const block of blocks) {
-    if (block.type === 'heading') {
-      const isDaily = /^Day \d+/.test(block.text);
-      const isWeek = /^Week \d+ Summary Report/.test(block.text);
-      const isMajorFrontMatter = ['DECLARATION', 'APPROVAL', 'ACKNOWLEDGEMENT', 'ABBREVIATIONS', 'TABLE OF CONTENTS', 'LIST OF FIGURES', 'REFERENCES', 'APPENDICES', 'FORM I', 'ATTACHMENTS', 'UNIVERSITY GUIDELINES', 'ASSESSMENT FORM', 'UNIVERSITY SUPERVISOR'].some((title) => block.text.toUpperCase().startsWith(title));
-      const isChapter = /^CHAPTER [IV]+:/.test(block.text);
-      const isGuidelineBreak = doc.kind === 'logbook' && /^(I\. MISSION|IV\. DURATION|VIII\. WEEKLY SUMMARY|XIV\. EXPECTED OUTPUT|XVI\. INDUSTRIAL ATTACHMENT|XVIII\. UNIVERSITY STAFF|XX\. THE MAIN REPORT|XXI\. INDUSTRIAL ATTACHMENT|XXII\. FURTHER POINTS|XXIII\. STUDENT DECLARATION|PLACE OF HOST COMPANY)/i.test(block.text);
+function renderBlockHtml(block, doc) {
+  if (block.type === 'heading') {
+    const isDaily = /^Day \d+/.test(block.text);
+    const isWeek = /^Week \d+ Summary Report/.test(block.text);
+    const isMajorFrontMatter = ['DECLARATION', 'APPROVAL', 'ACKNOWLEDGEMENT', 'ABBREVIATIONS', 'TABLE OF CONTENTS', 'LIST OF FIGURES', 'REFERENCES', 'APPENDICES', 'FORM I', 'ATTACHMENTS', 'UNIVERSITY GUIDELINES', 'ASSESSMENT FORM', 'UNIVERSITY SUPERVISOR'].some((title) => block.text.toUpperCase().startsWith(title));
+    const isChapter = /^CHAPTER [IV]+:/.test(block.text);
+    const isGuidelineBreak = doc.kind === 'logbook' && /^(I\. MISSION|IV\. DURATION|VIII\. WEEKLY SUMMARY|XIV\. EXPECTED OUTPUT|XVI\. INDUSTRIAL ATTACHMENT|XVIII\. UNIVERSITY STAFF|XX\. THE MAIN REPORT|XXI\. INDUSTRIAL ATTACHMENT|XXII\. FURTHER POINTS|XXIII\. STUDENT DECLARATION|PLACE OF HOST COMPANY)/i.test(block.text);
 
-      let classes = '';
-      if (isDaily && doc.kind === 'logbook') classes = ' class="daily-heading"';
-      else if (isWeek) classes = ' class="week-summary"';
-      else if (isChapter || isMajorFrontMatter) classes = ' class="section-break"';
-      else if (isGuidelineBreak) classes = ' class="guideline-break"';
+    let classes = '';
+    if (isDaily && doc.kind === 'logbook') classes = ' class="daily-heading"';
+    else if (isWeek) classes = ' class="week-summary"';
+    else if (isChapter || isMajorFrontMatter) classes = ' class="section-break"';
+    else if (isGuidelineBreak) classes = ' class="guideline-break"';
 
-      html += `<h${block.level}${classes}>${inlineHtml(block.text)}</h${block.level}>`;
-    } else if (block.type === 'paragraph') html += `<p>${inlineHtml(block.text)}</p>`;
-    else if (block.type === 'image') {
-      const imagePath = path.resolve(root, 'docs', block.src);
-      const imageData = fsSync.readFileSync(imagePath).toString('base64');
-      html += `<figure class="report-figure"><img src="data:image/png;base64,${imageData}" alt="${esc(block.alt)}"><figcaption>${inlineHtml(block.alt)}</figcaption></figure>`;
-    }
-    else if (block.type === 'quote') html += `<aside>${inlineHtml(block.text)}</aside>`;
-    else if (block.type === 'list') {
-      const tag = block.ordered ? 'ol' : 'ul';
-      html += `<${tag}>${block.items.map((item) => `<li>${inlineHtml(item)}</li>`).join('')}</${tag}>`;
-    } else if (block.type === 'table') {
-      const isSummary = block.rows[0]?.some((cell) => /Time in|Time out|Lessons learnt|Challenges faced/i.test(cell));
-      const [head, ...rows] = block.rows;
-      const columnCount = head.length;
-      let colgroup = '';
-      if (isSummary) {
-        const summaryWidths = [11, 25, 7, 7, 8, 21, 21];
-        colgroup = `<colgroup>${head.map((_, i) => `<col style="width:${summaryWidths[i] || 10}%" />`).join('')}</colgroup>`;
-      } else if (columnCount === 2) {
-        colgroup = `<colgroup><col style="width:72%" /><col style="width:28%" /></colgroup>`;
-      } else if (columnCount === 4) {
-        colgroup = `<colgroup><col style="width:7%" /><col style="width:48%" /><col style="width:28%" /><col style="width:17%" /></colgroup>`;
-      }
-      html += `<table class="${isSummary ? 'summary-table' : ''}">${colgroup}<thead><tr>${head.map((cell) => `<th>${inlineHtml(cell)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${head.map((_, i) => `<td>${inlineHtml(row[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-    }
+    return `<h${block.level}${classes}>${inlineHtml(block.text)}</h${block.level}>`;
   }
-  const coverFields = detailFields.map((field) => `<div class="cover-field"><b>${esc(field.label.toUpperCase())}:</b> ${inlineHtml(field.value)}</div>`).join('');
-  const logoData = (doc.kind === 'report' ? reportLogo : logbookLogo).toString('base64');
-  const logo = `<img class="auca-logo" src="data:image/png;base64,${logoData}" alt="Adventist University of Central Africa" />`;
-  const cover = doc.kind === 'report'
-    ? `<section class="cover report-cover"><div class="university">${esc(coverText.match(/^#\s+(.+)$/m)?.[1] || 'ADVENTIST UNIVERSITY OF CENTRAL AFRICA')}</div><div class="address">P.O. Box 2461 Kigali, Rwanda&nbsp; | &nbsp;www.auca.ac.rw&nbsp; | &nbsp;info@auca.ac.rw</div>${logo}<h1>${esc(doc.title)}</h1><div class="cover-fields"><div class="cover-field"><b>FACULTY:</b> Information Technology</div>${coverFields}</div></section>`
-    : `<section class="cover logbook-cover">${logo}<div class="faculty">Faculty of Information Technology</div><div class="ornament">❧</div><h1>${esc(doc.title)}</h1><div class="ornament bottom">✣</div><div class="cover-fields"><div class="cover-field"><b>ACADEMIC YEAR:</b> 2025/2026</div>${coverFields}<div class="cover-field">AUCA</div></div></section>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    @page { size: A4; margin: 20mm 18mm 19mm; @bottom-center { content: counter(page); font: 9pt Arial; color: #4B5563; } }
-    @page:first { margin: 16mm 18mm 18mm; @bottom-center { content: ''; } }
-    * { box-sizing: border-box; } body { margin: 0; font-family: Arial, Calibri, sans-serif; color: #20262D; font-size: 10.5pt; line-height: 1.48; }
-    .cover { height: 252mm; page-break-after: always; text-align: center; position: relative; padding: 17mm 12mm; color: #20262D; }
+  if (block.type === 'paragraph') return `<p>${inlineHtml(block.text)}</p>`;
+  if (block.type === 'code') return `<pre class="code-block"><code>${esc(block.text)}</code></pre>`;
+  if (block.type === 'image') {
+    const imagePath = resolveImagePath(block.src);
+    const imageData = fsSync.readFileSync(imagePath).toString('base64');
+    return `<figure class="report-figure"><img src="data:image/png;base64,${imageData}" alt="${esc(block.alt)}"><figcaption>${inlineHtml(block.alt)}</figcaption></figure>`;
+  }
+  if (block.type === 'quote') return `<aside>${inlineHtml(block.text)}</aside>`;
+  if (block.type === 'list') {
+    const tag = block.ordered ? 'ol' : 'ul';
+    return `<${tag}>${block.items.map((item) => `<li>${inlineHtml(item)}</li>`).join('')}</${tag}>`;
+  }
+  if (block.type === 'table') {
+    const isSummary = block.rows[0]?.some((cell) => /Time in|Time out|Lessons learnt|Challenges faced/i.test(cell));
+    const [head, ...rows] = block.rows;
+    const columnCount = head.length;
+    let colgroup = '';
+    if (isSummary) {
+      const summaryWidths = [11, 25, 7, 7, 8, 21, 21];
+      colgroup = `<colgroup>${head.map((_, i) => `<col style="width:${summaryWidths[i] || 10}%" />`).join('')}</colgroup>`;
+    } else if (head.some((c) => /Assessment Areas|Rating Scale/i.test(c))) {
+      const w = [7, 48, 28, 17];
+      colgroup = `<colgroup>${w.map((pct) => `<col style="width:${pct}%" />`).join('')}</colgroup>`;
+    } else if (head.some((c) => /Abbreviation/i.test(c))) {
+      const w = [14, 36, 14, 36];
+      colgroup = `<colgroup>${w.map((pct) => `<col style="width:${pct}%" />`).join('')}</colgroup>`;
+    } else if (head.some((c) => /Entity Name/i.test(c))) {
+      const w = [16, 14, 34, 36];
+      colgroup = `<colgroup>${w.map((pct) => `<col style="width:${pct}%" />`).join('')}</colgroup>`;
+    } else if (head.some((c) => /Deployment Phase|Procedure/i.test(c))) {
+      const w = [8, 24, 34, 34];
+      colgroup = `<colgroup>${w.map((pct) => `<col style="width:${pct}%" />`).join('')}</colgroup>`;
+    } else if (columnCount === 2) {
+      colgroup = `<colgroup><col style="width:72%" /><col style="width:28%" /></colgroup>`;
+    } else {
+      const pct = Math.floor(100 / columnCount);
+      colgroup = `<colgroup>${head.map(() => `<col style="width:${pct}%" />`).join('')}</colgroup>`;
+    }
+    return `<table class="${isSummary ? 'summary-table' : ''}">${colgroup}<thead><tr>${head.map((cell) => `<th>${inlineHtml(cell)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${head.map((_, i) => `<td>${inlineHtml(row[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+  return '';
+}
+
+function getCommonCss() {
+  return `
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Calibri, sans-serif; color: #20262D; font-size: 10.5pt; line-height: 1.48; }
+    .cover { min-height: 235mm; page-break-after: always; text-align: center; position: relative; padding: 12mm 12mm; color: #20262D; }
     .cover h1 { page-break-before: avoid !important; }
-    .report-cover .university { margin-top: 18mm; color: #17365D; font-weight: 700; font-size: 19pt; letter-spacing: .4px; }
+    .report-cover .university { margin-top: 15mm; color: #17365D; font-weight: 700; font-size: 18pt; letter-spacing: .4px; }
     .address { color: #586575; font-size: 8.5pt; margin-top: 2mm; }
-    .auca-logo { display:block; width:145mm; height:auto; object-fit:contain; margin:5mm auto 0; }
-    .report-cover h1 { color: #17365D; font-size: 17pt; line-height: 1.4; margin: 35mm 0 17mm; letter-spacing: .15px; }
+    .auca-logo { display:block; width:140mm; height:auto; object-fit:contain; margin:5mm auto 0; }
+    .report-cover h1 { color: #17365D; font-size: 16.5pt; line-height: 1.38; margin: 30mm 0 15mm; letter-spacing: .15px; }
     .cover-fields { margin: 0 auto; max-width: 145mm; }
-    .cover-field { font-size: 10pt; line-height: 1.9; }
+    .cover-field { font-size: 10pt; line-height: 1.85; }
     .cover-field b { letter-spacing: .1px; }
     .logbook-cover .auca-logo { width:160mm; margin:0 auto; }
     .faculty { margin-top: 17mm; font-size: 10pt; }
@@ -622,12 +672,13 @@ function markdownToHtml(markdown, doc) {
     .logbook-cover h1 { border-bottom:1.4px solid #9BC2E6; font: 12pt Georgia,serif; padding: 11mm 0 2mm; margin-top: 10mm; }
     .ornament.bottom { border:0; margin-top: 2mm; }
     .logbook-cover .cover-fields { margin-top: 14mm; }
-    main h1 { color:#17365D; font-size:17pt; line-height:1.25; margin: 0 0 11pt; page-break-before: always; border-bottom:1px solid #245A8D; padding-bottom:5pt; }
-    h2 { color:#17365D; font-size:13pt; margin:15pt 0 7pt; page-break-after: avoid; }
-    h3 { color:#20262D; font-size:11pt; margin:11pt 0 5pt; page-break-after: avoid; }
+    main h1 { color:#17365D; font-size:16pt; line-height:1.25; margin: 0 0 11pt; page-break-before: always; border-bottom:1px solid #245A8D; padding-bottom:5pt; }
+    main h1:first-child { page-break-before: avoid; }
+    h2 { color:#17365D; font-size:12.5pt; margin:14pt 0 6pt; page-break-after: avoid; }
+    h3 { color:#20262D; font-size:10.5pt; margin:10pt 0 4pt; page-break-after: avoid; }
     .daily-heading, .week-summary, .section-break, .guideline-break { page-break-before: always; }
-    p { text-align:justify; margin:0 0 9pt; widows:3; orphans:3; }
-    li { margin:0 0 4pt; } ul,ol { padding-left:22pt; margin-top:3pt; margin-bottom:10pt; }
+    p { text-align:justify; margin:0 0 8.5pt; widows:3; orphans:3; }
+    li { margin:0 0 3.5pt; } ul,ol { padding-left:22pt; margin-top:2pt; margin-bottom:9pt; }
     aside { background:#EEF4F8; border-left:3px solid #9BC2E6; padding:8pt 10pt; color:#56616E; font-size:9pt; margin:7pt 0 12pt; }
     table { width:100%; border-collapse:collapse; margin:7pt 0 12pt; table-layout:fixed; page-break-inside:avoid; }
     tr { page-break-inside:avoid; } th,td { border:0.6px solid #B8C9D8; padding:4.5pt; vertical-align:top; overflow-wrap:anywhere; }
@@ -635,11 +686,31 @@ function markdownToHtml(markdown, doc) {
     tbody tr:nth-child(even) { background:#F5F8FA; }
     .summary-table { font-size:6.7pt; line-height:1.28; } .summary-table th,.summary-table td { padding:2.6pt 2pt; }
     .link { color:#245A8D; } code { font-family:Consolas,monospace; font-size:9pt; }
-    .report-figure { margin:8pt auto 16pt; text-align:center; page-break-inside:avoid; }.report-figure img { width:100%; height:auto; border:1px solid #D6DFE8; border-radius:5px; }.report-figure figcaption { color:#66717D; font-style:italic; font-size:9pt; margin-top:4pt; }
-    ${doc.kind === 'logbook' ? '@page { @top-left { content: "AUCA"; font: 8pt Arial; color:#65717E; } @top-center { content:"Attachment Logbook"; font:8pt Arial; color:#65717E; } @top-right { content:"IT"; font:8pt Arial; color:#65717E; } @bottom-center { content: ""; } @bottom-right { content: counter(page) " | Page"; font:8pt Arial; color:#65717E; } } @page:first { @top-left { content:""; } @top-center { content:""; } @top-right { content:""; } }' : ''}
-  </style></head><body>${cover}<main>${html}</main></body></html>`;
+    pre.code-block { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:4px; padding:8pt 10pt; font-family:Consolas,monospace; font-size:8.5pt; line-height:1.4; overflow:hidden; white-space:pre-wrap; margin:6pt 0 10pt; }
+    .report-figure { margin:8pt auto 16pt; text-align:center; page-break-inside:avoid; }
+    .report-figure img { width:100%; height:auto; border:1px solid #D6DFE8; border-radius:5px; }
+    .report-figure figcaption { color:#66717D; font-style:italic; font-size:9pt; margin-top:4pt; }
+  `;
 }
 
+function markdownToHtml(markdown, doc) {
+  const { coverText, body, detailFields } = splitCover(markdown, doc);
+  const blocks = parseMarkdownBlocks(body);
+  const contentHtml = blocks.map((b) => renderBlockHtml(b, doc)).join('');
+
+  const coverFields = detailFields.map((field) => `<div class="cover-field"><b>${esc(field.label.toUpperCase())}:</b> ${inlineHtml(field.value)}</div>`).join('');
+  const logoData = (doc.kind === 'report' ? reportLogo : logbookLogo).toString('base64');
+  const logo = `<img class="auca-logo" src="data:image/png;base64,${logoData}" alt="Adventist University of Central Africa" />`;
+  const cover = doc.kind === 'report'
+    ? `<section class="cover report-cover"><div class="university">${esc(coverText.match(/^#\s+(.+)$/m)?.[1] || 'ADVENTIST UNIVERSITY OF CENTRAL AFRICA')}</div><div class="address">P.O. Box 2461 Kigali, Rwanda&nbsp; | &nbsp;www.auca.ac.rw&nbsp; | &nbsp;info@auca.ac.rw</div>${logo}<h1>${esc(doc.title)}</h1><div class="cover-fields"><div class="cover-field"><b>FACULTY:</b> Information Technology</div>${coverFields}</div></section>`
+    : `<section class="cover logbook-cover">${logo}<div class="faculty">Faculty of Information Technology</div><div class="ornament">❧</div><h1>${esc(doc.title)}</h1><div class="ornament bottom">✣</div><div class="cover-fields"><div class="cover-field"><b>ACADEMIC YEAR:</b> 2025/2026</div>${coverFields}<div class="cover-field">AUCA</div></div></section>`;
+
+  const pageCss = doc.kind === 'logbook'
+    ? `@page { size: A4; margin: 18mm; @top-left { content: "AUCA"; font: 8pt Arial; color:#65717E; } @top-center { content:"Attachment Logbook"; font:8pt Arial; color:#65717E; } @top-right { content:"IT"; font:8pt Arial; color:#65717E; } @bottom-right { content: counter(page) " | Page"; font:8pt Arial; color:#65717E; } } @page:first { @top-left { content:""; } @top-center { content:""; } @top-right { content:""; } @bottom-right { content:""; } }`
+    : `@page { size: A4; margin: 18mm; @bottom-center { content: counter(page); font: 9pt Arial; color: #4B5563; } } @page:first { @bottom-center { content: ''; } }`;
+
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${getCommonCss()} ${pageCss}</style></head><body>${cover}<main>${contentHtml}</main></body></html>`;
+}
 async function buildWordDocument(markdown, doc) {
   const { coverText, body, fields } = splitCover(markdown, doc);
   const bodyBlocks = parseMarkdownBlocks(body);
@@ -748,13 +819,13 @@ console.log('Screenshots generated successfully!');
 for (const doc of docs) {
   console.log(`Processing ${doc.basename}...`);
   let markdown = await fs.readFile(path.join(root, doc.markdown), 'utf8');
+  markdown = markdown.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
   if (doc.kind === 'logbook') {
     const toolset = 'Laptop/computer, Visual Studio Code, Node.js/npm, Git/GitHub, and browser developer tools; Prisma/PostgreSQL, Redis/BullMQ, Vitest/Playwright, and API testing tools where applicable';
     markdown = markdown
       .replaceAll('[Enter actual tools.]', toolset)
       .replaceAll('[Enter actual: e.g. laptop, VS Code, browser, project specification.]', `${toolset}, and the project specification`);
   }
-  const html = markdownToHtml(markdown, doc);
   const word = await buildWordDocument(markdown, doc);
   await fs.writeFile(path.join(deliverables, `${doc.basename}.docx`), await Packer.toBuffer(word));
 
@@ -765,19 +836,65 @@ for (const doc of docs) {
   }
   const browser = await chromium.launch(launchOptions);
   try {
-    const page = await browser.newPage({ viewport: { width: 794, height: 1123 }, deviceScaleFactor: 1 });
-    await page.setContent(html, { waitUntil: 'load' });
-    await page.locator('.auca-logo').evaluate((image) => image.decode());
-    const logoDimensions = await page.locator('.auca-logo').evaluate((image) => ({ width: image.naturalWidth, height: image.naturalHeight }));
-    if (!logoDimensions.width || !logoDimensions.height) throw new Error(`Could not render AUCA logo for ${doc.basename}`);
-    await page.pdf({
-      path: path.join(deliverables, `${doc.basename}.pdf`),
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: false,
-      margin: { top: '18mm', right: '18mm', bottom: '18mm', left: '18mm' },
-    });
+    if (doc.kind === 'report') {
+      const { coverText, body, detailFields } = splitCover(markdown, doc);
+      const blocks = parseMarkdownBlocks(body);
+      const chapter1Index = blocks.findIndex((b) => b.type === 'heading' && /^CHAPTER I:/i.test(b.text));
+      const prelimBlocks = chapter1Index >= 0 ? blocks.slice(0, chapter1Index) : blocks;
+      const mainBlocks = chapter1Index >= 0 ? blocks.slice(chapter1Index) : [];
+
+      const coverFields = detailFields.map((field) => `<div class="cover-field"><b>${esc(field.label.toUpperCase())}:</b> ${inlineHtml(field.value)}</div>`).join('');
+      const logoData = reportLogo.toString('base64');
+      const logo = `<img class="auca-logo" src="data:image/png;base64,${logoData}" alt="Adventist University of Central Africa" />`;
+      const coverHtml = `<section class="cover report-cover"><div class="university">${esc(coverText.match(/^#\s+(.+)$/m)?.[1] || 'ADVENTIST UNIVERSITY OF CENTRAL AFRICA')}</div><div class="address">P.O. Box 2461 Kigali, Rwanda&nbsp; | &nbsp;www.auca.ac.rw&nbsp; | &nbsp;info@auca.ac.rw</div>${logo}<h1>${esc(doc.title)}</h1><div class="cover-fields"><div class="cover-field"><b>FACULTY:</b> Information Technology</div>${coverFields}</div></section>`;
+
+      const prelimHtml = prelimBlocks.map((b) => renderBlockHtml(b, doc)).join('');
+      const mainHtml = mainBlocks.map((b) => renderBlockHtml(b, doc)).join('');
+
+      const tempCoverPdf = path.join(deliverables, `${doc.basename}-cover.pdf`);
+      const tempPrelimPdf = path.join(deliverables, `${doc.basename}-prelim.pdf`);
+      const tempMainPdf = path.join(deliverables, `${doc.basename}-main.pdf`);
+      const finalPdf = path.join(deliverables, `${doc.basename}.pdf`);
+
+      // 1. Cover
+      const p1 = await browser.newPage({ viewport: { width: 794, height: 1123 } });
+      await p1.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>${getCommonCss()} @page { size: A4; margin: 18mm; @bottom-center { content: ""; } }</style></head><body>${coverHtml}</body></html>`, { waitUntil: 'load' });
+      await p1.locator('.auca-logo').evaluate((img) => img.decode().catch(() => {}));
+      await p1.pdf({ path: tempCoverPdf, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false, margin: { top: '18mm', right: '18mm', bottom: '18mm', left: '18mm' } });
+      await p1.close();
+
+      // 2. Prelim (Roman numerals)
+      const p2 = await browser.newPage({ viewport: { width: 794, height: 1123 } });
+      await p2.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>${getCommonCss()} @page { size: A4; margin: 18mm; @bottom-center { content: counter(page, lower-roman); font: 9pt Arial; color: #4B5563; } }</style></head><body><main>${prelimHtml}</main></body></html>`, { waitUntil: 'load' });
+      await p2.pdf({ path: tempPrelimPdf, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false, margin: { top: '18mm', right: '18mm', bottom: '18mm', left: '18mm' } });
+      await p2.close();
+
+      // 3. Main (Arabic numerals)
+      const p3 = await browser.newPage({ viewport: { width: 794, height: 1123 } });
+      await p3.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>${getCommonCss()} @page { size: A4; margin: 18mm; @bottom-center { content: counter(page); font: 9pt Arial; color: #4B5563; } }</style></head><body><main>${mainHtml}</main></body></html>`, { waitUntil: 'load' });
+      await p3.pdf({ path: tempMainPdf, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false, margin: { top: '18mm', right: '18mm', bottom: '18mm', left: '18mm' } });
+      await p3.close();
+
+      // 4. Merge
+      execSync(`python -c "import pypdf; w = pypdf.PdfWriter(); [w.append(f) for f in [r'${tempCoverPdf}', r'${tempPrelimPdf}', r'${tempMainPdf}']]; w.write(r'${finalPdf}'); w.close()"`);
+      await fs.unlink(tempCoverPdf).catch(() => {});
+      await fs.unlink(tempPrelimPdf).catch(() => {});
+      await fs.unlink(tempMainPdf).catch(() => {});
+    } else {
+      const html = markdownToHtml(markdown, doc);
+      const page = await browser.newPage({ viewport: { width: 794, height: 1123 }, deviceScaleFactor: 1 });
+      await page.setContent(html, { waitUntil: 'load' });
+      await page.locator('.auca-logo').evaluate((image) => image.decode());
+      await page.pdf({
+        path: path.join(deliverables, `${doc.basename}.pdf`),
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        displayHeaderFooter: false,
+        margin: { top: '18mm', right: '18mm', bottom: '18mm', left: '18mm' },
+      });
+      await page.close();
+    }
   } finally {
     await browser.close();
   }

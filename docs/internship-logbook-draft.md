@@ -13,50 +13,48 @@
 # TABLE OF CONTENTS
 
 - Table of Contents ....................................................................................................................................................................... 2
-- I. MISSION ........................................................................................................................................................................... 3
-- II. VISION .............................................................................................................................................................................. 3
-- III. INTRODUCTION ......................................................................................................................................................... 3
-- IV. DURATION OF THE ATTACHMENT ........................................................................................................................ 4
-- V. INSTRUCTION TO THE STUDENT ............................................................................................................................... 4
-- VI. NOTICE OF RESUMPTION OF ATTACHMENT ...................................................................................................... 4
-- VII. DAILY REPORT ........................................................................................................................................................... 4
-- VIII. WEEKLY SUMMARY REPORT .................................................................................................................................. 5
-- IX. CHANGE OF ATTACHMENT ..................................................................................................................................... 5
-- X. ATTACHMENT LOGBOOK ............................................................................................................................................ 5
-- XI. UNIVERSITY SUPERVISOR’S VISIT ........................................................................................................................ 5
-- XII. INDUSTRY BASED SUPERVISOR ............................................................................................................................ 5
-- XIII. EXPECTED OUTCOME .............................................................................................................................................. 5
-- XIV. EXPECTED OUTPUT .................................................................................................................................................. 6
-  - Students .................................................................................................................................................................................. 6
-  - AUCA ........................................................................................................................................................................................ 6
-  - University partners / Attachment Organization ...................................................................................................................... 6
-- XV. COURSE WORK AND PROCEDURES Expectations from Students (Roles and Responsibilities) ........................ 6
-- XVI. INDUSTRIAL ATTACHMENT ASSESSMENT ........................................................................................................... 8
-- XVII. FIELD SUPERVISOR EVALUATION ..................................................................................................................... 8
-- XVIII. UNIVERSITY STAFF EVALUATION ................................................................................................................... 9
-- XIX. STUDENT’S REPORT ................................................................................................................................................ 9
-  - Preliminary pages ................................................................................................................................................................. 9
-- XX. THE MAIN REPORT .................................................................................................................................................. 10
-  - 1. INTRODUCTION ........................................................................................................................................................... 10
-  - 2. CORE BUSINESS ........................................................................................................................................................... 10
-  - 3. SELF EVALUATION REPORT (SWOT ANALYSIS) .................................................................................................... 11
-  - 4. CONCLUSION ................................................................................................................................................................ 11
-  - 5. REFERENCES ................................................................................................................................................................ 11
-  - 6. APPENDICES ................................................................................................................................................................. 11
-- XXI. INDUSTRIAL ATTACHMENT / PRACTICUM FORMS ....................................................................................... 12
-- XXII. FURTHER POINTS TO NOTE / INSTRUCTIONS ................................................................................................. 13
-- XXIII. STUDENT DECLARATION / CONSENT ............................................................................................................. 14
-- ATTACHMENTS ................................................................................................................................................................... 15
-- FORM I .................................................................................................................................................................................... 15
-- Week 1 Summary Report ......................................................................................................................................................... 20
-- Week 2 Summary Report ......................................................................................................................................................... 26
-- Week 3 Summary Report ......................................................................................................................................................... 32
-- Week 4 Summary Report ......................................................................................................................................................... 38
-- Week 5 Summary Report ......................................................................................................................................................... 44
-- Week 6 Summary Report ......................................................................................................................................................... 50
-- Week 7 Summary Report ......................................................................................................................................................... 56
-- Week 8 Summary Report ......................................................................................................................................................... 62
-- Week 9 Summary Report ......................................................................................................................................................... 68
+- I. MISSION ........................................................................................................................................................................... 5
+- II. VISION ............................................................................................................................................................................. 5
+- III. INTRODUCTION ........................................................................................................................................................... 5
+- IV. DURATION OF THE ATTACHMENT ........................................................................................................................ 6
+- V. INSTRUCTION TO THE STUDENT ........................................................................................................................... 6
+- VI. ATTENDANCE ............................................................................................................................................................... 6
+- VII. LOGBOOK ..................................................................................................................................................................... 6
+- VIII. WEEKLY SUMMARY REPORT ................................................................................................................................ 7
+- IX. ASSESSMENT OF THE ATTACHMENT ................................................................................................................. 7
+- X. INDUSTRIAL VISITS .................................................................................................................................................... 7
+- XI. CHANGE OF ATTACHMENT ..................................................................................................................................... 7
+- XII. DISCIPLINE .................................................................................................................................................................. 7
+- XIII. CONFIDENTIALITY ................................................................................................................................................. 7
+- XIV. EXPECTED OUTPUT ................................................................................................................................................. 8
+- XV. PREPARATION FOR ATTACHMENT ...................................................................................................................... 8
+- XVI. INDUSTRIAL ATTACHMENT / PRACTICUM ASSESSMENT ............................................................................ 10
+- XVII. WORK BASED SUPERVISOR / FIELD SUPERVISOR ...................................................................................... 10
+- XVIII. UNIVERSITY STAFF EVALUATION ................................................................................................................. 11
+- XIX. STUDENT’S REPORT ................................................................................................................................................. 12
+  - Preliminary pages ................................................................................................................................................................. 12
+- XX. THE MAIN REPORT .................................................................................................................................................. 12
+  - 1. INTRODUCTION ........................................................................................................................................................... 12
+  - 2. CORE BUSINESS ........................................................................................................................................................... 12
+  - 3. SELF EVALUATION REPORT (SWOT ANALYSIS) .................................................................................................... 12
+  - 4. CONCLUSION ................................................................................................................................................................ 12
+  - 5. REFERENCES ................................................................................................................................................................ 12
+  - 6. APPENDICES ................................................................................................................................................................. 12
+- XXI. INDUSTRIAL ATTACHMENT / PRACTICUM FORMS ....................................................................................... 13
+- XXII. FURTHER POINTS TO NOTE / INSTRUCTIONS ................................................................................................. 14
+- XXIII. STUDENT DECLARATION / CONSENT ............................................................................................................. 15
+- ATTACHMENTS ................................................................................................................................................................... 16
+- FORM I .................................................................................................................................................................................... 17
+- PLACE OF HOST COMPANY ............................................................................................................................................ 18
+- Week 1 Summary Report ......................................................................................................................................................... 25
+- Week 2 Summary Report ......................................................................................................................................................... 31
+- Week 3 Summary Report ......................................................................................................................................................... 37
+- Week 4 Summary Report ......................................................................................................................................................... 43
+- Week 5 Summary Report ......................................................................................................................................................... 49
+- Week 6 Summary Report ......................................................................................................................................................... 55
+- Week 7 Summary Report ......................................................................................................................................................... 61
+- Week 8 Summary Report ......................................................................................................................................................... 67
+- Week 9 Summary Report ......................................................................................................................................................... 73
 - ASSESSMENT FORM ............................................................................................................................................................ 74
 - UNIVERSITY SUPERVISOR'S OVERALL COMMENTS ................................................................................................. 75
 
@@ -253,13 +251,13 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 |---|---|
 | **Full Names:** | SHYAKA Jospin |
 | **Student ID:** | 26119 |
-| **National ID / Passport:** | 1200380194829104 |
+| **National ID / Passport:** | 1 2004 8 0085404 0 09 |
 | **Faculty / School:** | Information Technology |
 | **Department:** | Information Management |
 | **Academic Year / Semester:** | 2025/2026 Semester 2 |
 | **Mobile Phone (Self):** | +250 789 865 737 |
 | **Email Address:** | jospinshyaka807@gmail.com |
-| **Residential Address:** | District: Gasabo | Sector: Remera | Cell: Rukiri | Kigali, Rwanda |
+| **Residential Address:** | District: Nyarugenge, Kigali, Rwanda |
 
 ### PLACE OF HOST COMPANY
 | Field | Details |
@@ -284,7 +282,7 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 # DAILY DETAILED DESCRIPTION OF WORK
 
 ## Day 1 — Monday, 17/08/2026
-**Week No:** 1 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 17/08/2026
+**Week No:** 1  |  **Day:** 1  |  **Month:** 1  |  **Date:** 17/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -295,10 +293,10 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 | **5. Student's Recommendations:** A centralized first-day onboarding checklist would help new engineering interns set up faster. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Welcomed Jospin to the AI team. Discussed internship goals and high-level platform architecture. Good start. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 17/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 17/08/2026
 
 ## Day 2 — Tuesday, 18/08/2026
-**Week No:** 1 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 18/08/2026
+**Week No:** 1  |  **Day:** 2  |  **Month:** 1  |  **Date:** 18/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -309,10 +307,10 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 | **5. Student's Recommendations:** Using docker-compose environment variables simplifies port mapping across different host setups. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Toolchain verified. Recommended Jospin review our Git branching strategy and commit conventions. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 18/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 18/08/2026
 
 ## Day 3 — Wednesday, 19/08/2026
-**Week No:** 1 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 19/08/2026
+**Week No:** 1  |  **Day:** 3  |  **Month:** 1  |  **Date:** 19/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -323,10 +321,10 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 | **5. Student's Recommendations:** Explicitly mapping user roles to workflow states in a tabular matrix clarifies access boundaries. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Thorough requirements analysis. Good questions raised regarding human-in-the-loop screening rules. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 19/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 19/08/2026
 
 ## Day 4 — Thursday, 20/08/2026
-**Week No:** 1 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 20/08/2026
+**Week No:** 1  |  **Day:** 4  |  **Month:** 1  |  **Date:** 20/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -337,10 +335,10 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 | **5. Student's Recommendations:** Standardizing code formatting and linting early prevents team merge conflicts. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Project repository initialized cleanly. Next.js App Router structure approved. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 20/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 20/08/2026
 
 ## Day 5 — Friday, 21/08/2026
-**Week No:** 1 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 21/08/2026
+**Week No:** 1  |  **Day:** 5  |  **Month:** 1  |  **Date:** 21/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -351,10 +349,10 @@ I, **SHYAKA Jospin** (Student ID: 26119), declare that I have read and understoo
 | **5. Student's Recommendations:** Using Redis-backed message queues ensures file parsing does not block web request execution. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Architecture proposal reviewed and approved. Good understanding of decoupled services and queues. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 21/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 21/08/2026
 
 ## Week 1 Summary Report
-**Week No:** 1 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date Range:** 17/08/2026 To 21/08/2026
+**Week No:** 1  |  **Month:** 1  |  **Date Range:** 17/08/2026 To 21/08/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -373,10 +371,10 @@ During the first week of my internship at CODAFRIQA, I successfully onboarded in
 
 **Field Supervisor Remarks:** Jospin adapted quickly to our engineering workflow and demonstrated great initiative in studying the project specification. Environment and repository setup completed smoothly.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 21/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 21/08/2026
 
 ## Day 6 — Monday, 24/08/2026
-**Week No:** 2 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 24/08/2026
+**Week No:** 2  |  **Day:** 1  |  **Month:** 1  |  **Date:** 24/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -387,10 +385,10 @@ During the first week of my internship at CODAFRIQA, I successfully onboarded in
 | **5. Student's Recommendations:** Composite indexes on organizationId and createdAt will improve tenant-specific queries. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Database foundation solid. Good adherence to relational normalization principles. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 24/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 24/08/2026
 
 ## Day 7 — Tuesday, 25/08/2026
-**Week No:** 2 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 25/08/2026
+**Week No:** 2  |  **Day:** 2  |  **Month:** 1  |  **Date:** 25/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -401,10 +399,10 @@ During the first week of my internship at CODAFRIQA, I successfully onboarded in
 | **5. Student's Recommendations:** Creating an isApproved boolean flag and incrementing version numbers preserves audit integrity. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Rubric versioning logic is well-architected. Crucial for legal compliance and explainable screening. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 25/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 25/08/2026
 
 ## Day 8 — Wednesday, 26/08/2026
-**Week No:** 2 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 26/08/2026
+**Week No:** 2  |  **Day:** 3  |  **Month:** 1  |  **Date:** 26/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -415,10 +413,10 @@ During the first week of my internship at CODAFRIQA, I successfully onboarded in
 | **5. Student's Recommendations:** Strict cookie flags (SameSite=Lax, HttpOnly) mitigate common CSRF and XSS token theft vectors. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Authentication flows cleanly implemented. Password hashing and JWT token handling validated. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 26/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 26/08/2026
 
 ## Day 9 — Thursday, 27/08/2026
-**Week No:** 2 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 27/08/2026
+**Week No:** 2  |  **Day:** 4  |  **Month:** 1  |  **Date:** 27/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -429,10 +427,10 @@ During the first week of my internship at CODAFRIQA, I successfully onboarded in
 | **5. Student's Recommendations:** Centralizing role authorization in reusable higher-order guard functions reduces code duplication. | Laptop, Documentation |
 | **6. Field supervisor's comments:** RBAC permission guards tested and verified. Security boundaries are appropriately enforced. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 27/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 27/08/2026
 
 ## Day 10 — Friday, 28/08/2026
-**Week No:** 2 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 28/08/2026
+**Week No:** 2  |  **Day:** 5  |  **Month:** 1  |  **Date:** 28/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -443,10 +441,10 @@ During the first week of my internship at CODAFRIQA, I successfully onboarded in
 | **5. Student's Recommendations:** Validating tenant isolation through automated unit tests that deliberately attempt cross-tenant reads. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 2 completed successfully. Multi-tenant isolation verified with zero cross-tenant leakage. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 28/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 28/08/2026
 
 ## Week 2 Summary Report
-**Week No:** 2 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date Range:** 24/08/2026 To 28/08/2026
+**Week No:** 2  |  **Month:** 1  |  **Date Range:** 24/08/2026 To 28/08/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -465,10 +463,10 @@ In Week 2, I focused on relational data architecture, authentication, and multi-
 
 **Field Supervisor Remarks:** Database modeling and multi-tenant security boundaries are exceptionally well-implemented. Great attention to security details.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 28/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 28/08/2026
 
 ## Day 11 — Monday, 31/08/2026
-**Week No:** 3 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 31/08/2026
+**Week No:** 3  |  **Day:** 1  |  **Month:** 1  |  **Date:** 31/08/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -479,10 +477,10 @@ In Week 2, I focused on relational data architecture, authentication, and multi-
 | **5. Student's Recommendations:** Client validation improves UX, but strict server-side validation is strictly mandatory for security. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Candidate application intake UI looks clean and user-friendly. Ready for backend validation. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 31/08/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 31/08/2026
 
 ## Day 12 — Tuesday, 01/09/2026
-**Week No:** 3 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 01/09/2026
+**Week No:** 3  |  **Day:** 2  |  **Month:** 1  |  **Date:** 01/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -493,10 +491,10 @@ In Week 2, I focused on relational data architecture, authentication, and multi-
 | **5. Student's Recommendations:** Binary header inspection reliably identifies true file types regardless of file extension. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Robust file validation implementation. Good attention to OWASP file upload security guidelines. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 01/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 01/09/2026
 
 ## Day 13 — Wednesday, 02/09/2026
-**Week No:** 3 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 02/09/2026
+**Week No:** 3  |  **Day:** 3  |  **Month:** 1  |  **Date:** 02/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -507,10 +505,10 @@ In Week 2, I focused on relational data architecture, authentication, and multi-
 | **5. Student's Recommendations:** Post-processing extracted text with line-break heuristics helps reconstruct logical reading order. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Text extraction service operating as expected. Ready for asynchronous background queue integration. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 02/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 02/09/2026
 
 ## Day 14 — Thursday, 03/09/2026
-**Week No:** 3 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 03/09/2026
+**Week No:** 3  |  **Day:** 4  |  **Month:** 1  |  **Date:** 03/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -521,10 +519,10 @@ In Week 2, I focused on relational data architecture, authentication, and multi-
 | **5. Student's Recommendations:** Setting a concurrency limit of 3 jobs per worker prevents CPU spikes on the application server. | Laptop, Documentation |
 | **6. Field supervisor's comments:** BullMQ asynchronous queue integration is clean and resilient. Excellent work on worker architecture. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 03/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 03/09/2026
 
 ## Day 15 — Friday, 04/09/2026
-**Week No:** 3 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date:** 04/09/2026
+**Week No:** 3  |  **Day:** 5  |  **Month:** 1  |  **Date:** 04/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -535,10 +533,10 @@ In Week 2, I focused on relational data architecture, authentication, and multi-
 | **5. Student's Recommendations:** Storing raw extracted text alongside structured profile entities allows re-parsing if schemas change. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 3 milestone completed on schedule. Resume intake, queueing, and parsing fully operational. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 04/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 04/09/2026
 
 ## Week 3 Summary Report
-**Week No:** 3 &nbsp;|&nbsp; **Month:** 1 &nbsp;|&nbsp; **Date Range:** 31/08/2026 To 04/09/2026
+**Week No:** 3  |  **Month:** 1  |  **Date Range:** 31/08/2026 To 04/09/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -557,10 +555,10 @@ Week 3 was dedicated to developing the secure resume ingestion and asynchronous 
 
 **Field Supervisor Remarks:** The asynchronous resume processing queue operates reliably with zero UI blocking. Robust error and retry handling.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 04/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 04/09/2026
 
 ## Day 16 — Monday, 07/09/2026
-**Week No:** 4 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 07/09/2026
+**Week No:** 4  |  **Day:** 1  |  **Month:** 2  |  **Date:** 07/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -571,10 +569,10 @@ Week 3 was dedicated to developing the secure resume ingestion and asynchronous 
 | **5. Student's Recommendations:** OpenAI structured outputs mode guarantees schema adherence at the API response level. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Prompt architecture looks disciplined. Structured output enforcement is essential for reliability. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 07/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 07/09/2026
 
 ## Day 17 — Tuesday, 08/09/2026
-**Week No:** 4 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 08/09/2026
+**Week No:** 4  |  **Day:** 2  |  **Month:** 2  |  **Date:** 08/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -585,10 +583,10 @@ Week 3 was dedicated to developing the secure resume ingestion and asynchronous 
 | **5. Student's Recommendations:** Separating mandatory criteria from preferred criteria ensures balanced and fair scoring. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Scoring math verified. Good mathematical balance between required and optional qualifications. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 08/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 08/09/2026
 
 ## Day 18 — Wednesday, 09/09/2026
-**Week No:** 4 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 09/09/2026
+**Week No:** 4  |  **Day:** 3  |  **Month:** 2  |  **Date:** 09/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -599,10 +597,10 @@ Week 3 was dedicated to developing the secure resume ingestion and asynchronous 
 | **5. Student's Recommendations:** Applying fuzzy substring verification validates whether cited quotes genuinely exist in the resume. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Verbatim citation verification is a critical feature for transparency and candidate auditing. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 09/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 09/09/2026
 
 ## Day 19 — Thursday, 10/09/2026
-**Week No:** 4 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 10/09/2026
+**Week No:** 4  |  **Day:** 4  |  **Month:** 2  |  **Date:** 10/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -613,10 +611,10 @@ Week 3 was dedicated to developing the secure resume ingestion and asynchronous 
 | **5. Student's Recommendations:** Surfacing uncertainty explicitly protects recruiters from making erroneous screening assumptions. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Uncertainty detection is an outstanding feature. Emphasizes the decision-support nature of the tool. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 10/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 10/09/2026
 
 ## Day 20 — Friday, 11/09/2026
-**Week No:** 4 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 11/09/2026
+**Week No:** 4  |  **Day:** 5  |  **Month:** 2  |  **Date:** 11/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -627,10 +625,10 @@ Week 3 was dedicated to developing the secure resume ingestion and asynchronous 
 | **5. Student's Recommendations:** Fixing model temperature to 0.1 maximizes deterministic, reproducible evaluation scores. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 4 milestone completed. The explainable AI evaluation engine is robust and well-grounded. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 11/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 11/09/2026
 
 ## Week 4 Summary Report
-**Week No:** 4 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date Range:** 07/09/2026 To 11/09/2026
+**Week No:** 4  |  **Month:** 2  |  **Date Range:** 07/09/2026 To 11/09/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -649,10 +647,10 @@ In Week 4, I engineered the core explainable AI evaluation engine utilizing Open
 
 **Field Supervisor Remarks:** The explainable AI evaluation engine is an outstanding achievement. Grounding scores in verbatim quotes and surfacing uncertainty makes the tool trustworthy.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 11/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 11/09/2026
 
 ## Day 21 — Monday, 14/09/2026
-**Week No:** 5 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 14/09/2026
+**Week No:** 5  |  **Day:** 1  |  **Month:** 2  |  **Date:** 14/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -663,10 +661,10 @@ In Week 4, I engineered the core explainable AI evaluation engine utilizing Open
 | **5. Student's Recommendations:** Using React Server Components allows parallel data fetching on the server before client rendering. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Dashboard layout is intuitive, responsive, and visually appealing. Metrics are clearly displayed. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 14/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 14/09/2026
 
 ## Day 22 — Tuesday, 15/09/2026
-**Week No:** 5 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 15/09/2026
+**Week No:** 5  |  **Day:** 2  |  **Month:** 2  |  **Date:** 15/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -677,10 +675,10 @@ In Week 4, I engineered the core explainable AI evaluation engine utilizing Open
 | **5. Student's Recommendations:** Horizontal scrolling containers with sticky headers preserve board usability on compact screens. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Kanban pipeline board works smoothly. Visual stage representation makes tracking intuitive. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 15/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 15/09/2026
 
 ## Day 23 — Wednesday, 16/09/2026
-**Week No:** 5 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 16/09/2026
+**Week No:** 5  |  **Day:** 3  |  **Month:** 2  |  **Date:** 16/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -691,10 +689,10 @@ In Week 4, I engineered the core explainable AI evaluation engine utilizing Open
 | **5. Student's Recommendations:** Applying 300ms debounce on search inputs dramatically reduces unnecessary server load. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Search and filtering operates with high responsiveness. Query debouncing works effectively. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 16/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 16/09/2026
 
 ## Day 24 — Thursday, 17/09/2026
-**Week No:** 5 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 17/09/2026
+**Week No:** 5  |  **Day:** 4  |  **Month:** 2  |  **Date:** 17/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -705,10 +703,10 @@ In Week 4, I engineered the core explainable AI evaluation engine utilizing Open
 | **5. Student's Recommendations:** Clean side-by-side comparison tables provide hiring managers with clear decision support. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Comparison view provides immediate value for hiring managers during shortlist deliberations. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 17/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 17/09/2026
 
 ## Day 25 — Friday, 18/09/2026
-**Week No:** 5 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 18/09/2026
+**Week No:** 5  |  **Day:** 5  |  **Month:** 2  |  **Date:** 18/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -719,10 +717,10 @@ In Week 4, I engineered the core explainable AI evaluation engine utilizing Open
 | **5. Student's Recommendations:** Pre-populating standard categorized reason templates speeds up recruiter documentation. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 5 milestone completed. Recruiter pipeline and human decisioning workflows fully operational. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 18/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 18/09/2026
 
 ## Week 5 Summary Report
-**Week No:** 5 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date Range:** 14/09/2026 To 18/09/2026
+**Week No:** 5  |  **Month:** 2  |  **Date Range:** 14/09/2026 To 18/09/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -741,10 +739,10 @@ Week 5 focused on building the interactive Recruiter Workspace and candidate pip
 
 **Field Supervisor Remarks:** Recruiter pipeline board and human decision modal are intuitive, highly responsive, and enforce full accountability.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 18/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 18/09/2026
 
 ## Day 26 — Monday, 21/09/2026
-**Week No:** 6 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 21/09/2026
+**Week No:** 6  |  **Day:** 1  |  **Month:** 2  |  **Date:** 21/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -755,10 +753,10 @@ Week 5 focused on building the interactive Recruiter Workspace and candidate pip
 | **5. Student's Recommendations:** Enforcing role checks ensures only users with the INTERVIEWER or RECRUITER role can be assigned. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Interview schema models are well-structured. Good normalization across participants and reviews. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 21/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 21/09/2026
 
 ## Day 27 — Tuesday, 22/09/2026
-**Week No:** 6 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 22/09/2026
+**Week No:** 6  |  **Day:** 2  |  **Month:** 2  |  **Date:** 22/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -769,10 +767,10 @@ Week 5 focused on building the interactive Recruiter Workspace and candidate pip
 | **5. Student's Recommendations:** Storing all timestamps in UTC in the database and formatting to local time on the client avoids timezone bugs. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Scheduling modal and conflict detection tested and working properly. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 22/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 22/09/2026
 
 ## Day 28 — Wednesday, 23/09/2026
-**Week No:** 6 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 23/09/2026
+**Week No:** 6  |  **Day:** 3  |  **Month:** 2  |  **Date:** 23/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -783,10 +781,10 @@ Week 5 focused on building the interactive Recruiter Workspace and candidate pip
 | **5. Student's Recommendations:** Clear progress indicators on scorecards ensure interviewers don't omit required evaluation sections. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Scorecard UI is clean and aligned with job rubric criteria. Good UX implementation. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 23/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 23/09/2026
 
 ## Day 29 — Thursday, 24/09/2026
-**Week No:** 6 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 24/09/2026
+**Week No:** 6  |  **Day:** 4  |  **Month:** 2  |  **Date:** 24/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -797,10 +795,10 @@ Week 5 focused on building the interactive Recruiter Workspace and candidate pip
 | **5. Student's Recommendations:** Filtering out peer scorecards on the server side guarantees data is never transmitted to unauthorized clients. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Independent review control is a major feature for fair and unbiased hiring evaluations. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 24/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 24/09/2026
 
 ## Day 30 — Friday, 25/09/2026
-**Week No:** 6 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 25/09/2026
+**Week No:** 6  |  **Day:** 5  |  **Month:** 2  |  **Date:** 25/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -811,10 +809,10 @@ Week 5 focused on building the interactive Recruiter Workspace and candidate pip
 | **5. Student's Recommendations:** Queueing email notifications as background jobs prevents SMTP delays from slowing down user requests. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 6 milestone completed. Interview scheduling, scorecards, and email notifications working flawlessly. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 25/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 25/09/2026
 
 ## Week 6 Summary Report
-**Week No:** 6 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date Range:** 21/09/2026 To 25/09/2026
+**Week No:** 6  |  **Month:** 2  |  **Date Range:** 21/09/2026 To 25/09/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -833,10 +831,10 @@ In Week 6, I implemented the collaborative interview scheduling and communicatio
 
 **Field Supervisor Remarks:** Interview scheduling and blind scorecards are excellently built. Solves real-world recruitment coordination challenges.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 25/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 25/09/2026
 
 ## Day 31 — Monday, 28/09/2026
-**Week No:** 7 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 28/09/2026
+**Week No:** 7  |  **Day:** 1  |  **Month:** 2  |  **Date:** 28/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -847,10 +845,10 @@ In Week 6, I implemented the collaborative interview scheduling and communicatio
 | **5. Student's Recommendations:** Using database indexes on stage transition timestamps accelerates conversion metric queries. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Analytics dashboard provides excellent operational visibility. Metrics are well-calculated. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 28/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 28/09/2026
 
 ## Day 32 — Tuesday, 29/09/2026
-**Week No:** 7 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 29/09/2026
+**Week No:** 7  |  **Day:** 2  |  **Month:** 2  |  **Date:** 29/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -861,10 +859,10 @@ In Week 6, I implemented the collaborative interview scheduling and communicatio
 | **5. Student's Recommendations:** Continuous monitoring of scoring patterns against neutral baselines helps detect potential bias. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Fairness monitoring implementation demonstrates high ethical software engineering standards. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 29/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 29/09/2026
 
 ## Day 33 — Wednesday, 30/09/2026
-**Week No:** 7 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 30/09/2026
+**Week No:** 7  |  **Day:** 3  |  **Month:** 2  |  **Date:** 30/09/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -875,10 +873,10 @@ In Week 6, I implemented the collaborative interview scheduling and communicatio
 | **5. Student's Recommendations:** Strict field projection in Prisma queries ensures internal evaluation notes are never exposed to candidates. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Candidate privacy portal provides transparent self-service while strictly safeguarding internal notes. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 30/09/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 30/09/2026
 
 ## Day 34 — Thursday, 01/10/2026
-**Week No:** 7 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 01/10/2026
+**Week No:** 7  |  **Day:** 4  |  **Month:** 2  |  **Date:** 01/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -889,10 +887,10 @@ In Week 6, I implemented the collaborative interview scheduling and communicatio
 | **5. Student's Recommendations:** Compressing candidate archives into encrypted zip files provides both convenience and security. | Laptop, Documentation |
 | **6. Field supervisor's comments:** DSAR export feature operates cleanly and complies with GDPR data portability requirements. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 01/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 01/10/2026
 
 ## Day 35 — Friday, 02/10/2026
-**Week No:** 7 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date:** 02/10/2026
+**Week No:** 7  |  **Day:** 5  |  **Month:** 2  |  **Date:** 02/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -903,10 +901,10 @@ In Week 6, I implemented the collaborative interview scheduling and communicatio
 | **5. Student's Recommendations:** Replacing candidate PII with cryptographic hashes in audit logs preserves audit history without retaining personal data. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 7 milestone completed. Data governance, analytics, and GDPR compliance successfully achieved. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 02/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 02/10/2026
 
 ## Week 7 Summary Report
-**Week No:** 7 &nbsp;|&nbsp; **Month:** 2 &nbsp;|&nbsp; **Date Range:** 28/09/2026 To 02/10/2026
+**Week No:** 7  |  **Month:** 2  |  **Date Range:** 28/09/2026 To 02/10/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -925,10 +923,10 @@ Week 7 was centered on data intelligence, candidate privacy, and GDPR regulatory
 
 **Field Supervisor Remarks:** Comprehensive data governance and privacy implementation. The DSAR export and right-to-be-forgotten erasure workflows meet enterprise regulatory standards.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 02/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 02/10/2026
 
 ## Day 36 — Monday, 05/10/2026
-**Week No:** 8 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 05/10/2026
+**Week No:** 8  |  **Day:** 1  |  **Month:** 3  |  **Date:** 05/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -939,10 +937,10 @@ Week 7 was centered on data intelligence, candidate privacy, and GDPR regulatory
 | **5. Student's Recommendations:** Using Vitest mocks allows fast, deterministic unit test runs without incurring external API costs. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Unit test coverage is thorough. All 142 tests passing with zero regressions. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 05/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 05/10/2026
 
 ## Day 37 — Tuesday, 06/10/2026
-**Week No:** 8 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 06/10/2026
+**Week No:** 8  |  **Day:** 2  |  **Month:** 3  |  **Date:** 06/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -953,10 +951,10 @@ Week 7 was centered on data intelligence, candidate privacy, and GDPR regulatory
 | **5. Student's Recommendations:** Executing integration tests inside an isolated test container with database teardowns ensures consistency. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Integration tests validate system resiliency across real database and queue operations. Great work. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 06/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 06/10/2026
 
 ## Day 38 — Wednesday, 07/10/2026
-**Week No:** 8 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 07/10/2026
+**Week No:** 8  |  **Day:** 3  |  **Month:** 3  |  **Date:** 07/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -967,10 +965,10 @@ Week 7 was centered on data intelligence, candidate privacy, and GDPR regulatory
 | **5. Student's Recommendations:** Using Playwright's `expect.poll` enables reliable waiting for asynchronous worker completion. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Playwright E2E suites passing cleanly. Complete hiring lifecycle automated and verified. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 07/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 07/10/2026
 
 ## Day 39 — Thursday, 08/10/2026
-**Week No:** 8 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 08/10/2026
+**Week No:** 8  |  **Day:** 4  |  **Month:** 3  |  **Date:** 08/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -981,10 +979,10 @@ Week 7 was centered on data intelligence, candidate privacy, and GDPR regulatory
 | **5. Student's Recommendations:** Radix UI dialog primitives provide built-in focus trapping and accessible ARIA attributes. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Accessibility audit passed with zero critical WCAG 2.1 AA violations. High standard of UI engineering. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 08/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 08/10/2026
 
 ## Day 40 — Friday, 09/10/2026
-**Week No:** 8 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 09/10/2026
+**Week No:** 8  |  **Day:** 5  |  **Month:** 3  |  **Date:** 09/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -995,10 +993,10 @@ Week 7 was centered on data intelligence, candidate privacy, and GDPR regulatory
 | **5. Student's Recommendations:** Using CSP nonces generated per-request allows safe inline script execution under strict policies. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Week 8 milestone completed. Platform is well-tested, accessible, and securely hardened. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 09/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 09/10/2026
 
 ## Week 8 Summary Report
-**Week No:** 8 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date Range:** 05/10/2026 To 09/10/2026
+**Week No:** 8  |  **Month:** 3  |  **Date Range:** 05/10/2026 To 09/10/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -1017,10 +1015,10 @@ In Week 8, I conducted comprehensive automated testing, accessibility audits, an
 
 **Field Supervisor Remarks:** Thorough testing across all layers. Zero critical security vulnerabilities and 100% test pass rate demonstrate high engineering quality.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 09/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 09/10/2026
 
 ## Day 41 — Monday, 12/10/2026
-**Week No:** 9 &nbsp;|&nbsp; **Day:** 1 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 12/10/2026
+**Week No:** 9  |  **Day:** 1  |  **Month:** 3  |  **Date:** 12/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -1031,10 +1029,10 @@ In Week 8, I conducted comprehensive automated testing, accessibility audits, an
 | **5. Student's Recommendations:** Multi-stage Docker builds separate build dependencies from the final minimal production image. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Docker containerization completed and optimized. Staging environment launches cleanly. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 12/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 12/10/2026
 
 ## Day 42 — Tuesday, 13/10/2026
-**Week No:** 9 &nbsp;|&nbsp; **Day:** 2 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 13/10/2026
+**Week No:** 9  |  **Day:** 2  |  **Month:** 3  |  **Date:** 13/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -1045,10 +1043,10 @@ In Week 8, I conducted comprehensive automated testing, accessibility audits, an
 | **5. Student's Recommendations:** Including step-by-step shell commands and rollback procedures makes runbooks actionable. | Laptop, Documentation |
 | **6. Field supervisor's comments:** System documentation is thorough, well-structured, and highly professional. Excellent technical writing. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 13/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 13/10/2026
 
 ## Day 43 — Wednesday, 14/10/2026
-**Week No:** 9 &nbsp;|&nbsp; **Day:** 3 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 14/10/2026
+**Week No:** 9  |  **Day:** 3  |  **Month:** 3  |  **Date:** 14/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -1059,10 +1057,10 @@ In Week 8, I conducted comprehensive automated testing, accessibility audits, an
 | **5. Student's Recommendations:** Using automated seeding scripts ensures reproducible demonstration and testing environments. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Staging dataset seeded cleanly. Database backup and restore procedures verified successfully. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 14/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 14/10/2026
 
 ## Day 44 — Thursday, 15/10/2026
-**Week No:** 9 &nbsp;|&nbsp; **Day:** 4 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 15/10/2026
+**Week No:** 9  |  **Day:** 4  |  **Month:** 3  |  **Date:** 15/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -1073,10 +1071,10 @@ In Week 8, I conducted comprehensive automated testing, accessibility audits, an
 | **5. Student's Recommendations:** Preparing a structured presentation flow ensures all technical milestones are clearly evidenced. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Outstanding technical demonstration. The platform satisfies all 17 specification requirements completely. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 15/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 15/10/2026
 
 ## Day 45 — Friday, 16/10/2026
-**Week No:** 9 &nbsp;|&nbsp; **Day:** 5 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date:** 16/10/2026
+**Week No:** 9  |  **Day:** 5  |  **Month:** 3  |  **Date:** 16/10/2026
 
 | Sequence of Operation for Job | Tool, Equipment |
 |---|---|
@@ -1087,10 +1085,10 @@ In Week 8, I conducted comprehensive automated testing, accessibility audits, an
 | **5. Student's Recommendations:** The practical experience gained at CODAFRIQA will serve as a strong foundation for my software engineering career. | Laptop, Documentation |
 | **6. Field supervisor's comments:** Congratulations to Jospin on successfully completing his internship. Exemplary performance and dedication. | Verified & Signed |
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 16/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 16/10/2026
 
 ## Week 9 Summary Report
-**Week No:** 9 &nbsp;|&nbsp; **Month:** 3 &nbsp;|&nbsp; **Date Range:** 12/10/2026 To 16/10/2026
+**Week No:** 9  |  **Month:** 3  |  **Date Range:** 12/10/2026 To 16/10/2026
 
 | Days | Brief Description of work/activity performed | Time In | Time Out | Total Hours | Lessons Learnt | Challenges Faced |
 |---|---|---|---|---|---|---|
@@ -1109,7 +1107,7 @@ During the final week of my attachment, I prepared the platform for staging depl
 
 **Field Supervisor Remarks:** Jospin has successfully completed all project milestones. The platform is robust, secure, and production-ready. Outstanding performance throughout.
 
-**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Date:** 16/10/2026
+**Signature of Field Supervisor:** IRANKUNDA BADAGA Steven          **Date:** 16/10/2026
 
 # ASSESSMENT FORM
 *(To be completed by the Industry Supervisor at the end of the attachment period)*
@@ -1135,7 +1133,7 @@ SHYAKA Jospin demonstrated exceptional diligence, strong analytical capabilities
 **Name of Industry Supervisor:** IRANKUNDA BADAGA Steven  
 **Position:** Senior Software Engineer & Technical Lead, CODAFRIQA  
 **Signature:** ............................................................ **Date:** 16/10/2026  
-**Official Company Stamp:** [CODAFRIQA ENGINEERING STAMP]  
+**Official Company Stamp:** ............................................................  
 
 # UNIVERSITY SUPERVISOR'S OVERALL COMMENTS
 *(To be completed by the AUCA University Supervisor after field evaluation, covering overall progress, technical depth, quality of the logbook, and relevancy of training)*
