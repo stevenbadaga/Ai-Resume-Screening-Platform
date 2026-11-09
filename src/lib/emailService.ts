@@ -322,7 +322,14 @@ export async function sendTransactionalEmail(
   // configured — it is the only provider that produces properly signed mail
   // from a @gmail.com address (the common small-team setup).
   if (gmailSmtpConfigured()) {
-    return sendViaGmailSmtp(subject, html, payload.to);
+    try {
+      return await sendViaGmailSmtp(subject, html, payload.to);
+    } catch (smtpErr) {
+      console.warn('[email] Gmail SMTP connection failed (often blocked on cloud hosts like Render), attempting HTTPS API fallback:', smtpErr);
+      if (!process.env.BREVO_API_KEY && !process.env.RESEND_API_KEY) {
+        throw smtpErr;
+      }
+    }
   }
 
   const brevoApiKey = process.env.BREVO_API_KEY;

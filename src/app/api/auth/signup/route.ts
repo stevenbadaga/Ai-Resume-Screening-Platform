@@ -189,6 +189,9 @@ export async function POST(req: Request) {
     // exists; a delivery failure does NOT roll back the account — the user
     // can request a fresh code from the sign-in page (resend-verification).
     const issued = await issueVerificationCode(user.id, 'EMAIL_VERIFICATION');
+    if (issued.ok) {
+      console.log(`[AUTH SIGNUP] 6-digit verification code for ${normalizedEmail}: ${issued.code}`);
+    }
 
     // Cooldown conflict on a brand-new account cannot really happen (the row
     // set is empty), but fail honest rather than silently skipping the email.

@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     if (user && user.passwordHash && !user.emailVerifiedAt) {
       const issued = await issueVerificationCode(user.id, 'EMAIL_VERIFICATION');
       if (issued.ok) {
+        console.log(`[AUTH RESEND] 6-digit verification code for ${email}: ${issued.code}`);
         // Recorded send (spec §6.9): even this anti-enumeration path records an
         // honest SENT/FAILED row — observability never leaks enumeration signals
         // because the API response stays generic regardless of outcome.
