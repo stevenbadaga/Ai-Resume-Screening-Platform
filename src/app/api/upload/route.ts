@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { submitApplication } from '@/lib/intakeService';
+import { submitApplication, type IntakeInput } from '@/lib/intakeService';
 import { safeErrorResponse } from '@/lib/validation';
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rateLimit';
 import { requestIdOf } from '@/lib/observability';
@@ -35,24 +35,101 @@ export async function POST(req: NextRequest) {
     }
     const data = formData;
     const file = data.get('resume') as unknown as File | null;
-    const firstName = data.get('firstName') as string;
-    const lastName = data.get('lastName') as string;
-    const email = data.get('email') as string;
+    let firstName = data.get('firstName') as string;
+    let lastName = data.get('lastName') as string;
+    let email = data.get('email') as string;
+    let phone = (data.get('phone') as string | null) || null;
     const jobId = data.get('jobId') as string;
-    const consent = data.get('consent') === 'on';
+    const consent = data.get('consent') === 'on' || data.get('consent') === 'true' || data.get('consentGiven') === 'true';
 
-    if (!file || !firstName || !lastName || !email || !jobId) {
+    const wantsProfileResume =
+      ((data.get('useProfileResume') as string | null) === 'true' ||
+        (data.get('useSavedCv') as string | null) === 'yes' ||
+        (data.get('useSavedCv') as string | null) === 'true') &&
+      !file;
+
+    if (!jobId) {
+      return NextResponse.json({ success: false, error: 'Missing job requisition selection' }, { status: 400 });
+    }
+
+    if (!wantsProfileResume && (!file || !firstName || !lastName || !email)) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    let fileInput: IntakeInput['file'] = file
+      ? {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          buffer: Buffer.from(await file.arrayBuffer()),
+        }
+      : null;
+
+    if (wantsProfileResume) {
+      const { getServerSession } = await import('next-auth/next');
+      const { authOptions } = await import('@/lib/authOptions');
+      const prisma = (await import('@/lib/prisma')).default;
+      const { getObject, contentTypeFromKey } = await import('@/lib/storage');
+
+      const session = await getServerSession(authOptions);
+      const sessionEmail = (session?.user as { email?: string | null } | null)?.email;
+      const effectiveLookupEmail = email || sessionEmail;
+
+      if (!effectiveLookupEmail) {
+        return NextResponse.json(
+          { success: false, error: 'Sign in to apply with your saved CV, or attach a resume file.' },
+          { status: 401 }
+        );
+      }
+
+      const candidate = await prisma.candidate.findFirst({ where: { email: effectiveLookupEmail } });
+      if (!candidate?.profileResumeRef) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No CV saved on your profile yet — upload one on your profile page, or attach a file here.',
+          },
+          { status: 400 }
+        );
+      }
+
+      let saved;
+      try {
+        saved = await getObject(candidate.profileResumeRef);
+      } catch (storageErr: any) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Could not load your saved CV from storage (' +
+              (storageErr?.message || 'document unavailable') +
+              '). Please apply by uploading your resume document directly.',
+          },
+          { status: 400 }
+        );
+      }
+
+      const savedName = candidate.profileResumeName ?? 'saved-resume';
+      fileInput = {
+        name: savedName,
+        size: saved.bytes.length,
+        type: saved.contentType || contentTypeFromKey(savedName),
+        buffer: saved.bytes,
+      };
+      email = email || candidate.email || sessionEmail || '';
+      firstName = firstName || candidate.firstName || '';
+      lastName = lastName || candidate.lastName || '';
+      phone = phone || candidate.phone || null;
+    }
+
     const result = await submitApplication({
       jobId,
       firstName,
       lastName,
       email,
+      phone,
       consentGiven: consent,
-      file: { name: file.name, size: file.size, type: file.type, buffer },
+      file: fileInput,
       requestId: requestIdOf(req),
     });
 

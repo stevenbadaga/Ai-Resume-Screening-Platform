@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
     const email = formData.get('email') as string;
+    const phone = (formData.get('phone') as string | null) || null;
     const consentRaw =
       formData.get('consentGiven') ?? formData.get('consent') ?? formData.get('consentToDataProcessing');
     const consentGiven = consentRaw === 'true' || consentRaw === '1' || consentRaw === 'on';
@@ -72,10 +73,22 @@ export async function POST(req: NextRequest) {
     let effectiveEmail = email;
     let effectiveFirst = firstName;
     let effectiveLast = lastName;
+    let effectivePhone = phone;
+
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as { name?: string | null; email?: string | null } | undefined;
+    const sessionEmail = sessionUser?.email;
+
+    if (!effectiveEmail && sessionEmail) {
+      effectiveEmail = sessionEmail;
+    }
+    if (!effectiveFirst && sessionUser?.name) {
+      const parts = sessionUser.name.trim().split(' ');
+      effectiveFirst = parts[0] || 'Applicant';
+      effectiveLast = effectiveLast || parts.slice(1).join(' ') || '';
+    }
 
     if (wantsProfileResume) {
-      const session = await getServerSession(authOptions);
-      const sessionEmail = (session?.user as { email?: string | null } | null)?.email;
       if (!sessionEmail) {
         return NextResponse.json(
           { error: 'Sign in to apply with your saved CV, or attach a resume file.' },
@@ -89,7 +102,22 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      const saved = await getObject(candidate.profileResumeRef);
+
+      let saved;
+      try {
+        saved = await getObject(candidate.profileResumeRef);
+      } catch (storageErr: any) {
+        return NextResponse.json(
+          {
+            error:
+              'Could not load your saved CV from storage (' +
+              (storageErr?.message || 'document unavailable') +
+              '). Please apply by uploading your resume document directly.',
+          },
+          { status: 400 }
+        );
+      }
+
       const savedName = candidate.profileResumeName ?? 'saved-resume';
       effectiveFile = {
         name: savedName,
@@ -97,9 +125,10 @@ export async function POST(req: NextRequest) {
         type: saved.contentType || contentTypeFromKey(savedName),
         buffer: saved.bytes,
       };
-      effectiveEmail = candidate.email || sessionEmail;
-      effectiveFirst = candidate.firstName;
-      effectiveLast = candidate.lastName;
+      effectiveEmail = email || candidate.email || sessionEmail;
+      effectiveFirst = firstName || candidate.firstName || effectiveFirst;
+      effectiveLast = lastName || candidate.lastName || effectiveLast;
+      effectivePhone = phone || candidate.phone || effectivePhone;
     }
 
     const result = await submitApplication({
@@ -107,6 +136,7 @@ export async function POST(req: NextRequest) {
       firstName: effectiveFirst,
       lastName: effectiveLast,
       email: effectiveEmail,
+      phone: effectivePhone,
       consentGiven,
       file: effectiveFile,
       requestId: requestIdOf(req),

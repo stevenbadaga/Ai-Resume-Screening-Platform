@@ -31,6 +31,7 @@ export interface IntakeInput {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string | null;
   consentGiven: boolean;
   file: { name: string; size: number; type: string; buffer: Buffer } | null;
   /** Correlation id from the request for logs + audit context. */
@@ -54,7 +55,7 @@ function normalizeName(name: string): string {
 }
 
 export async function submitApplication(input: IntakeInput): Promise<IntakeResult> {
-  const { jobId, firstName, lastName, email, consentGiven, file } = input;
+  const { jobId, firstName, lastName, email, phone, consentGiven, file } = input;
 
   if (!consentGiven) {
     return { ok: false, status: 400, error: 'Consent to data processing is required' };
@@ -187,6 +188,7 @@ export async function submitApplication(input: IntakeInput): Promise<IntakeResul
         firstName,
         lastName,
         email,
+        phone: phone?.trim() || null,
         consentGiven: true,
         consentNoticeVersion: PRIVACY_NOTICE_VERSION,
         consentGivenAt: new Date(),
@@ -198,6 +200,9 @@ export async function submitApplication(input: IntakeInput): Promise<IntakeResul
     // Returning candidate: refresh consent if previously withheld, tag the
     // new record set for duplicate review.
     const updateData: Record<string, unknown> = {};
+    if (phone?.trim() && (!candidate.phone || candidate.phone !== phone.trim())) {
+      updateData.phone = phone.trim();
+    }
     if (!candidate.consentGiven) {
       updateData.consentGiven = true;
       updateData.consentNoticeVersion = PRIVACY_NOTICE_VERSION;
@@ -283,7 +288,7 @@ export async function submitApplication(input: IntakeInput): Promise<IntakeResul
     await prisma.notification.createMany({
       data: orgUsers.map((u) => ({
         userId: u.id,
-        title: `📄 New Applicant: ${firstName} ${lastName}`,
+        title: `New Applicant: ${firstName} ${lastName}`,
         message: `${firstName} ${lastName} has submitted an application for ${job.title}.${screeningQueued ? ' AI screening is running automatically.' : ' Screening is queued for retry — the pipeline was temporarily unavailable.'}`,
         type: 'APPLICATION_STATUS',
         link: `/candidates`,
