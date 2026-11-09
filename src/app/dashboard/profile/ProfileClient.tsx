@@ -169,7 +169,7 @@ export default function ProfileClient({ account, candidate }: Props) {
     <div className="max-w-3xl mx-auto space-y-5">
       {/* Personalized Header */}
       <div className="pb-3 border-b border-[var(--border)]">
-        <p className="eyebrow mb-1">{isCandidate ? t('profile_workspace_candidate') : t('profile_workspace_account')}</p>
+        <p className="eyebrow mb-1">{isCandidate ? t('profile_workspace_candidate') : (t('profile_workspace_account') || 'Staff Account')}</p>
         <h1 className="h-page">{t('profile_title')}</h1>
         {/* Personalized greeting for candidates */}
         {isCandidate && candidate?.firstName && (
@@ -178,12 +178,14 @@ export default function ProfileClient({ account, candidate }: Props) {
           </p>
         )}
         <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)] mt-1">
-          {t('profile_subtitle')}
+          {isCandidate
+            ? t('profile_subtitle')
+            : 'Manage your profile details, contact information, and workspace role.'}
         </p>
       </div>
 
       {/* Identity card */}
-      <section className="panel p-5 sm:p-6">
+      <section className="panel p-5 sm:p-6 space-y-4">
         <div className="flex items-start gap-4">
           <div className="brand-mark w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-extrabold shrink-0">
             {initials}
@@ -212,7 +214,9 @@ export default function ProfileClient({ account, candidate }: Props) {
                   className="field"
                 />
                 <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_50%,transparent)] mt-1">
-                  {t('profile_phone_hint')}
+                  {isCandidate
+                    ? t('profile_phone_hint')
+                    : 'Contact phone number for internal notifications and team communications.'}
                 </p>
               </div>
             </div>
@@ -240,7 +244,48 @@ export default function ProfileClient({ account, candidate }: Props) {
             )}
           </div>
         </div>
+
+        {/* Save button for identity card */}
+        <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between gap-3">
+          {profileMessage ? (
+            <span
+              role="status"
+              className={`text-xs font-semibold ${profileMessage.kind === 'ok' ? 'text-[var(--accent)]' : 'text-[var(--coral)]'}`}
+            >
+              {profileMessage.text}
+            </span>
+          ) : (
+            <span className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_45%,transparent)]">
+              {isCandidate ? 'Keep your contact info current.' : 'Your name and contact number are visible to your recruitment team.'}
+            </span>
+          )}
+          <button type="button" onClick={saveProfile} disabled={saving} className="btn btn-primary !px-4 !py-1.5 !text-xs">
+            {saving ? t('profile_saving') : t('profile_save')}
+          </button>
+        </div>
       </section>
+
+      {!isCandidate && (
+        <section className="panel p-5 sm:p-6 space-y-3">
+          <h2 className="text-sm font-bold text-[var(--foreground)]">Workspace & Role Information</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]">
+              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-medium">Assigned Role</p>
+              <p className="font-semibold text-sm mt-0.5">{account.role}</p>
+              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] mt-1">
+                Permissions are managed by your workspace Administrator.
+              </p>
+            </div>
+            <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]">
+              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-medium">Organization</p>
+              <p className="font-semibold text-sm mt-0.5">{account.organizationName || 'Default Workspace'}</p>
+              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] mt-1">
+                Multi-tenant tenant partition active.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {isCandidate && (
         <>

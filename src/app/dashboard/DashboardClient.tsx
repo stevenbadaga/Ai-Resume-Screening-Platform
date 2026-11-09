@@ -247,7 +247,9 @@ export default function DashboardClient({
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
             <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
               <span>{t('metric_low_confidence')}</span>
-              <span aria-hidden="true">⚠️</span>
+              <svg className="w-3.5 h-3.5 text-[var(--warning)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
             </div>
             <div className="mt-1 text-xl font-bold tabular-nums text-[var(--warning)]">{lowConfidenceCount}</div>
             <span className="text-[10px] text-[var(--muted)] mt-0.5 block">{t('metric_low_confidence_hint')}</span>
@@ -256,7 +258,9 @@ export default function DashboardClient({
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
             <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
               <span>{t('metric_manual_corrections')}</span>
-              <span aria-hidden="true">✏️</span>
+              <svg className="w-3.5 h-3.5 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
             </div>
             <div className="mt-1 text-xl font-bold tabular-nums text-[var(--accent)]">{manualCorrectionsCount}</div>
             <span className="text-[10px] text-[var(--muted)] mt-0.5 block">{t('metric_manual_corrections_hint')}</span>
@@ -265,7 +269,9 @@ export default function DashboardClient({
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
             <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
               <span>{t('metric_score_overrides')}</span>
-              <span aria-hidden="true">⚖️</span>
+              <svg className="w-3.5 h-3.5 text-[var(--info)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+              </svg>
             </div>
             <div className="mt-1 text-xl font-bold tabular-nums text-[var(--info)]">{scoreOverridesCount}</div>
             <span className="text-[10px] text-[var(--muted)] mt-0.5 block">{t('metric_score_overrides_hint')}</span>
@@ -274,7 +280,9 @@ export default function DashboardClient({
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
             <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
               <span>{t('metric_processing_failures')}</span>
-              <span aria-hidden="true">🔴</span>
+              <svg className="w-3.5 h-3.5 text-[var(--danger)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
             <div
               className={`mt-1 text-xl font-bold tabular-nums ${failedProcessingCount > 0 ? 'text-[var(--danger)]' : 'text-[var(--muted)]'}`}
@@ -287,7 +295,9 @@ export default function DashboardClient({
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
             <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
               <span>{t('metric_upcoming_interviews')}</span>
-              <span aria-hidden="true">📅</span>
+              <svg className="w-3.5 h-3.5 text-[var(--success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
             <div className="mt-1 text-xl font-bold tabular-nums text-[var(--success)]">{upcomingInterviewsCount}</div>
             <span className="text-[10px] text-[var(--muted)] mt-0.5 block">{t('metric_upcoming_interviews_hint')}</span>
@@ -304,7 +314,9 @@ export default function DashboardClient({
           >
             <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted)]">
               <span>{t('metric_failed_emails')}</span>
-              <span aria-hidden="true">📧</span>
+              <svg className="w-3.5 h-3.5 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
             </div>
             <div
               className={`mt-1 text-xl font-bold tabular-nums ${failedEmailDeliveriesCount > 0 ? 'text-[var(--danger)]' : 'text-[var(--muted)]'}`}
@@ -398,7 +410,15 @@ export default function DashboardClient({
                             }}
                             aria-hidden="true"
                           >
-                            {isAI ? '🤖' : '👤'}
+                            {isAI ? (
+                              <svg className="w-3 h-3 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3 h-3 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            )}
                           </span>
                           <div>
                             <p className="font-semibold text-[var(--foreground)] leading-none text-xs">{actorName}</p>

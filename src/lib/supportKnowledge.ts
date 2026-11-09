@@ -46,11 +46,11 @@ export const RECRUIT_AI_MULTILINGUAL_KNOWLEDGE: MultilingualKnowledgeItem[] = [
   {
     keywords: ['hi', 'hello', 'hey', 'hi there', 'hello there', 'good morning', 'good afternoon', 'good evening', 'good day', 'bonjour', 'bonsoir', 'salut', 'hola', 'buenas', 'buenos dias', 'hallo', 'guten tag', 'guten morgen', 'muraho', 'bite', 'mwiriwe', 'amakuru', 'hey there', 'hello recruitai'],
     answers: {
-      en: "Hello! 👋 I am your RecruitAI Assistant. Whether you are an applicant, recruiter, hiring manager, interviewer, auditor, or admin — ask me how to apply for a job, review candidates, post new roles, submit scorecards, or understand our AI screening.",
-      fr: "Bonjour ! 👋 Je suis votre assistant RecruitAI. Que vous soyez candidat, recruteur, manager, évaluateur, auditeur ou administrateur — demandez-moi comment postuler, évaluer des candidats, publier des offres ou comprendre notre criblage IA.",
-      es: "¡Hola! 👋 Soy tu Asistente RecruitAI. Seas postulante, reclutador, gerente, entrevistador, auditor o administrador: pregúntame cómo postularte, evaluar candidatos, publicar vacantes o entender nuestro cribado con IA.",
-      de: "Hallo! 👋 Ich bin Ihr RecruitAI-Assistent. Ob Bewerber, Recruiter, Hiring Manager, Interviewer, Auditor oder Admin — fragen Sie mich, wie Sie sich bewerben, Kandidaten prüfen, Stellen ausschreiben oder unser KI-Screening verstehen.",
-      rw: "Muraho! 👋 Ndi umufasha wanyu wa RecruitAI. Uraba ari umusaba akazi, ushakisha abakozi, umuyobozi, ukora ikizamini, umugenzuzi cyangwa umuyobozi — Mumbaze uko basaba akazi, uko basuzuma abakandida, uko fungura imyanya, cyangwa uko isuzuma rya rya AI rikora."
+      en: "Hello! I am your RecruitAI Assistant. Whether you are an applicant, recruiter, hiring manager, interviewer, auditor, or admin — ask me how to apply for a job, review candidates, post new roles, submit scorecards, or understand our AI screening.",
+      fr: "Bonjour ! Je suis votre assistant RecruitAI. Que vous soyez candidat, recruteur, manager, évaluateur, auditeur ou administrateur — demandez-moi comment postuler, évaluer des candidats, publier des offres ou comprendre notre criblage IA.",
+      es: "¡Hola! Soy tu Asistente RecruitAI. Seas postulante, reclutador, gerente, entrevistador, auditor o administrador: pregúntame cómo postularte, evaluar candidatos, publicar vacantes o entender nuestro cribado con IA.",
+      de: "Hallo! Ich bin Ihr RecruitAI-Assistent. Ob Bewerber, Recruiter, Hiring Manager, Interviewer, Auditor oder Admin — fragen Sie mich, wie Sie sich bewerben, Kandidaten prüfen, Stellen ausschreiben oder unser KI-Screening verstehen.",
+      rw: "Muraho! Ndi umufasha wanyu wa RecruitAI. Uraba ari umusaba akazi, ushakisha abakozi, umuyobozi, ukora ikizamini, umugenzuzi cyangwa umuyobozi — Mumbaze uko basaba akazi, uko basuzuma abakandida, uko fungura imyanya, cyangwa uko isuzuma rya rya AI rikora."
     }
   },
 

@@ -445,7 +445,11 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
       {/* Requisitions Grid */}
       {jobs.length === 0 ? (
         <div className="panel p-10 text-center space-y-2">
-          <span className="text-3xl block" aria-hidden="true">🗂️</span>
+          <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto text-teal-600 dark:text-teal-400">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
           <p className="text-xs text-[color-mix(in_srgb,var(--foreground)_60%,transparent)]">{t('no_jobs_found')}</p>
         </div>
       ) : (
@@ -534,96 +538,104 @@ export default function JobsClient({ initialJobs, userRole = 'Candidate', pagina
                     {job._count?.applications || job.applications?.length || 0} {t('applicants')}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    {isStaff && (
-                      <button
-                        onClick={() => handleDuplicateJob(job)}
-                        disabled={duplicatingId === job.id}
-                        title={t('aria_duplicate_requisition')}
-                        className="btn btn-secondary !px-2 !py-1 !text-[11px]"
-                      >
-                        {duplicatingId === job.id ? t('btn_cloning') : t('btn_copy')}
-                      </button>
-                    )}
-                    {isStaff && job.status === 'OPEN' && (
+                    {isStaff ? (
+                      /* Staff actions: manage requisition, view pipeline candidates, duplicate, publish, close, archive. NO apply buttons. */
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <Link
-                          href={`/jobs/${job.id}/apply`}
-                          className="btn btn-secondary !px-2 !py-1 !text-[11px]"
-                          title="View requisition or submit an application"
-                        >
-                          Apply / View &rarr;
-                        </Link>
-                        <button
-                          onClick={() => handleCloseJob(job)}
-                          title={t('aria_close_requisition')}
-                          className="btn btn-danger !px-2 !py-1 !text-[11px]"
-                        >
-                          {t('btn_close')}
-                        </button>
-                      </div>
-                    )}
-                    {isStaff && job.status === 'CLOSED' && (
-                      <button
-                        onClick={() => handleArchiveJob(job)}
-                        title="Archive requisition"
-                        className="btn btn-secondary !px-2 !py-1 !text-[11px]"
-                      >
-                        {t('btn_archive') || 'Archive'}
-                      </button>
-                    )}
-                    {isStaff && (job.status === 'DRAFT' || job.status === 'REVIEW') ? (
-                      <button
-                        onClick={() => handlePublishJob(job)}
-                        disabled={publishingId === job.id}
-                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
-                      >
-                        {publishingId === job.id ? t('btn_publishing') : t('btn_publish')}
-                      </button>
-                    ) : !isStaff && myApplications[job.id] ? (
-                      <span className="flex items-center gap-1.5">
-                        <span className="chip text-emerald-600 dark:text-emerald-400 border-emerald-500/40" title={`Applied ${new Date(myApplications[job.id].appliedAt).toLocaleDateString()}`}>
-                          {t('chip_applied')}
-                        </span>
-                        {myApplications[job.id].score !== null && (
-                          <span className="chip chip-accent" title={t('aria_latest_score')}>
-                            {t('chip_match_pct').replace('{score}', String(Math.round(myApplications[job.id].score!)))}
-                          </span>
+                        {job.status === 'OPEN' && (
+                          <Link
+                            href={`/candidates?jobId=${job.id}`}
+                            className="btn btn-secondary !px-2 !py-1 !text-[11px]"
+                            title="View applicants in pipeline"
+                          >
+                            {t('pipeline_title') || 'View Candidates'} &rarr;
+                          </Link>
                         )}
-                      </span>
-                    ) : !isAuthenticated && job.status === 'OPEN' ? (
-                      <Link
-                        href={`/auth/signin?callbackUrl=${encodeURIComponent(`/jobs/${job.id}/apply`)}`}
-                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
-                      >
-                        Sign in to apply &rarr;
-                      </Link>
-                    ) : !isStaff && job.status === 'OPEN' && hasSavedResume ? (
-                      <div className="flex items-center gap-1.5 flex-wrap">
                         <button
-                          onClick={() => handleOneClickApply(job)}
-                          disabled={applyingJobId === job.id}
-                          title={t('aria_apply_instant')}
-                          className="btn btn-primary !px-2.5 !py-1 !text-[11px] inline-flex items-center gap-1 shadow-sm font-semibold"
+                          onClick={() => handleDuplicateJob(job)}
+                          disabled={duplicatingId === job.id}
+                          title={t('aria_duplicate_requisition')}
+                          className="btn btn-secondary !px-2 !py-1 !text-[11px]"
                         >
-                          <span>{applyingJobId === job.id ? t('btn_applying') : t('btn_one_click_apply').replace(/^⚡\s*/, '')}</span>
+                          {duplicatingId === job.id ? t('btn_cloning') : t('btn_copy')}
                         </button>
-                        <Link
-                          href={`/jobs/${job.id}/apply`}
-                          className="btn btn-secondary !px-2.5 !py-1 !text-[11px] inline-flex items-center gap-1 hover:border-[var(--accent)] font-medium"
-                          title="Apply with a tailored or different resume"
-                        >
-                          <span>{t('apply_role') || 'Apply with Custom CV'} &rarr;</span>
-                        </Link>
+                        {(job.status === 'DRAFT' || job.status === 'REVIEW') && (
+                          <button
+                            onClick={() => handlePublishJob(job)}
+                            disabled={publishingId === job.id}
+                            className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
+                          >
+                            {publishingId === job.id ? t('btn_publishing') : t('btn_publish')}
+                          </button>
+                        )}
+                        {job.status === 'OPEN' && (
+                          <button
+                            onClick={() => handleCloseJob(job)}
+                            title={t('aria_close_requisition')}
+                            className="btn btn-danger !px-2 !py-1 !text-[11px]"
+                          >
+                            {t('btn_close')}
+                          </button>
+                        )}
+                        {job.status === 'CLOSED' && (
+                          <button
+                            onClick={() => handleArchiveJob(job)}
+                            title="Archive requisition"
+                            className="btn btn-secondary !px-2 !py-1 !text-[11px]"
+                          >
+                            {t('btn_archive') || 'Archive'}
+                          </button>
+                        )}
                       </div>
-                    ) : job.status === 'OPEN' ? (
-                      <Link
-                        href={`/jobs/${job.id}/apply`}
-                        className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
-                      >
-                        {t('apply_role')} &rarr;
-                      </Link>
                     ) : (
-                      <span className="chip" aria-disabled="true">{t('status_closed')}</span>
+                      /* Candidate & public visitor actions: apply, view applied status */
+                      <>
+                        {myApplications[job.id] ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="chip text-emerald-600 dark:text-emerald-400 border-emerald-500/40" title={`Applied ${new Date(myApplications[job.id].appliedAt).toLocaleDateString()}`}>
+                              {t('chip_applied')}
+                            </span>
+                            {myApplications[job.id].score !== null && (
+                              <span className="chip chip-accent" title={t('aria_latest_score')}>
+                                {t('chip_match_pct').replace('{score}', String(Math.round(myApplications[job.id].score!)))}
+                              </span>
+                            )}
+                          </span>
+                        ) : !isAuthenticated && job.status === 'OPEN' ? (
+                          <Link
+                            href={`/auth/signin?callbackUrl=${encodeURIComponent(`/jobs/${job.id}/apply`)}`}
+                            className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
+                          >
+                            Sign in to apply &rarr;
+                          </Link>
+                        ) : job.status === 'OPEN' && hasSavedResume ? (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button
+                              onClick={() => handleOneClickApply(job)}
+                              disabled={applyingJobId === job.id}
+                              title={t('aria_apply_instant')}
+                              className="btn btn-primary !px-2.5 !py-1 !text-[11px] inline-flex items-center gap-1 shadow-sm font-semibold"
+                            >
+                              <span>{applyingJobId === job.id ? t('btn_applying') : t('btn_one_click_apply').replace(/^⚡\s*/, '')}</span>
+                            </button>
+                            <Link
+                              href={`/jobs/${job.id}/apply`}
+                              className="btn btn-secondary !px-2.5 !py-1 !text-[11px] inline-flex items-center gap-1 hover:border-[var(--accent)] font-medium"
+                              title="Apply with a tailored or different resume"
+                            >
+                              <span>{t('apply_role') || 'Apply with Custom CV'} &rarr;</span>
+                            </Link>
+                          </div>
+                        ) : job.status === 'OPEN' ? (
+                          <Link
+                            href={`/jobs/${job.id}/apply`}
+                            className="btn btn-primary !px-2.5 !py-1 !text-[11px]"
+                          >
+                            {t('apply_role')} &rarr;
+                          </Link>
+                        ) : (
+                          <span className="chip" aria-disabled="true">{t('status_closed')}</span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

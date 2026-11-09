@@ -174,20 +174,28 @@ export default function CompareClient({
           {/* Blind Screening Toggle (§7 Bias Mitigation) */}
           <button
             onClick={() => setBlindMode(!blindMode)}
-            className={`btn btn-sm ${
+            className={`btn btn-sm inline-flex items-center gap-1.5 ${
               blindMode
                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30 font-bold'
                 : 'btn-secondary'
             }`}
             title={t('blind_screening_hint') || 'Hide candidate names and personal identifiers to mitigate unconscious bias'}
           >
-            <span>{blindMode ? '👁️' : '🕶️'}</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              {blindMode ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              )}
+            </svg>
             <span>{blindMode ? (t('blind_mode_active') || 'Blind Mode: ON') : (t('blind_mode_off') || 'Blind Screening')}</span>
           </button>
 
           {/* Export / Print */}
-          <button onClick={printReport} className="btn btn-secondary btn-sm" title="Print or export benchmark as PDF">
-            <span>🖨️</span>
+          <button onClick={printReport} className="btn btn-secondary btn-sm inline-flex items-center gap-1.5" title="Print or export benchmark as PDF">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
             <span>{t('btn_print_report') || 'Export / Print'}</span>
           </button>
 
@@ -238,8 +246,10 @@ export default function CompareClient({
       {/* Empty State */}
       {applications.length === 0 ? (
         <div className="panel p-12 text-center space-y-4 max-w-xl mx-auto my-8">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--accent)]/15 border border-[var(--accent)]/30 flex items-center justify-center text-2xl">
-            ⚖️
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--accent)]/15 border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent)]">
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+            </svg>
           </div>
           <h2 className="text-lg font-bold text-[var(--foreground)]">
             {t('compare_no_candidates_title') || 'No Candidates Selected for Benchmark'}
@@ -352,7 +362,9 @@ export default function CompareClient({
                   : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
               }`}
             >
-              <span>📋</span>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
               <span>{t('tab_criteria_matrix') || 'Criterion-by-Criterion Evaluation Matrix'}</span>
               <span className="chip chip-info !text-[9px] !py-0 !px-1.5">{canonicalCriteria.length}</span>
             </button>
@@ -364,7 +376,9 @@ export default function CompareClient({
                   : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
               }`}
             >
-              <span>💡</span>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
               <span>{t('tab_skills_taxonomy') || 'Skills Normalization & Transferability'}</span>
             </button>
             <button
@@ -375,7 +389,10 @@ export default function CompareClient({
                   : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
               }`}
             >
-              <span>🎓</span>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
               <span>{t('tab_exp_edu') || 'Experience & Education Audit'}</span>
             </button>
           </div>
@@ -386,7 +403,9 @@ export default function CompareClient({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
                 <div>
                   <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
-                    <span>⚖️</span>
+                    <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                    </svg>
                     <span>{t('matrix_heading') || 'Structured Criteria Benchmark Matrix'}</span>
                   </h2>
                   <p className="text-xs text-[var(--muted)] mt-0.5">
@@ -533,7 +552,17 @@ export default function CompareClient({
                                           : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
                                       }`}
                                     >
-                                      <span>{isMatch ? '✓' : isPartial ? '⚠' : '✕'}</span>
+                                      <span className="inline-flex items-center">
+                                        {isMatch ? (
+                                          '✓'
+                                        ) : isPartial ? (
+                                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                          </svg>
+                                        ) : (
+                                          '✕'
+                                        )}
+                                      </span>
                                       <span>{effectiveResult}</span>
                                     </span>
 
@@ -553,8 +582,10 @@ export default function CompareClient({
 
                                   {/* Uncertainty Warning (§6.5 & §7) */}
                                   {hasUncertainty && (
-                                    <div className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md flex items-center gap-1">
-                                      <span>⚠️</span>
+                                    <div className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md flex items-center gap-1.5">
+                                      <svg className="w-3 h-3 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                      </svg>
                                       <span>Low Evidence Confidence (Human Review Flagged)</span>
                                     </div>
                                   )}
@@ -601,7 +632,9 @@ export default function CompareClient({
             <div className="panel p-5 space-y-4">
               <div>
                 <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
-                  <span>💡</span>
+                  <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
                   <span>{t('skills_taxonomy_heading') || 'Normalized Skills & Transferability Benchmark'}</span>
                 </h2>
                 <p className="text-xs text-[var(--muted)] mt-0.5">
@@ -676,7 +709,10 @@ export default function CompareClient({
             <div className="panel p-5 space-y-4">
               <div>
                 <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
-                  <span>🎓</span>
+                  <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                  </svg>
                   <span>{t('exp_edu_heading') || 'Career History & Educational Credentials'}</span>
                 </h2>
                 <p className="text-xs text-[var(--muted)] mt-0.5">

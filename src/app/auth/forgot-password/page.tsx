@@ -56,13 +56,19 @@ export default function ForgotPasswordPage() {
         {submitted ? (
           <div role="status" className="space-y-4 text-xs">
             {emailSystemHealthy ? (
-              <div className="p-3.5 bg-emerald-950/80 border border-emerald-800 rounded-xl text-emerald-300 font-bold text-center">
-                ✅ If an account exists for that email, a reset link is on its way.
+              <div className="p-3.5 bg-emerald-950/80 border border-emerald-800 rounded-xl text-emerald-300 font-bold text-center flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>If an account exists for that email, a reset link is on its way.</span>
               </div>
             ) : (
               <div className="p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 font-bold text-center space-y-3">
-                <p>
-                  ⚠️ If an account exists for that email, a reset link was requested — but our email delivery is failing right now, so it may never arrive.
+                <p className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>If an account exists for that email, a reset link was requested — but our email delivery is failing right now, so it may never arrive.</span>
                 </p>
                 <p className="font-medium opacity-90">
                   Please try again shortly; if it keeps failing, contact support so delivery can be restored.
@@ -95,8 +101,11 @@ export default function ForgotPasswordPage() {
             </div>
 
             {error && (
-              <div role="alert" className="p-3.5 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 text-xs font-bold text-center">
-                ⚠️ {error}
+              <div role="alert" className="p-3.5 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 text-xs font-bold text-center flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{error}</span>
               </div>
             )}
 

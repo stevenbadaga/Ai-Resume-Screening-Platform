@@ -67,7 +67,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     email: 'Email Address',
     password: 'Password',
     secureAccess: 'Secure workspace access',
-    signIn: 'Sign In ➔',
+    signIn: 'Sign In →',
     authenticating: 'Authenticating...',
     invalidCredentials: 'Invalid email or password credentials.',
     showPassword: 'Show password',
@@ -94,7 +94,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeSentTo: 'We emailed a 6-digit code to',
     codeLabel: 'Verification Code',
     codePlaceholder: '000000',
-    verify: 'Verify & Sign In ➔',
+    verify: 'Verify & Sign In →',
     verifying: 'Verifying...',
     codeInvalid: 'Invalid or expired code. Please try again.',
     codeHint: 'The code expires in 10 minutes. Check your spam folder if it is not in your inbox.',
@@ -106,7 +106,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeCooldownWait: 'A code was just sent — finishing sign-in…',
     codeSentToTOTP: 'Enter the 6-digit code from your authenticator app for',
     totpHint: 'Enter the 6-digit code currently shown in your authenticator app. If you lost access to your device, contact your administrator.',
-    activate: 'Activate ➔',
+    activate: 'Activate →',
     activationSuccess: 'Email verified! Continuing to sign-in…',
     registeredEmailFailed: 'Account created, but the verification email could not be sent (email delivery is not working right now).',
     registeredSuccess: 'Account created. Sign in with your email and password — you will then be asked for the verification code we emailed you.',
@@ -119,7 +119,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     email: 'Adresse e-mail',
     password: 'Mot de passe',
     secureAccess: 'Accès sécurisé à l’espace de travail',
-    signIn: 'Se connecter ➔',
+    signIn: 'Se connecter →',
     authenticating: 'Authentification...',
     invalidCredentials: 'Adresse e-mail ou mot de passe incorrect.',
     showPassword: 'Afficher le mot de passe',
@@ -146,7 +146,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeSentTo: 'Nous avons envoyé un code à 6 chiffres à',
     codeLabel: 'Code de vérification',
     codePlaceholder: '000000',
-    verify: 'Vérifier et se connecter ➔',
+    verify: 'Vérifier et se connecter →',
     verifying: 'Vérification...',
     codeInvalid: 'Code invalide ou expiré. Veuillez réessayer.',
     codeHint: 'Le code expire dans 10 minutes. Vérifiez votre dossier spam s’il n’est pas dans votre boîte.',
@@ -158,7 +158,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeCooldownWait: 'Un code vient d’être envoyé — finalisation de la connexion…',
     codeSentToTOTP: 'Entrez le code à 6 chiffres de votre application authentificatrice pour',
     totpHint: 'Entrez le code à 6 chiffres actuellement affiché dans votre application authentificatrice. Si vous avez perdu l’accès à votre appareil, contactez votre administrateur.',
-    activate: 'Activer ➔',
+    activate: 'Activer →',
     activationSuccess: 'E-mail vérifié ! Continuation de la connexion…',
     registeredEmailFailed: 'Compte créé, mais l’e-mail de vérification n’a pas pu être envoyé (l’envoi d’e-mails ne fonctionne pas pour le moment).',
     registeredSuccess: 'Compte créé. Connectez-vous avec votre e-mail et votre mot de passe — le code de vérification qui vous a été envoyé vous sera ensuite demandé.',
@@ -171,7 +171,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     email: 'Dirección de correo',
     password: 'Contraseña',
     secureAccess: 'Acceso seguro al espacio de trabajo',
-    signIn: 'Iniciar sesión ➔',
+    signIn: 'Iniciar sesión →',
     authenticating: 'Autenticando...',
     invalidCredentials: 'El correo o la contraseña no son válidos.',
     showPassword: 'Mostrar contraseña',
@@ -198,7 +198,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeSentTo: 'Enviamos un código de 6 dígitos a',
     codeLabel: 'Código de verificación',
     codePlaceholder: '000000',
-    verify: 'Verificar e iniciar sesión ➔',
+    verify: 'Verificar e iniciar sesión →',
     verifying: 'Verificando...',
     codeInvalid: 'Código inválido o caducado. Inténtelo de nuevo.',
     codeHint: 'El código caduca en 10 minutos. Revise su carpeta de spam si no está en la bandeja.',
@@ -210,7 +210,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeCooldownWait: 'Se acaba de enviar un código — completando el inicio de sesión…',
     codeSentToTOTP: 'Ingresa el código de 6 dígitos de tu app de autenticación para',
     totpHint: 'Ingresa el código de 6 dígitos de tu app de autenticación. Si perdiste el acceso a tu dispositivo, contacta a tu administrador.',
-    activate: 'Activar ➔',
+    activate: 'Activar →',
     activationSuccess: '¡Correo verificado! Continuando con el inicio de sesión…',
     registeredEmailFailed: 'Cuenta creada, pero no se pudo enviar el correo de verificación (el envío de correos no funciona en este momento).',
     registeredSuccess: 'Cuenta creada. Inicie sesión con su correo y contraseña; después se le pedirá el código de verificación que le enviamos.',
@@ -223,7 +223,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     email: 'E-Mail-Adresse',
     password: 'Passwort',
     secureAccess: 'Sicherer Zugriff auf den Arbeitsbereich',
-    signIn: 'Anmelden ➔',
+    signIn: 'Anmelden →',
     authenticating: 'Authentifizierung...',
     invalidCredentials: 'Ungültige E-Mail-Adresse oder ungültiges Passwort.',
     showPassword: 'Passwort anzeigen',
@@ -250,7 +250,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeSentTo: 'Wir haben einen 6-stelligen Code gesendet an',
     codeLabel: 'Bestätigungscode',
     codePlaceholder: '000000',
-    verify: 'Verifizieren und anmelden ➔',
+    verify: 'Verifizieren und anmelden →',
     verifying: 'Wird verifiziert...',
     codeInvalid: 'Ungültiger oder abgelaufener Code. Bitte erneut versuchen.',
     codeHint: 'Der Code läuft in 10 Minuten ab. Prüfen Sie Ihren Spam-Ordner, falls er nicht im Posteingang ist.',
@@ -262,7 +262,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeCooldownWait: 'Ein Code wurde gerade gesendet — Anmeldung wird abgeschlossen…',
     codeSentToTOTP: 'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App für ein',
     totpHint: 'Geben Sie den 6-stelligen Code ein, der aktuell in Ihrer Authenticator-App angezeigt wird. Wenn Sie den Zugriff auf Ihr Gerät verloren haben, wenden Sie sich an Ihren Administrator.',
-    activate: 'Aktivieren ➔',
+    activate: 'Aktivieren →',
     activationSuccess: 'E-Mail bestätigt! Anmeldung wird fortgesetzt…',
     registeredEmailFailed: 'Konto erstellt, aber die Bestätigungs-E-Mail konnte nicht gesendet werden (der E-Mail-Versand funktioniert derzeit nicht).',
     registeredSuccess: 'Konto erstellt. Melden Sie sich mit E-Mail und Passwort an — anschließend werden Sie nach dem per E-Mail gesendeten Bestätigungscode gefragt.',
@@ -275,7 +275,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     email: 'Aderesi ya imeyili',
     password: 'Ijambo ry’ibanga',
     secureAccess: 'Kwinjira mu mwanya w’akazi mu buryo bwizewe',
-    signIn: 'Injira ➔',
+    signIn: 'Injira →',
     authenticating: 'Birimo kugenzurwa...',
     invalidCredentials: 'Imeyili/ijambo ry’ibanga si byo.',
     showPassword: 'Erekana ijambo ry’ibanga',
@@ -302,7 +302,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeSentTo: 'Twohereze kode nshya ibara 6 kuri',
     codeLabel: 'Kode yo kwemeza',
     codePlaceholder: '000000',
-    verify: 'Emeza & winjire ➔',
+    verify: 'Emeza & winjire →',
     verifying: 'Birimo kwemezwa...',
     codeInvalid: 'Kode itemeuye cyangwa yarengeje igihe. Ongera ugerageze.',
     codeHint: 'Kode irengera umunota 10. Reba n’ububiko bw’ibaruwa bashobora kuyikubiyemo.',
@@ -314,7 +314,7 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeCooldownWait: 'Kode yoherezwa vuba — baguze gusa…',
     codeSentToTOTP: 'Andika kodya 6 kuturageza hanyuma',
     totpHint: 'Andika kodya 6 ishyirwaga muri prooteyi yawe ya autentifikasyon. Niba uburyowoko bwawe bwafunzwe, kontakt yufite umuyobozi wawe.',
-    activate: 'Emeza konti ➔',
+    activate: 'Emeza konti →',
     activationSuccess: 'Imeyili yemejwe! Birimo gukomeza kwinjira…',
     registeredEmailFailed: 'Konti yafunguwe, ariko imeyili yo kwemeza ntishobora koherezwa (kohereza imeyili ntikora ubu).',
     registeredSuccess: 'Konti yafunguwe. Injira ukoresha imeyili n’ijambo ry’ibanga — hanyuma ugasabwa kode yo kwemeza twoherejwe.',
@@ -647,14 +647,17 @@ function SignInForm() {
         {error && (
           <div
             role="alert"
-            className="p-3.5 rounded-lg border text-xs font-bold text-center"
+            className="p-3.5 rounded-lg border text-xs font-bold text-center flex items-center justify-center gap-1.5"
             style={{
               backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
               borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)',
               color: 'var(--danger)',
             }}
           >
-            ⚠️ {error}
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
@@ -668,7 +671,12 @@ function SignInForm() {
           >
             {emailDeliveryFailed ? (
               <>
-                <p>⚠️ {copy.registeredEmailFailed}</p>
+                <p className="flex items-center justify-center gap-1.5">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{copy.registeredEmailFailed}</span>
+                </p>
                 <button
                   type="button"
                   onClick={handleResend}
@@ -676,30 +684,55 @@ function SignInForm() {
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
                 >
                   {cooldownSeconds > 0
-                    ? `⏳ ${cooldownSeconds}s`
+                    ? `${cooldownSeconds}s`
                     : resendState === 'sending'
                       ? copy.resending
                       : copy.resendVerification}
                 </button>
                 {resendState === 'delivery-failed' && (
-                  <p className="font-medium text-amber-200">⚠️ {copy.codeDeliveryFailed}</p>
+                  <p className="font-medium text-amber-200 flex items-center justify-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{copy.codeDeliveryFailed}</span>
+                  </p>
                 )}
                 {resendState === 'sent' && (
-                  <p className="font-medium opacity-90">✅ {copy.resendSent}</p>
+                  <p className="font-medium opacity-90 flex items-center justify-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{copy.resendSent}</span>
+                  </p>
                 )}
               </>
             ) : (
-              <p>✅ {copy.registeredSuccess}</p>
+              <p className="flex items-center justify-center gap-1.5">
+                <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{copy.registeredSuccess}</span>
+              </p>
             )}
           </div>
         )}
 
         {emailNotVerified && (
           <div role="alert" className="p-3.5 rounded-lg border text-xs space-y-3 text-center border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
-            <p className="font-bold">⚠️ {copy.emailNotVerified}</p>
+            <p className="font-bold flex items-center justify-center gap-1.5">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{copy.emailNotVerified}</span>
+            </p>
             <p className="font-medium opacity-90">{copy.emailNotVerifiedHint}</p>
             {activationState === 'done' ? (
-              <p className="font-semibold text-[var(--success)]">✅ {copy.activationSuccess}</p>
+              <p className="font-semibold text-[var(--success)] flex items-center justify-center gap-1.5">
+                <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{copy.activationSuccess}</span>
+              </p>
             ) : (
               <>
                 <div className="flex items-center justify-center gap-2">
@@ -726,10 +759,20 @@ function SignInForm() {
                   </button>
                 </div>
                 {resendState === 'delivery-failed' && (
-                  <p className="font-medium text-amber-200">⚠️ {copy.codeDeliveryFailed}</p>
+                  <p className="font-medium text-amber-200 flex items-center justify-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{copy.codeDeliveryFailed}</span>
+                  </p>
                 )}
                 {resendState === 'sent' ? (
-                  <p className="font-semibold text-[var(--success)]">✅ {copy.resendSent}</p>
+                  <p className="font-semibold text-[var(--success)] flex items-center justify-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{copy.resendSent}</span>
+                  </p>
                 ) : (
                   <button
                     type="button"
@@ -738,7 +781,7 @@ function SignInForm() {
                     className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
                   >
                     {cooldownSeconds > 0
-                      ? `⏳ ${cooldownSeconds}s`
+                      ? `${cooldownSeconds}s`
                       : resendState === 'sending'
                         ? copy.resending
                         : copy.resendVerification}
@@ -779,9 +822,12 @@ function SignInForm() {
                 <p
                   id="signin-email-format-error"
                   role="alert"
-                  className="mt-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400"
+                  className="mt-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1"
                 >
-                  ⚠️ {copy.emailInvalidPrompt}
+                  <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{copy.emailInvalidPrompt}</span>
                 </p>
               )}
             </div>
@@ -850,13 +896,19 @@ function SignInForm() {
             </div>
 
             {codeStatus === 'delivery-failed' && (
-              <div role="alert" className="p-3.5 rounded-lg border text-xs font-semibold text-center border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
-                ⚠️ {copy.codeDeliveryFailed}
+              <div role="alert" className="p-3.5 rounded-lg border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{copy.codeDeliveryFailed}</span>
               </div>
             )}
             {codeStatus === 'resent' && (
-              <div role="status" className="p-3.5 rounded-lg border text-xs font-semibold text-center border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)] text-[var(--accent)]">
-                ✅ {copy.codeResent}
+              <div role="status" className="p-3.5 rounded-lg border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)] text-[var(--accent)]">
+                <svg className="w-4 h-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{copy.codeResent}</span>
               </div>
             )}
 

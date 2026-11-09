@@ -124,26 +124,26 @@ export default function SupportWidget() {
 
   // Helper to extract quick navigation actions if the message mentions sections
   const getActionLinks = (content: string) => {
-    const actions: { title: string; href: string; icon: string }[] = [];
+    const actions: { title: string; href: string }[] = [];
     const lower = content.toLowerCase();
 
     if (lower.includes('explore open jobs') || lower.includes('job requisitions') || lower.includes('offres') || lower.includes('puestos') || lower.includes('stellenangebote') || lower.includes('imyanya')) {
-      actions.push({ title: t('nav_jobs'), href: '/jobs', icon: '💼' });
+      actions.push({ title: t('nav_jobs'), href: '/jobs' });
     }
     if (lower.includes('my applications') || lower.includes('candidatures') || lower.includes('solicitudes') || lower.includes('bewerbungen') || lower.includes('ubusabe')) {
-      actions.push({ title: t('nav_my_applications'), href: '/dashboard/my-applications', icon: '📄' });
+      actions.push({ title: t('nav_my_applications'), href: '/dashboard/my-applications' });
     }
     if (lower.includes('candidates') || lower.includes('candidats') || lower.includes('candidatos') || lower.includes('kandidaten') || lower.includes('abakandida')) {
-      actions.push({ title: t('nav_candidates'), href: '/candidates', icon: '👥' });
+      actions.push({ title: t('nav_candidates'), href: '/candidates' });
     }
     if (lower.includes('data privacy') || lower.includes('rgpd') || lower.includes('privacidad') || lower.includes('datenschutz') || lower.includes('umutekano')) {
-      actions.push({ title: t('nav_privacy'), href: '/privacy', icon: '🛡️' });
+      actions.push({ title: t('nav_privacy'), href: '/privacy' });
     }
     if (lower.includes('audit') || lower.includes('journal') || lower.includes('registro') || lower.includes('igenzura')) {
-      actions.push({ title: t('nav_audit'), href: '/audit', icon: '📋' });
+      actions.push({ title: t('nav_audit'), href: '/audit' });
     }
     if (lower.includes('team') || lower.includes('rbac') || lower.includes('equipo') || lower.includes('inshingano')) {
-      actions.push({ title: t('nav_team'), href: '/dashboard/team', icon: '👑' });
+      actions.push({ title: t('nav_team'), href: '/dashboard/team' });
     }
 
     return actions;
@@ -161,7 +161,9 @@ export default function SupportWidget() {
           className="px-3.5 py-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-2 text-xs font-semibold transition transform hover:scale-105"
           title={t('copilot_title')}
         >
-          <span className="text-sm">✨</span>
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
           <span>{t('copilot_title')}</span>
         </button>
       )}
@@ -171,7 +173,11 @@ export default function SupportWidget() {
           {/* Header */}
           <div className="p-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-white/20 flex items-center justify-center text-xs">✨</div>
+              <div className="w-6 h-6 rounded-md bg-white/20 flex items-center justify-center text-xs">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+              </div>
               <div>
                 <h3 className="font-bold text-xs leading-none">{t('copilot_title')}</h3>
                 <span className="text-[9px] text-indigo-100 font-mono">{t('copilot_subtitle')}</span>
@@ -250,9 +256,8 @@ export default function SupportWidget() {
                             key={actIdx}
                             href={act.href}
                             onClick={() => setIsOpen(false)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[10px] transition shadow-xs"
+                            className="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[10px] transition shadow-xs"
                           >
-                            <span>{act.icon}</span>
                             <span>{act.title} &rarr;</span>
                           </Link>
                         ))}

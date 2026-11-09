@@ -35,16 +35,97 @@ export default function CommandPalette() {
     return null;
   }
 
-  const actions = [
-    { name: t('nav_dashboard'), path: '/dashboard', icon: '📊', category: t('cmd_cat_navigation') },
-    { name: t('nav_candidates'), path: '/candidates', icon: '👥', category: t('cmd_cat_navigation') },
-    { name: t('nav_compare'), path: '/candidates/compare', icon: '⚖️', category: t('cmd_cat_analytics') },
-    { name: t('nav_duplicates'), path: '/candidates/duplicates', icon: '🔍', category: t('cmd_cat_analytics') },
-    { name: t('nav_jobs'), path: '/jobs', icon: '💼', category: t('cmd_cat_requisitions') },
-    { name: t('nav_audit'), path: '/audit', icon: '🛡️', category: t('cmd_cat_compliance') },
-    { name: t('nav_privacy'), path: '/privacy', icon: '🔒', category: t('cmd_cat_compliance') },
-    { name: t('nav_team'), path: '/dashboard/team', icon: '🏢', category: t('cmd_cat_administration') },
-    { name: t('nav_analytics'), path: '/dashboard/analytics', icon: '📈', category: t('cmd_cat_analytics') },
+  const actions: Array<{ name: string; path: string; icon: React.ReactNode; category: string }> = [
+    {
+      name: t('nav_dashboard'),
+      path: '/dashboard',
+      category: t('cmd_cat_navigation'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_candidates'),
+      path: '/candidates',
+      category: t('cmd_cat_navigation'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_compare'),
+      path: '/candidates/compare',
+      category: t('cmd_cat_analytics'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_duplicates'),
+      path: '/candidates/duplicates',
+      category: t('cmd_cat_analytics'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_jobs'),
+      path: '/jobs',
+      category: t('cmd_cat_requisitions'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_audit'),
+      path: '/audit',
+      category: t('cmd_cat_compliance'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_privacy'),
+      path: '/privacy',
+      category: t('cmd_cat_compliance'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_team'),
+      path: '/dashboard/team',
+      category: t('cmd_cat_administration'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav_analytics'),
+      path: '/dashboard/analytics',
+      category: t('cmd_cat_analytics'),
+      icon: (
+        <svg className="w-4 h-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+    },
   ];
 
   const filtered = actions.filter((a) =>

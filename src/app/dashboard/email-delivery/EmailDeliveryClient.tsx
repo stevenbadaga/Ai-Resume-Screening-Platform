@@ -105,7 +105,11 @@ export default function EmailDeliveryClient({
 
       {deliveries.length === 0 ? (
         <div className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl p-8 text-center space-y-2">
-          <span className="text-3xl block">✅</span>
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-500">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
           <h2 className="text-sm font-bold dark:text-white text-slate-900">{t('email_empty_title')}</h2>
           <p className="text-xs dark:text-slate-400 text-slate-500">
             {t('email_empty_desc')}

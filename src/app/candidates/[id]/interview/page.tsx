@@ -95,7 +95,11 @@ export default function ScheduleInterviewPage() {
 
         {success ? (
           <div className="p-6 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-2xl text-center space-y-2">
-            <span className="text-3xl block">📅</span>
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
             <h2 className="text-base font-bold text-white">{t('interview_success_title')}</h2>
             <p className="text-xs text-emerald-300">
               {t('interview_success_desc')}
@@ -104,8 +108,11 @@ export default function ScheduleInterviewPage() {
         ) : (
           <form onSubmit={handleSchedule} className="space-y-4 text-xs text-slate-300">
             {error && (
-              <div className="p-3 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 font-bold">
-                ⚠️ {error}
+              <div className="p-3 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 font-bold flex items-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{error}</span>
               </div>
             )}
 
@@ -159,7 +166,9 @@ export default function ScheduleInterviewPage() {
               disabled={submitting}
               className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
             >
-              <span>📅</span>
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
               <span>{submitting ? t('interview_submitting') : t('interview_submit')}</span>
             </button>
           </form>
