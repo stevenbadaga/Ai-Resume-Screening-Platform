@@ -28,7 +28,7 @@ function buildCsp(request: NextRequest): { nonce: string; csp: string } | null {
     `img-src 'self' data: blob:`,
     // OpenAI is called server-side only; no browser connect-src needed.
     `connect-src 'self'`,
-    `frame-ancestors 'none'`,
+    `frame-ancestors 'self'`,
     `base-uri 'self'`,
     `form-action 'self'`,
     `object-src 'none'`,
@@ -136,7 +136,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protect internal candidate review routes — require recruitment staff roles
-  if (pathname.startsWith('/candidates')) {
+  // Note: /candidates/apply is public/candidate-accessible intake
+  if (pathname.startsWith('/candidates') && !pathname.startsWith('/candidates/apply')) {
     const recruitmentRoles = ['Admin', 'Recruiter', 'HiringManager', 'Interviewer', 'ComplianceAuditor'];
     if (!recruitmentRoles.includes(userRole)) {
       return withCsp(request, NextResponse.redirect(new URL('/dashboard/my-applications', request.url)));

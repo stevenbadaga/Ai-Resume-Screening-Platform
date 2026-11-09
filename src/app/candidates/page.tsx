@@ -170,7 +170,7 @@ export default async function CandidatesDashboard({
         ? [{ createdAt: 'asc' as const }]
         : [{ createdAt: 'desc' as const }];
 
-  const [applicationsData, totalMatching] = await Promise.all([
+  const [applicationsData, totalMatching, jobs, recruiters, tagRows] = await Promise.all([
     prisma.application.findMany({
       where,
       include: {
@@ -185,10 +185,7 @@ export default async function CandidatesDashboard({
       skip: (page - 1) * PAGE_SIZE,
     }),
     prisma.application.count({ where }),
-  ]);
-
-  // Facet data for filter dropdowns — org-scoped, cheap aggregate queries.
-  const [jobs, recruiters, tagRows] = await Promise.all([
+    // Facet data for filter dropdowns — org-scoped, cheap aggregate queries.
     prisma.jobRequisition.findMany({
       where: role === 'HiringManager' ? { organizationId, ownerId: userId } : { organizationId },
       select: { id: true, title: true },

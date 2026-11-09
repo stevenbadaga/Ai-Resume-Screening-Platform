@@ -69,7 +69,9 @@ export default async function JobsPage({
     ];
   }
 
-  const [jobs, total, departmentRows] = await Promise.all([
+  const candidateEmail = (session?.user as any)?.email as string | undefined;
+
+  const [jobs, total, departmentRows, cand] = await Promise.all([
     isPublicListing ? prisma.jobRequisition.findMany({
       where: whereClause,
       select: {
@@ -82,7 +84,7 @@ export default async function JobsPage({
       where: whereClause,
       include: {
         organization: { select: { id: true, name: true } },
-        rubrics: { include: { criteria: true } },
+        rubrics: { orderBy: { version: 'desc' }, take: 1, include: { criteria: true } },
         // Count aggregates instead of pulling every application row —
         // the card only displays the number.
         _count: { select: { applications: true } },
@@ -101,6 +103,29 @@ export default async function JobsPage({
           select: { department: true },
           distinct: ['department'],
         }),
+    // Candidate context fetched in parallel with jobs board
+    userRole === 'Candidate' && candidateEmail
+      ? prisma.candidate.findFirst({
+          where: { email: candidateEmail },
+          select: {
+            profileResumeRef: true,
+            applications: {
+              select: {
+                id: true,
+                jobId: true,
+                status: true,
+                stage: true,
+                createdAt: true,
+                screeningRuns: {
+                  orderBy: { createdAt: 'desc' },
+                  take: 1,
+                  select: { totalResult: true, effectiveResult: true },
+                },
+              },
+            },
+          },
+        })
+      : Promise.resolve(null),
   ]);
 
   // JobsClient cards read `job.applications.length`; map the count aggregate
@@ -118,48 +143,25 @@ export default async function JobsPage({
     { applicationId: string; status: string; stage: string; score: number | null; appliedAt: string }
   > = {};
   let hasSavedResume = false;
-  if (userRole === 'Candidate') {
-    const email = (session?.user as any)?.email as string | undefined;
-    if (email) {
-      const cand = await prisma.candidate.findFirst({
-        where: { email },
-        select: {
-          profileResumeRef: true,
-          applications: {
-            select: {
-              id: true,
-              jobId: true,
-              status: true,
-              stage: true,
-              createdAt: true,
-              screeningRuns: {
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-                select: { totalResult: true, effectiveResult: true },
-              },
-            },
+  if (userRole === 'Candidate' && cand) {
+    hasSavedResume = Boolean(cand.profileResumeRef);
+    myApplications = Object.fromEntries(
+      (cand.applications ?? []).map((a) => {
+        const run = a.screeningRuns[0];
+        const raw = run?.effectiveResult ?? run?.totalResult ?? null;
+        const score = raw === null ? null : Number(raw);
+        return [
+          a.jobId,
+          {
+            applicationId: a.id,
+            status: a.status,
+            stage: a.stage,
+            score: score !== null && Number.isFinite(score) ? score : null,
+            appliedAt: a.createdAt.toISOString(),
           },
-        },
-      });
-      hasSavedResume = Boolean(cand?.profileResumeRef);
-      myApplications = Object.fromEntries(
-        (cand?.applications ?? []).map((a) => {
-          const run = a.screeningRuns[0];
-          const raw = run?.effectiveResult ?? run?.totalResult ?? null;
-          const score = raw === null ? null : Number(raw);
-          return [
-            a.jobId,
-            {
-              applicationId: a.id,
-              status: a.status,
-              stage: a.stage,
-              score: score !== null && Number.isFinite(score) ? score : null,
-              appliedAt: a.createdAt.toISOString(),
-            },
-          ];
-        })
-      );
-    }
+        ];
+      })
+    );
   }
 
   return (
