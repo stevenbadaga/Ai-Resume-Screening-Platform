@@ -56,7 +56,7 @@ export default function AuditClient({
   const getActorDisplay = (evt: any) => {
     if (evt.actor?.name) return evt.actor.name;
     if (evt.actor?.email) return evt.actor.email;
-    if (!evt.actorId || evt.actorId === 'SYSTEM') return 'Deterministic AI Worker';
+    if (!evt.actorId || evt.actorId === 'SYSTEM') return 'System Automation';
     if (evt.actorId.includes('@')) return evt.actorId;
     return 'System Pipeline';
   };
@@ -68,7 +68,7 @@ export default function AuditClient({
     if (evt.actor?.email?.includes('manager')) return 'HiringManager';
     if (evt.actor?.email?.includes('interviewer')) return 'Interviewer';
     if (evt.actor?.email?.includes('auditor')) return 'ComplianceAuditor';
-    if (!evt.actorId || evt.actorId === 'SYSTEM') return 'AI Agent';
+    if (!evt.actorId || evt.actorId === 'SYSTEM') return 'Automated Pipeline';
     return 'Authorized User';
   };
 
@@ -184,7 +184,7 @@ export default function AuditClient({
             {events.map((evt) => {
               const actorName = getActorDisplay(evt);
               const actorRole = getActorRole(evt);
-              const isAI = actorName === 'Deterministic AI Worker';
+              const isAutomated = actorName === 'System Automation';
 
               return (
                 <tr key={evt.id} className="dark:hover:bg-slate-900/50 hover:bg-slate-50 transition">
@@ -198,12 +198,12 @@ export default function AuditClient({
                   </td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
-                      <div className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        isAI
-                          ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30'
-                          : 'bg-teal-600/20 text-teal-400 border border-teal-500/30'
+                      <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold shrink-0 ${
+                        isAutomated
+                          ? 'bg-teal-600/20 text-teal-400 border border-teal-500/30'
+                          : 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
                       }`}>
-                        {isAI ? 'AI' : (actorName[0]?.toUpperCase() || 'U')}
+                        {isAutomated ? 'SYS' : (actorName[0]?.toUpperCase() || 'U')}
                       </div>
                       <div>
                         <p className="font-semibold dark:text-white text-slate-900 text-xs leading-tight">

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { SupportedLanguage } from '@/lib/i18n/translations';
+import LanguageSelector from '@/components/LanguageSelector';
 
 const SIGN_IN_COPY: Record<SupportedLanguage, {
   title: string;
@@ -24,20 +25,26 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   staffTab: string;
   applicantBadge: string;
   staffBadge: string;
+  applicantTitle: string;
+  staffTitle: string;
   applicantSub: string;
   staffSub: string;
   applicantPlaceholder: string;
   staffPlaceholder: string;
   noStaffAccount: string;
   createStaffAccount: string;
+  applicantOverlayTitle: string;
+  applicantOverlaySub: string;
+  applicantOverlayBtn: string;
+  staffOverlayTitle: string;
+  staffOverlaySub: string;
+  staffOverlayBtn: string;
   emailNotVerified: string;
   emailNotVerifiedHint: string;
   resendVerification: string;
   resendSent: string;
   resending: string;
-  // Invalid email prompt (shown under the email field with an actionable hint)
   emailInvalidPrompt: string;
-  // Two-step sign-in (step 2: emailed code)
   codeTitle: string;
   codeSentTo: string;
   codeLabel: string;
@@ -60,10 +67,13 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   registeredSuccess: string;
   forgotPassword: string;
   loadingText: string;
+  demoCandidatePill: string;
+  demoRecruiterPill: string;
+  demoAdminPill: string;
 }> = {
   en: {
     title: 'Sign In to RecruitAI',
-    subtitle: 'Enterprise explainable AI resume screening & applicant tracking.',
+    subtitle: 'Human-centered recruitment & applicant tracking.',
     email: 'Email Address',
     password: 'Password',
     secureAccess: 'Secure workspace access',
@@ -74,16 +84,24 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Hide password',
     noAccount: "Don't have an applicant account?",
     createAccount: 'Create Applicant Account →',
-    applicantTab: 'Work Applicant',
+    applicantTab: 'Candidate Portal',
     staffTab: 'Company & Staff',
     applicantBadge: 'Candidate Workspace',
     staffBadge: 'Company Staff Workspace',
+    applicantTitle: 'Candidate Sign In',
+    staffTitle: 'Staff Workspace Sign In',
     applicantSub: 'Sign in to track your job applications, CV status, and interview invites.',
     staffSub: 'Sign in to access resume screening pipelines, scoring rubrics, and team analytics.',
     applicantPlaceholder: 'candidate@example.com',
     staffPlaceholder: 'recruiter@company.com',
     noStaffAccount: 'Registering a company or joining a team?',
     createStaffAccount: 'Create Staff Account →',
+    applicantOverlayTitle: 'Hiring Team or Staff?',
+    applicantOverlaySub: 'Are you managing candidate pipelines or reviewing requisitions? Access your corporate workspace with structured scorecards and audit trails.',
+    applicantOverlayBtn: 'Switch to Staff Portal →',
+    staffOverlayTitle: 'Applying for a Job?',
+    staffOverlaySub: 'Looking to submit your CV, check your screening status, or review interview invitations? Head over to the candidate portal.',
+    staffOverlayBtn: 'Switch to Candidate Portal →',
     emailNotVerified: 'Please verify your email address before signing in.',
     emailNotVerifiedHint: 'We sent a verification code when you registered. Enter it to activate your account.',
     resendVerification: 'Resend verification code',
@@ -112,10 +130,13 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Account created. Sign in with your email and password — you will then be asked for the verification code we emailed you.',
     forgotPassword: 'Forgot your password?',
     loadingText: 'Loading…',
+    demoCandidatePill: 'Demo Candidate',
+    demoRecruiterPill: 'Demo Recruiter',
+    demoAdminPill: 'Demo Admin',
   },
   fr: {
     title: 'Se connecter à RecruitAI',
-    subtitle: "Criblage de CV par IA explicable et suivi des candidatures d'entreprise.",
+    subtitle: 'Plateforme moderne de recrutement et suivi des candidatures.',
     email: 'Adresse e-mail',
     password: 'Mot de passe',
     secureAccess: 'Accès sécurisé à l’espace de travail',
@@ -126,16 +147,24 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Masquer le mot de passe',
     noAccount: "Vous n'avez pas de compte candidat ?",
     createAccount: 'Créer un compte candidat →',
-    applicantTab: 'Candidat',
+    applicantTab: 'Portail Candidat',
     staffTab: 'Entreprise & Équipe',
     applicantBadge: 'Espace Candidat',
     staffBadge: 'Espace Entreprise & Équipe',
+    applicantTitle: 'Connexion Candidat',
+    staffTitle: 'Connexion Espace Entreprise',
     applicantSub: 'Connectez-vous pour suivre vos candidatures, vos CV et vos invitations d’entretien.',
     staffSub: 'Connectez-vous pour accéder au criblage de CV, aux grilles de notation et aux métriques.',
     applicantPlaceholder: 'candidat@exemple.com',
     staffPlaceholder: 'recruteur@entreprise.com',
     noStaffAccount: 'Vous enregistrez une entreprise ou rejoignez une équipe ?',
     createStaffAccount: 'Créer un compte entreprise →',
+    applicantOverlayTitle: 'Entreprise ou Recruteur ?',
+    applicantOverlaySub: 'Vous recrutez ou gérez des candidatures ? Accédez à votre espace entreprise pour évaluer les candidats et collaborer sur les grilles.',
+    applicantOverlayBtn: 'Passer à l’espace entreprise →',
+    staffOverlayTitle: 'Vous postulez ?',
+    staffOverlaySub: 'Vous souhaitez suivre vos candidatures, vos entretiens ou mettre à jour votre CV ? Accédez au portail candidat.',
+    staffOverlayBtn: 'Passer au portail candidat →',
     emailNotVerified: 'Veuillez vérifier votre adresse e-mail avant de vous connecter.',
     emailNotVerifiedHint: "Un code de vérification vous a été envoyé lors de l'inscription. Saisissez-le pour activer votre compte.",
     resendVerification: "Renvoyer le code de vérification",
@@ -164,10 +193,13 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Compte créé. Connectez-vous avec votre e-mail et votre mot de passe — le code de vérification qui vous a été envoyé vous sera ensuite demandé.',
     forgotPassword: 'Mot de passe oublié ?',
     loadingText: 'Chargement…',
+    demoCandidatePill: 'Démo Candidat',
+    demoRecruiterPill: 'Démo Recruteur',
+    demoAdminPill: 'Démo Admin',
   },
   es: {
     title: 'Iniciar sesión en RecruitAI',
-    subtitle: 'Filtrado explicable de CV con IA y seguimiento de candidatos.',
+    subtitle: 'Plataforma moderna de selección de talento y gestión de postulaciones.',
     email: 'Dirección de correo',
     password: 'Contraseña',
     secureAccess: 'Acceso seguro al espacio de trabajo',
@@ -178,16 +210,24 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Ocultar contraseña',
     noAccount: '¿No tienes una cuenta de candidato?',
     createAccount: 'Crear cuenta de candidato →',
-    applicantTab: 'Candidato',
+    applicantTab: 'Portal de Candidato',
     staffTab: 'Empresa y Personal',
     applicantBadge: 'Espacio del Candidato',
     staffBadge: 'Espacio de Empresa y Equipo',
+    applicantTitle: 'Iniciar Sesión Candidato',
+    staffTitle: 'Iniciar Sesión Empresa',
     applicantSub: 'Inicia sesión para revisar tus solicitudes, estado de CV e invitaciones a entrevistas.',
     staffSub: 'Inicia sesión para acceder al cribado de CVs, rúbricas de evaluación y análisis de equipo.',
     applicantPlaceholder: 'candidato@ejemplo.com',
     staffPlaceholder: 'reclutador@empresa.com',
     noStaffAccount: '¿Registras una empresa o te unes a un equipo?',
     createStaffAccount: 'Crear cuenta de personal →',
+    applicantOverlayTitle: '¿Empresa o Equipo?',
+    applicantOverlaySub: '¿Estás contratando o gestionando candidatos? Accede a tu espacio de empresa para evaluar postulantes y colaborar en rúbricas.',
+    applicantOverlayBtn: 'Ir al portal de empresa →',
+    staffOverlayTitle: '¿Buscas empleo?',
+    staffOverlaySub: '¿Deseas dar seguimiento a tus postulaciones, entrevistas o actualizar tu CV? Accede al portal de candidatos.',
+    staffOverlayBtn: 'Ir al portal de candidatos →',
     emailNotVerified: 'Verifique su dirección de correo antes de iniciar sesión.',
     emailNotVerifiedHint: 'Se envió un código de verificación al registrarse. Ingréselo para activar su cuenta.',
     resendVerification: 'Reenviar código de verificación',
@@ -216,10 +256,13 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Cuenta creada. Inicie sesión con su correo y contraseña; después se le pedirá el código de verificación que le enviamos.',
     forgotPassword: '¿Olvidó su contraseña?',
     loadingText: 'Cargando…',
+    demoCandidatePill: 'Demo Candidato',
+    demoRecruiterPill: 'Demo Reclutador',
+    demoAdminPill: 'Demo Admin',
   },
   de: {
     title: 'Bei RecruitAI anmelden',
-    subtitle: 'Erklärbare KI-Lebenslaufprüfung und Bewerberverwaltung.',
+    subtitle: 'Moderne Talentakquise und Bewerbermanagement-Plattform.',
     email: 'E-Mail-Adresse',
     password: 'Passwort',
     secureAccess: 'Sicherer Zugriff auf den Arbeitsbereich',
@@ -230,16 +273,24 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Passwort ausblenden',
     noAccount: 'Noch kein Bewerberkonto?',
     createAccount: 'Bewerberkonto erstellen →',
-    applicantTab: 'Bewerber',
+    applicantTab: 'Bewerberportal',
     staffTab: 'Unternehmen & Team',
     applicantBadge: 'Bewerber-Arbeitsbereich',
     staffBadge: 'Unternehmens-Arbeitsbereich',
+    applicantTitle: 'Bewerber-Anmeldung',
+    staffTitle: 'Mitarbeiter-Anmeldung',
     applicantSub: 'Melden Sie sich an, um Ihre Bewerbungen, Lebenslauf-Status und Einladungen einzusehen.',
     staffSub: 'Melden Sie sich an, um Lebenslauf-Prüfungen, Bewertungsrubriken und Team-Analysen zu verwalten.',
     applicantPlaceholder: 'bewerber@beispiel.de',
     staffPlaceholder: 'recruiter@unternehmen.de',
     noStaffAccount: 'Unternehmen registrieren oder Team beitreten?',
     createStaffAccount: 'Mitarbeiterkonto erstellen →',
+    applicantOverlayTitle: 'Unternehmen & Team?',
+    applicantOverlaySub: 'Rekrutieren oder verwalten Sie Bewerber? Nutzen Sie Ihren Unternehmensarbeitsbereich für strukturierte Bewertungen und Auswertungen.',
+    applicantOverlayBtn: 'Zum Unternehmensportal →',
+    staffOverlayTitle: 'Bewerben Sie sich?',
+    staffOverlaySub: 'Möchten Sie Ihre Bewerbungen, Interviewtermine oder Ihren Lebenslauf verwalten? Wechseln Sie zum Bewerberportal.',
+    staffOverlayBtn: 'Zum Bewerberportal →',
     emailNotVerified: 'Bitte bestätigen Sie Ihre E-Mail-Adresse vor der Anmeldung.',
     emailNotVerifiedHint: 'Bei der Registrierung wurde ein Bestätigungscode gesendet. Geben Sie ihn ein, um Ihr Konto zu aktivieren.',
     resendVerification: 'Bestätigungscode erneut senden',
@@ -268,10 +319,13 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Konto erstellt. Melden Sie sich mit E-Mail und Passwort an — anschließend werden Sie nach dem per E-Mail gesendeten Bestätigungscode gefragt.',
     forgotPassword: 'Passwort vergessen?',
     loadingText: 'Wird geladen…',
+    demoCandidatePill: 'Demo Bewerber',
+    demoRecruiterPill: 'Demo Recruiter',
+    demoAdminPill: 'Demo Admin',
   },
   rw: {
     title: 'Injira muri RecruitAI',
-    subtitle: 'Isuzuma rya CV risobanurwa na AI no gukurikirana abasaba akazi.',
+    subtitle: 'Urubuga rugezweho rwo gushaka no gukurikirana abakozi.',
     email: 'Aderesi ya imeyili',
     password: 'Ijambo ry’ibanga',
     secureAccess: 'Kwinjira mu mwanya w’akazi mu buryo bwizewe',
@@ -282,16 +336,24 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     hidePassword: 'Hisha ijambo ry’ibanga',
     noAccount: 'Nta konti y’usaba akazi ufite?',
     createAccount: 'Fungura konti y’usaba akazi →',
-    applicantTab: 'Usaba akazi',
+    applicantTab: 'Umwanya w’Usaba Akazi',
     staffTab: 'Ikigo n’Abakozi',
     applicantBadge: 'Umwanya w’Usaba Akazi',
     staffBadge: 'Umwanya w’Ikigo n’Abakozi',
+    applicantTitle: 'Kwinjira kw’Usaba Akazi',
+    staffTitle: 'Kwinjira kw’Ikigo n’Abakozi',
     applicantSub: 'Injira kugira ngo ukurikirane ubusabe bwawe, imiterere ya CV, n’ubutumire bw’ibazwa.',
     staffSub: 'Injira kugira ngo ubashe gukoresha isuzuma rya CV, ibipimo byo gusuzuma, n’ibarurishamibare.',
     applicantPlaceholder: 'usaba@urugero.rw',
     staffPlaceholder: 'umukozi@ikigo.rw',
     noStaffAccount: 'Ukeneye kwandikisha ikigo cyangwa kwinjira mu ikipe?',
     createStaffAccount: 'Fungura konti y’ikigo →',
+    applicantOverlayTitle: 'Ikigo n’Abakozi?',
+    applicantOverlaySub: 'Urashaka abakozi cyangwa uragenzura ubusabe? Injira mu mwanya w’ikigo kugira ngo usuzume abakandida ku buryo bwizewe.',
+    applicantOverlayBtn: 'Jya ku mwanya w’ikigo →',
+    staffOverlayTitle: 'Urasaba akazi?',
+    staffOverlaySub: 'Urashaka gukurikirana ubusabe bwawe, gahunda y’ibazwa, cyangwa kuvugurura CV? Injira ku rubuga rw’abasaba akazi.',
+    staffOverlayBtn: 'Jya ku rubuga rw’abasaba →',
     emailNotVerified: 'Banza umeze aderesi ya imeyili mbere yo kwinjira.',
     emailNotVerifiedHint: 'Kode yo kwemeza yoherejwe iyo wiyandikishije. Yandike kugira ngo ukoreshe konti yawe.',
     resendVerification: 'Ongera uwohereze kode yo kwemeza',
@@ -320,12 +382,15 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Konti yafunguwe. Injira ukoresha imeyili n’ijambo ry’ibanga — hanyuma ugasabwa kode yo kwemeza twoherejwe.',
     forgotPassword: 'Wibagiwe ijambo ry’ibanga?',
     loadingText: 'Birimo gupakura…',
+    demoCandidatePill: 'Demo Usaba Akazi',
+    demoRecruiterPill: 'Demo Ushakisha',
+    demoAdminPill: 'Demo Admin',
   },
 };
 
 function SignInForm() {
   const { language } = useLanguage();
-  const copy = SIGN_IN_COPY[language];
+  const copy = SIGN_IN_COPY[language] || SIGN_IN_COPY.en;
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -379,7 +444,6 @@ function SignInForm() {
   const handleResend = async () => {
     if (!email || resendState === 'sending') return;
     setEmailFormatError(false);
-    // Client-side prompt: catch obvious typos before bothering the server.
     if (!EMAIL_FORMAT_RE.test(email.trim()) || email.length > 320) {
       setEmailFormatError(true);
       return;
@@ -393,19 +457,16 @@ function SignInForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 400) {
-        // The server rejected the address format — same prompt, server-confirmed.
         setEmailFormatError(true);
         setResendState('idle');
         return;
       }
       if (typeof data?.cooldownSeconds === 'number' && data.cooldownSeconds > 0) {
-        // A code was just sent; show the real wait instead of a false "sent".
         setCooldownSeconds(data.cooldownSeconds);
         setResendState('idle');
         return;
       }
       if (data?.delivered === false) {
-        // Delivery provider failed — honest notice, retry stays available.
         setResendState('delivery-failed');
         return;
       }
@@ -415,7 +476,6 @@ function SignInForm() {
     }
   };
 
-  // Step 1: verify credentials server-side and email the 6-digit code.
   const runChallenge = async (isRetry = false): Promise<void> => {
     setLoading(true);
     setError('');
@@ -431,7 +491,6 @@ function SignInForm() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.success) {
-        // Factor 1 solved. Move to the appropriate second-factor step.
         if (data.next === 'totp') {
           setStep('totp');
         } else {
@@ -441,10 +500,6 @@ function SignInForm() {
       } else if (data.error === 'EMAIL_NOT_VERIFIED') {
         setEmailNotVerified(true);
       } else if (res.status === 429) {
-        // A code was issued moments ago (60s resend cooldown) — wait it out
-        // and ask once more instead of dead-ending the user with a scary
-        // error. The server stays authoritative: a real flood (IP/account
-        // limiter) carries no retryAfterSeconds and still shows the error.
         if (
           !isRetry &&
           typeof data?.retryAfterSeconds === 'number' &&
@@ -474,8 +529,6 @@ function SignInForm() {
     await runChallenge();
   };
 
-  // Activate the account with the emailed signup code, then roll straight
-  // into the two-step sign-in (the credentials are already in memory).
   const handleActivate = async () => {
     if (activationState === 'activating' || activationCode.length !== 6) return;
     setActivationState('activating');
@@ -504,8 +557,6 @@ function SignInForm() {
     }
   };
 
-  // Step 2: verify the second factor (emailed code or TOTP), then exchange
-  // both factors for a session.
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (codeStatus === 'verifying') return;
@@ -521,8 +572,6 @@ function SignInForm() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.verified && data.mfaTicket) {
-        // Both factors proven. NextAuth issues the session — it re-verifies
-        // the password AND the ticket, so the ticket alone grants nothing.
         const result = await signIn('credentials', {
           redirect: false,
           email,
@@ -552,10 +601,8 @@ function SignInForm() {
     }
   };
 
-  // Resend a fresh login code (server enforces a 60s cooldown).
-  // For TOTP, this is not available — codes refresh every 30 seconds.
   const handleResendCode = async () => {
-    if (step === 'totp') return; // TOTP codes auto-refresh; no resend.
+    if (step === 'totp') return;
     if (!email || !password || codeStatus === 'verifying' || cooldownSeconds > 0) return;
     setError('');
     try {
@@ -566,7 +613,6 @@ function SignInForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 429 && typeof data?.retryAfterSeconds === 'number') {
-        // Cooldown active — show the real wait instead of a failure.
         setCooldownSeconds(data.retryAfterSeconds);
         setCodeStatus('resent');
       } else if (res.ok && res.status !== 503) {
@@ -579,109 +625,342 @@ function SignInForm() {
     }
   };
 
-  return (
-    <div className="min-h-[85vh] flex items-center justify-center py-8 px-2 sm:px-4">
-      <div className="panel-raised rounded-2xl max-w-lg w-full p-5 sm:p-8 space-y-6 overflow-hidden">
-        {/* Brand Header */}
-        <div className="text-center space-y-3 pt-1">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white dark:text-[#0B0F14] text-2xl font-extrabold mx-auto shadow-md ring-4 ring-[var(--accent-ring)]">
-            R
-          </div>
-          <div className="chip chip-success !text-[9px] !tracking-[0.18em] uppercase">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-            {step === 'credentials'
-              ? (portalType === 'applicant' ? copy.applicantBadge : copy.staffBadge)
-              : copy.secureAccess}
-          </div>
-          <h1 className="text-2xl font-extrabold text-[var(--foreground)] tracking-tight">
-            {step === 'code' || step === 'totp' ? copy.codeTitle : copy.title}
-          </h1>
-          {step === 'credentials' && (
-            <p className="text-xs text-[var(--muted)]">
-              {copy.subtitle}
-            </p>
-          )}
-          {(step === 'code' || step === 'totp') && (
-            <p className="text-xs text-[var(--muted)]">
-              {step === 'totp' ? copy.codeSentToTOTP : copy.codeSentTo} <span className="font-bold text-[var(--foreground)]">{email}</span>
+  const fillCredentials = (targetEmail: string) => {
+    setEmail(targetEmail);
+    setPassword('Password123!');
+    setError('');
+    setEmailFormatError(false);
+  };
+
+  // Reusable credential form markup
+  const renderCredentialsForm = (portal: 'applicant' | 'staff') => (
+    <form onSubmit={handleCredentialsSubmit} className="space-y-4 text-xs">
+      <div>
+        <label htmlFor={`signin-email-${portal}`} className="block text-slate-700 dark:text-slate-300 font-semibold mb-1.5 text-xs">
+          {portal === 'applicant' ? copy.email : copy.email}
+        </label>
+        <div className="relative">
+          <input
+            type="email"
+            id={`signin-email-${portal}`}
+            name="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailFormatError) setEmailFormatError(false);
+            }}
+            placeholder={portal === 'applicant' ? copy.applicantPlaceholder : copy.staffPlaceholder}
+            aria-invalid={emailFormatError || undefined}
+            aria-describedby={emailFormatError ? `signin-email-format-error-${portal}` : undefined}
+            className={`w-full rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all ${
+              emailFormatError ? '!border-rose-500 !ring-rose-500/20' : 'border-slate-200 dark:border-slate-800'
+            }`}
+          />
+        </div>
+        {emailFormatError && (
+          <p
+            id={`signin-email-format-error-${portal}`}
+            role="alert"
+            className="mt-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1"
+          >
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{copy.emailInvalidPrompt}</span>
+          </p>
+        )}
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label htmlFor={`signin-password-${portal}`} className="block text-slate-700 dark:text-slate-300 font-semibold text-xs">
+            {copy.password}
+          </label>
+          <a
+            href="/auth/forgot-password"
+            className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline font-medium"
+          >
+            {copy.forgotPassword}
+          </a>
+        </div>
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            id={`signin-password-${portal}`}
+            name="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••••••"
+            className="w-full rounded-xl px-4 py-2.5 pr-14 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((visible) => !visible)}
+            aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 active:scale-[0.99] transition-all duration-200 shadow-md shadow-teal-900/20 disabled:opacity-60 flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            <span>{copy.authenticating}</span>
+          </>
+        ) : (
+          <span>{portal === 'applicant' ? copy.signIn : copy.signIn}</span>
+        )}
+      </button>
+    </form>
+  );
+
+  // Reusable 2FA challenge markup
+  const renderMfaForm = () => (
+    <form onSubmit={handleCodeSubmit} className="space-y-4 text-xs">
+      <div className="text-center pb-2">
+        <div className="w-10 h-10 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto mb-2">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+          {step === 'totp' ? 'Authenticator Code' : copy.codeTitle}
+        </h3>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+          {step === 'totp' ? copy.codeSentToTOTP : copy.codeSentTo}{' '}
+          <strong className="text-slate-900 dark:text-slate-200">{email}</strong>
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="signin-code-input" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1 text-center text-xs">
+          {step === 'totp' ? 'Authenticator Code' : copy.codeLabel}
+        </label>
+        <input
+          type="text"
+          id="signin-code-input"
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          autoFocus
+          required
+          maxLength={6}
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          placeholder={copy.codePlaceholder}
+          className="w-full rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-[0.5em] bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-mono"
+        />
+        <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 text-center">
+          {step === 'totp' ? copy.totpHint : copy.codeHint}
+        </p>
+      </div>
+
+      {codeStatus === 'delivery-failed' && (
+        <div role="alert" className="p-3 rounded-xl border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{copy.codeDeliveryFailed}</span>
+        </div>
+      )}
+      {codeStatus === 'resent' && (
+        <div role="status" className="p-3 rounded-xl border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <svg className="w-4 h-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>{copy.codeResent}</span>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={codeStatus === 'verifying' || code.length !== 6}
+        className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 active:scale-[0.99] transition-all duration-200 shadow-md shadow-teal-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {codeStatus === 'verifying' ? (
+          <>
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            <span>{copy.verifying}</span>
+          </>
+        ) : (
+          <span>{copy.verify}</span>
+        )}
+      </button>
+
+      <div className="flex items-center justify-between text-[11px] pt-1">
+        <button
+          type="button"
+          onClick={() => {
+            setStep('credentials');
+            setCode('');
+            setError('');
+          }}
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        >
+          {copy.backToCredentials}
+        </button>
+        {step === 'totp' ? (
+          <span className="text-slate-400 dark:text-slate-500">
+            Auto-refreshes every 30s
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={handleResendCode}
+            disabled={cooldownSeconds > 0}
+            className="text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50 disabled:no-underline font-medium"
+          >
+            {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
+          </button>
+        )}
+      </div>
+    </form>
+  );
+
+  // Common notification banner block
+  const renderAlerts = () => (
+    <>
+      {error && (
+        <div
+          role="alert"
+          className="p-3 rounded-xl border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+        >
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {justRegistered && !error && !emailNotVerified && step === 'credentials' && (
+        <div
+          className={`p-3.5 rounded-xl border text-xs font-semibold text-center space-y-2 ${
+            emailDeliveryFailed
+              ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+          }`}
+        >
+          {emailDeliveryFailed ? (
+            <>
+              <p className="flex items-center justify-center gap-1.5">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{copy.registeredEmailFailed}</span>
+              </p>
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendState === 'sending' || cooldownSeconds > 0}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-200 hover:bg-amber-500/25 disabled:opacity-50"
+              >
+                {cooldownSeconds > 0
+                  ? `${cooldownSeconds}s`
+                  : resendState === 'sending'
+                    ? copy.resending
+                    : copy.resendVerification}
+              </button>
+              {resendState === 'delivery-failed' && (
+                <p className="font-medium text-amber-600 dark:text-amber-300 flex items-center justify-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{copy.codeDeliveryFailed}</span>
+                </p>
+              )}
+              {resendState === 'sent' && (
+                <p className="font-medium text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>{copy.resendSent}</span>
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="flex items-center justify-center gap-1.5">
+              <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{copy.registeredSuccess}</span>
             </p>
           )}
         </div>
+      )}
 
-        {/* Portal Switcher (credentials mode) */}
-        {step === 'credentials' && (
-          <div className="space-y-3">
-            <div className="segmented max-w-xs mx-auto">
-              <button
-                type="button"
-                onClick={() => setPortalType('applicant')}
-                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 font-semibold ${portalType === 'applicant' ? 'active' : ''
-                  }`}
-              >
-                <span>{copy.applicantTab}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPortalType('staff')}
-                className={`!py-2 !px-3 flex items-center justify-center gap-1.5 font-semibold ${portalType === 'staff' ? 'active' : ''
-                  }`}
-              >
-                <span>{copy.staffTab}</span>
-              </button>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] text-left">
-              <div>
-                <h3 className="font-bold text-[var(--foreground)] text-xs">
-                  {portalType === 'applicant' ? copy.applicantBadge : copy.staffBadge}
-                </h3>
-                <p className="text-[10px] text-[var(--muted)]">
-                  {portalType === 'applicant' ? copy.applicantSub : copy.staffSub}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div
-            role="alert"
-            className="p-3.5 rounded-lg border text-xs font-bold text-center flex items-center justify-center gap-1.5"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
-              borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)',
-              color: 'var(--danger)',
-            }}
-          >
+      {emailNotVerified && (
+        <div role="alert" className="p-3.5 rounded-xl border text-xs space-y-2.5 text-center border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+          <p className="font-bold flex items-center justify-center gap-1.5">
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <span>{error}</span>
-          </div>
-        )}
-
-        {justRegistered && !error && !emailNotVerified && step === 'credentials' && (
-          <div
-            className={
-              emailDeliveryFailed
-                ? 'p-3.5 rounded-lg border text-xs font-semibold text-center space-y-2 border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]'
-                : 'p-3.5 rounded-lg border text-xs font-semibold text-center border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)] text-[var(--accent)]'
-            }
-          >
-            {emailDeliveryFailed ? (
-              <>
-                <p className="flex items-center justify-center gap-1.5">
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span>{copy.emailNotVerified}</span>
+          </p>
+          <p className="text-[11px] opacity-90">{copy.emailNotVerifiedHint}</p>
+          {activationState === 'done' ? (
+            <p className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5">
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{copy.activationSuccess}</span>
+            </p>
+          ) : (
+            <>
+              <div className="flex items-center justify-center gap-2">
+                <input
+                  type="text"
+                  id="activation-code"
+                  name="activationCode"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  aria-label={copy.codeLabel}
+                  maxLength={6}
+                  value={activationCode}
+                  onChange={(e) => setActivationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder={copy.codePlaceholder}
+                  className="w-36 rounded-lg px-3 py-1.5 text-center text-base font-bold tracking-[0.3em] bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={handleActivate}
+                  disabled={activationState === 'activating' || activationCode.length !== 6}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-500/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 transition-colors disabled:opacity-50"
+                >
+                  {activationState === 'activating' ? copy.verifying : copy.activate}
+                </button>
+              </div>
+              {resendState === 'delivery-failed' && (
+                <p className="font-medium text-amber-600 dark:text-amber-300 flex items-center justify-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <span>{copy.registeredEmailFailed}</span>
+                  <span>{copy.codeDeliveryFailed}</span>
                 </p>
+              )}
+              {resendState === 'sent' ? (
+                <p className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>{copy.resendSent}</span>
+                </p>
+              ) : (
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={resendState === 'sending' || cooldownSeconds > 0}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
+                  className="px-3 py-1 rounded-lg text-[11px] font-semibold transition border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-200 disabled:opacity-50"
                 >
                   {cooldownSeconds > 0
                     ? `${cooldownSeconds}s`
@@ -689,301 +968,319 @@ function SignInForm() {
                       ? copy.resending
                       : copy.resendVerification}
                 </button>
-                {resendState === 'delivery-failed' && (
-                  <p className="font-medium text-amber-200 flex items-center justify-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span>{copy.codeDeliveryFailed}</span>
-                  </p>
-                )}
-                {resendState === 'sent' && (
-                  <p className="font-medium opacity-90 flex items-center justify-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{copy.resendSent}</span>
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="flex items-center justify-center gap-1.5">
-                <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{copy.registeredSuccess}</span>
-              </p>
-            )}
-          </div>
-        )}
-
-        {emailNotVerified && (
-          <div role="alert" className="p-3.5 rounded-lg border text-xs space-y-3 text-center border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
-            <p className="font-bold flex items-center justify-center gap-1.5">
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>{copy.emailNotVerified}</span>
-            </p>
-            <p className="font-medium opacity-90">{copy.emailNotVerifiedHint}</p>
-            {activationState === 'done' ? (
-              <p className="font-semibold text-[var(--success)] flex items-center justify-center gap-1.5">
-                <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{copy.activationSuccess}</span>
-              </p>
-            ) : (
-              <>
-                <div className="flex items-center justify-center gap-2">
-                  <input
-                    type="text"
-                    id="activation-code"
-                    name="activationCode"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    aria-label={copy.codeLabel}
-                    maxLength={6}
-                    value={activationCode}
-                    onChange={(e) => setActivationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder={copy.codePlaceholder}
-                    className="w-40 field !rounded-lg !px-3 !py-2 text-center !text-lg !font-bold !tracking-[0.3em]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleActivate}
-                    disabled={activationState === 'activating' || activationCode.length !== 6}
-                    className="px-3 py-2 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
-                  >
-                    {activationState === 'activating' ? copy.verifying : copy.activate}
-                  </button>
-                </div>
-                {resendState === 'delivery-failed' && (
-                  <p className="font-medium text-amber-200 flex items-center justify-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span>{copy.codeDeliveryFailed}</span>
-                  </p>
-                )}
-                {resendState === 'sent' ? (
-                  <p className="font-semibold text-[var(--success)] flex items-center justify-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{copy.resendSent}</span>
-                  </p>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={resendState === 'sending' || cooldownSeconds > 0}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition border !text-[var(--warning)] !border-[color-mix(in_srgb,var(--warning)_40%,transparent)] !bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] hover:!bg-[color-mix(in_srgb,var(--warning)_18%,transparent)] disabled:opacity-50"
-                  >
-                    {cooldownSeconds > 0
-                      ? `${cooldownSeconds}s`
-                      : resendState === 'sending'
-                        ? copy.resending
-                        : copy.resendVerification}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {step === 'credentials' ? (
-          <form onSubmit={handleCredentialsSubmit} className="space-y-4 text-xs">
-            <div>
-              <label htmlFor="signin-email" className="field-label">
-                {copy.email}
-              </label>
-              <input
-                type="email"
-                id="signin-email"
-                name="email"
-                autoComplete="email"
-                autoFocus
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (emailFormatError) setEmailFormatError(false);
-                }}
-                placeholder={portalType === 'applicant' ? copy.applicantPlaceholder : copy.staffPlaceholder}
-                aria-invalid={emailFormatError || undefined}
-                aria-describedby={emailFormatError ? 'signin-email-format-error' : undefined}
-                className={`w-full field !rounded-lg !px-4 !py-2.5 ${emailFormatError
-                    ? '!border-[var(--danger)]'
-                    : ''
-                  }`}
-              />
-              {emailFormatError && (
-                <p
-                  id="signin-email-format-error"
-                  role="alert"
-                  className="mt-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1"
-                >
-                  <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span>{copy.emailInvalidPrompt}</span>
-                </p>
               )}
-            </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
 
-            <div>
-              <label htmlFor="signin-password" className="field-label">
-                {copy.password}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="signin-password"
-                  name="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full field !rounded-lg !px-4 !py-2.5 !pr-16"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-[11px] font-semibold text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)] focus:outline-none"
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </div>
+  return (
+    <div className="min-h-[90vh] flex flex-col justify-between py-6 px-3 sm:px-6">
+      {/* Top Navbar */}
+      <header className="max-w-5xl w-full mx-auto flex items-center justify-between pb-6">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-base shadow-md group-hover:scale-105 transition-transform">
+            R
+          </div>
+          <div>
+            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white leading-none block">
+              RecruitAI
+            </span>
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">
+              ENTERPRISE ATS
+            </span>
+          </div>
+        </Link>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full !py-3 btn btn-primary !rounded-lg !text-xs !font-bold"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                  {copy.authenticating}
-                </span>
-              ) : copy.signIn}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleCodeSubmit} className="space-y-4 text-xs">
-            <div>
-              <label htmlFor="signin-code" className="field-label">
-                {step === 'totp' ? 'Authenticator Code' : copy.codeLabel}
-              </label>
-              <input
-                type="text"
-                id="signin-code"
-                name="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                required
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder={copy.codePlaceholder}
-                className="w-full field !rounded-lg !px-4 !py-3 text-center !text-2xl !font-bold !tracking-[0.5em]"
-              />
-              <p className="mt-2 text-[11px] text-[var(--muted)]">{step === 'totp' ? copy.totpHint : copy.codeHint}</p>
-            </div>
+        <div className="flex items-center gap-3">
+          <LanguageSelector />
+        </div>
+      </header>
 
-            {codeStatus === 'delivery-failed' && (
-              <div role="alert" className="p-3.5 rounded-lg border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,var(--surface))] text-[var(--warning)]">
-                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{copy.codeDeliveryFailed}</span>
-              </div>
-            )}
-            {codeStatus === 'resent' && (
-              <div role="status" className="p-3.5 rounded-lg border text-xs font-semibold text-center flex items-center justify-center gap-1.5 border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)] text-[var(--accent)]">
-                <svg className="w-4 h-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{copy.codeResent}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={codeStatus === 'verifying' || code.length !== 6}
-              className="w-full !py-3 btn btn-primary !rounded-lg !text-xs !font-bold"
-            >
-              {codeStatus === 'verifying' ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                  {copy.verifying}
-                </span>
-              ) : copy.verify}
-            </button>
-
-            <div className="flex items-center justify-between text-[11px]">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('credentials');
-                  setCode('');
-                  setError('');
-                }}
-                className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline"
-              >
-                {copy.backToCredentials}
-              </button>
-              {step === 'totp' ? (
-                <span className="text-[11px] text-[var(--muted)]">
-                  New code every 30 seconds
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleResendCode}
-                  disabled={cooldownSeconds > 0}
-                  className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline disabled:opacity-60 disabled:hover:no-underline"
-                >
-                  {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
-                </button>
-              )}
-            </div>
-          </form>
-        )}
-
-        {/* Forgot password (spec §6.1) */}
-        <div className="pt-2 text-center text-xs">
-          <a
-            href="/auth/forgot-password"
-            className="text-[var(--muted)] hover:text-[var(--foreground)] hover:underline"
+      {/* Main Interactive Stage */}
+      <main className="max-w-5xl w-full mx-auto my-auto flex flex-col items-center">
+        {/* Interactive Segmented Switcher Tabs (Clicking triggers the smooth slide!) */}
+        <div className="mb-6 inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-[#121B2B] border border-slate-200 dark:border-slate-800/80 shadow-inner">
+          <button
+            type="button"
+            onClick={() => setPortalType('applicant')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
+              portalType === 'applicant'
+                ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
           >
-            {copy.forgotPassword}
-          </a>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>{copy.applicantTab}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPortalType('staff')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
+              portalType === 'staff'
+                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>{copy.staffTab}</span>
+          </button>
         </div>
 
-        {/* Link to Registration */}
-        <div className="pt-2 text-center text-xs text-[var(--muted)] border-t border-[var(--border)]">
-          {portalType === 'applicant' ? (
-            <div>
+        {/* Double Slider Card (Matches the reference animation perfectly) */}
+        <div
+          className={`sliding-auth-card border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1522] shadow-2xl transition-all duration-300 ${
+            portalType === 'staff' ? 'staff-mode-active' : ''
+          }`}
+        >
+          {/* ──────────────────────────────────────────────────────────
+              PANE 1: Candidate / Applicant Side (Visible on Left)
+             ────────────────────────────────────────────────────────── */}
+          <div className={`sliding-form-pane pane-applicant p-6 sm:p-10 flex flex-col justify-between overflow-y-auto ${
+            portalType !== 'applicant' ? 'max-md:hidden' : ''
+          }`}>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                  {copy.applicantBadge}
+                </span>
+                <span className="text-[11px] text-slate-400 font-mono">PORTAL ACCESS</span>
+              </div>
+
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {step === 'credentials' ? copy.applicantTitle : copy.codeTitle}
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  {step === 'credentials' ? copy.applicantSub : copy.codeSentTo}
+                </p>
+              </div>
+
+              {/* Demo Quick-Fill helper */}
+              {step === 'credentials' && (
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Quick Demo Test:</span>
+                  <button
+                    type="button"
+                    onClick={() => fillCredentials('john.doe@example.com')}
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:bg-teal-500/10 border border-teal-500/30 transition-colors"
+                  >
+                    {copy.demoCandidatePill}
+                  </button>
+                </div>
+              )}
+
+              {portalType === 'applicant' && renderAlerts()}
+
+              {step === 'credentials' ? renderCredentialsForm('applicant') : renderMfaForm()}
+            </div>
+
+            {/* Bottom Registration Link */}
+            <div className="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs text-slate-500 dark:text-slate-400">
               <span>{copy.noAccount} </span>
-              <Link href="/auth/signup?accountType=candidate" className="link font-bold">
+              <Link
+                href="/auth/signup?accountType=candidate"
+                className="font-bold text-teal-600 dark:text-teal-400 hover:underline"
+              >
                 {copy.createAccount}
               </Link>
             </div>
-          ) : (
-            <div>
+          </div>
+
+          {/* ──────────────────────────────────────────────────────────
+              PANE 2: Company & Staff Side (Visible on Right when Active)
+             ────────────────────────────────────────────────────────── */}
+          <div className={`sliding-form-pane pane-staff p-6 sm:p-10 flex flex-col justify-between overflow-y-auto ${
+            portalType !== 'staff' ? 'max-md:hidden' : ''
+          }`}>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  {copy.staffBadge}
+                </span>
+                <span className="text-[11px] text-slate-400 font-mono">STAFF LOGIN</span>
+              </div>
+
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {step === 'credentials' ? copy.staffTitle : copy.codeTitle}
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  {step === 'credentials' ? copy.staffSub : copy.codeSentTo}
+                </p>
+              </div>
+
+              {/* Staff Demo Quick-Fill options */}
+              {step === 'credentials' && (
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Demo Staff:</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => fillCredentials('recruiter@codafriqa.rw')}
+                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/30 transition-colors"
+                    >
+                      {copy.demoRecruiterPill}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fillCredentials('admin@codafriqa.rw')}
+                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/30 transition-colors"
+                    >
+                      {copy.demoAdminPill}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {portalType === 'staff' && renderAlerts()}
+
+              {step === 'credentials' ? renderCredentialsForm('staff') : renderMfaForm()}
+            </div>
+
+            {/* Bottom Staff Registration Link */}
+            <div className="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs text-slate-500 dark:text-slate-400">
               <span>{copy.noStaffAccount} </span>
-              <Link href="/auth/signup?accountType=worker" className="link font-bold">
+              <Link
+                href="/auth/signup?accountType=worker"
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
                 {copy.createStaffAccount}
               </Link>
             </div>
-          )}
+          </div>
+
+          {/* ──────────────────────────────────────────────────────────
+              SLIDING OVERLAY CONTAINER (Desktop >= 768px)
+              Transforms horizontally between left and right!
+             ────────────────────────────────────────────────────────── */}
+          <div className="sliding-overlay-box hidden md:block" aria-hidden="true">
+            <div className="sliding-overlay-inner bg-gradient-to-br from-[#0F766E] via-[#0E7490] to-[#4338CA] text-white shadow-2xl relative">
+              {/* Subtle background glow rings */}
+              <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+
+              {/* Left Overlay Content: Visible when Staff Form is active on right */}
+              <div className="sliding-overlay-panel overlay-panel-left space-y-6">
+                <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-xl font-bold shadow-md">
+                  R
+                </div>
+                <div className="space-y-2 max-w-xs mx-auto">
+                  <span className="text-[10px] font-mono tracking-widest uppercase bg-white/15 px-3 py-1 rounded-full border border-white/20">
+                    CANDIDATE PORTAL
+                  </span>
+                  <h2 className="text-2xl font-black tracking-tight leading-tight">
+                    {copy.staffOverlayTitle}
+                  </h2>
+                  <p className="text-xs text-teal-100 leading-relaxed">
+                    {copy.staffOverlaySub}
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setPortalType('applicant')}
+                    className="border-2 border-white/90 text-white rounded-full px-7 py-2.5 font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-slate-900 active:scale-95 transition-all duration-300 shadow-xl"
+                  >
+                    {copy.staffOverlayBtn}
+                  </button>
+                </div>
+
+                <div className="pt-4 flex items-center justify-center gap-3 text-[10px] text-teal-100/90 font-mono">
+                  <span>Track Progress</span>
+                  <span>•</span>
+                  <span>1-Click Apply</span>
+                  <span>•</span>
+                  <span>Direct Invites</span>
+                </div>
+              </div>
+
+              {/* Right Overlay Content: Visible when Applicant Form is active on left */}
+              <div className="sliding-overlay-panel overlay-panel-right space-y-6">
+                <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-xl font-bold shadow-md">
+                  R
+                </div>
+                <div className="space-y-2 max-w-xs mx-auto">
+                  <span className="text-[10px] font-mono tracking-widest uppercase bg-white/15 px-3 py-1 rounded-full border border-white/20">
+                    COMPANY WORKSPACE
+                  </span>
+                  <h2 className="text-2xl font-black tracking-tight leading-tight">
+                    {copy.applicantOverlayTitle}
+                  </h2>
+                  <p className="text-xs text-indigo-100 leading-relaxed">
+                    {copy.applicantOverlaySub}
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setPortalType('staff')}
+                    className="border-2 border-white/90 text-white rounded-full px-7 py-2.5 font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-slate-900 active:scale-95 transition-all duration-300 shadow-xl"
+                  >
+                    {copy.applicantOverlayBtn}
+                  </button>
+                </div>
+
+                <div className="pt-4 flex items-center justify-center gap-3 text-[10px] text-indigo-100/90 font-mono">
+                  <span>Structured Rubrics</span>
+                  <span>•</span>
+                  <span>Tamper-Evident Audit</span>
+                  <span>•</span>
+                  <span>Scorecards</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Mobile Switcher Footer (Below card on mobile screens) */}
+        <div className="md:hidden mt-4 w-full max-w-sm text-center">
+          <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+            {portalType === 'applicant' ? (
+              <p>
+                Hiring or managing team pipelines?{' '}
+                <button
+                  type="button"
+                  onClick={() => setPortalType('staff')}
+                  className="font-bold text-teal-600 dark:text-teal-400 underline ml-1"
+                >
+                  Switch to Staff Portal →
+                </button>
+              </p>
+            ) : (
+              <p>
+                Applying for open job positions?{' '}
+                <button
+                  type="button"
+                  onClick={() => setPortalType('applicant')}
+                  className="font-bold text-indigo-600 dark:text-indigo-400 underline ml-1"
+                >
+                  Switch to Candidate Portal →
+                </button>
+              </p>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Trust & Security Footnote */}
+      <footer className="max-w-5xl w-full mx-auto pt-6 text-center text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center justify-center gap-2">
+        <svg className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <span>256-bit TLS Encryption • Role-Based Access Control • Tamper-Evident Audit Verification</span>
+      </footer>
     </div>
   );
 }
@@ -991,8 +1288,8 @@ function SignInForm() {
 function SignInLoading() {
   const { language } = useLanguage();
   return (
-    <div className="min-h-[85vh] flex items-center justify-center text-xs text-[var(--muted)]">
-      {SIGN_IN_COPY[language].loadingText}
+    <div className="min-h-[85vh] flex items-center justify-center text-xs text-slate-500 dark:text-slate-400">
+      {SIGN_IN_COPY[language]?.loadingText || 'Loading…'}
     </div>
   );
 }

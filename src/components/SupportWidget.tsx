@@ -225,11 +225,10 @@ export default function SupportWidget() {
                   className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`p-3 rounded-xl max-w-[90%] leading-relaxed whitespace-pre-wrap ${
-                      m.role === 'user'
+                    className={`p-3 rounded-xl max-w-[90%] leading-relaxed whitespace-pre-wrap ${m.role === 'user'
                         ? 'bg-indigo-600 text-white rounded-br-none text-xs font-medium'
                         : 'dark:bg-slate-900 bg-slate-100 dark:text-slate-200 text-slate-800 border dark:border-slate-800 border-slate-200 rounded-bl-none text-xs'
-                    }`}
+                      }`}
                   >
                     {m.content}
 

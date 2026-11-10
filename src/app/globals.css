@@ -927,3 +927,112 @@ summary:focus-visible {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ────────────────────────────────────────────────────────────────
+   Double-Slider Auth Container (Sliding Dual-Portal Animation)
+   ──────────────────────────────────────────────────────────────── */
+.sliding-auth-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 960px;
+  min-height: 640px;
+  border-radius: 28px;
+}
+
+@media (min-width: 768px) {
+  .sliding-form-pane {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    transition: all 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .pane-applicant {
+    left: 0;
+    z-index: 2;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pane-staff {
+    left: 0;
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .staff-mode-active .pane-staff {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    pointer-events: auto;
+  }
+
+  .staff-mode-active .pane-applicant {
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sliding-overlay-box {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 20;
+  }
+
+  .staff-mode-active .sliding-overlay-box {
+    transform: translateX(-100%);
+  }
+
+  .sliding-overlay-inner {
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .staff-mode-active .sliding-overlay-inner {
+    transform: translateX(50%);
+  }
+
+  .sliding-overlay-panel {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 40px;
+    transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .overlay-panel-left {
+    left: 0;
+    transform: translateX(-20%);
+  }
+
+  .staff-mode-active .overlay-panel-left {
+    transform: translateX(0);
+  }
+
+  .overlay-panel-right {
+    right: 0;
+    transform: translateX(0);
+  }
+
+  .staff-mode-active .overlay-panel-right {
+    transform: translateX(20%);
+  }
+}
