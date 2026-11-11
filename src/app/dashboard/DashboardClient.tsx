@@ -138,18 +138,12 @@ export default function DashboardClient({
           </div>
         </div>
 
-        <div className="dashboard-hero-art" aria-hidden="true">
-          <div className="dashboard-orbit dashboard-orbit-outer" />
-          <div className="dashboard-orbit dashboard-orbit-inner" />
-          <div className="dashboard-orbit-dot dashboard-orbit-dot-one" />
-          <div className="dashboard-orbit-dot dashboard-orbit-dot-two" />
-          <div className="dashboard-hero-emblem">
-            <svg viewBox="0 0 48 48" fill="none">
-              <path d="M15 8h13l9 9v22H15a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4Z" stroke="currentColor" strokeWidth="1.6" />
-              <path d="M28 8v10h9M18 25h14M18 31h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              <path d="m19 18 2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <div className="hidden lg:flex flex-col items-end justify-center gap-2 text-right relative z-10" aria-hidden="true">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-xs font-medium text-[var(--muted)] shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-semibold text-[var(--foreground)]">Enterprise ATS</span>
           </div>
+          <p className="text-[11px] font-mono text-[var(--muted)]">Audit Chain Verified • Active Pipeline</p>
         </div>
       </section>
 

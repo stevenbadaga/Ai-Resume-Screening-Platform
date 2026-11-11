@@ -653,8 +653,12 @@ function SignInForm() {
             placeholder={portal === 'applicant' ? copy.applicantPlaceholder : copy.staffPlaceholder}
             aria-invalid={emailFormatError || undefined}
             aria-describedby={emailFormatError ? `signin-email-format-error-${portal}` : undefined}
-            className={`w-full rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all ${
-              emailFormatError ? '!border-rose-500 !ring-rose-500/20' : 'border-slate-200 dark:border-slate-800'
+            className={`w-full rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-[#0D1017] border text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
+              portal === 'applicant'
+                ? 'focus:ring-rose-500/20 focus:border-rose-500'
+                : 'focus:ring-indigo-500/20 focus:border-indigo-500'
+            } ${
+              emailFormatError ? '!border-rose-500 !ring-rose-500/20' : 'border-slate-200 dark:border-white/10'
             }`}
           />
         </div>
@@ -679,7 +683,9 @@ function SignInForm() {
           </label>
           <a
             href="/auth/forgot-password"
-            className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline font-medium"
+            className={`text-[11px] hover:underline font-medium ${
+              portal === 'applicant' ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'
+            }`}
           >
             {copy.forgotPassword}
           </a>
@@ -694,7 +700,11 @@ function SignInForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••••••"
-            className="w-full rounded-xl px-4 py-2.5 pr-14 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+            className={`w-full rounded-xl px-4 py-2.5 pr-14 bg-slate-50 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
+              portal === 'applicant'
+                ? 'focus:ring-rose-500/20 focus:border-rose-500'
+                : 'focus:ring-indigo-500/20 focus:border-indigo-500'
+            }`}
           />
           <button
             type="button"
@@ -710,7 +720,11 @@ function SignInForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 active:scale-[0.99] transition-all duration-200 shadow-md shadow-teal-900/20 disabled:opacity-60 flex items-center justify-center gap-2"
+        className={`w-full py-3 px-4 rounded-xl font-bold text-xs text-white transition-all duration-200 shadow-md active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 ${
+          portal === 'applicant'
+            ? 'bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 shadow-rose-900/20'
+            : 'bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 shadow-indigo-900/20'
+        }`}
       >
         {loading ? (
           <>
@@ -718,7 +732,7 @@ function SignInForm() {
             <span>{copy.authenticating}</span>
           </>
         ) : (
-          <span>{portal === 'applicant' ? copy.signIn : copy.signIn}</span>
+          <span>{copy.signIn}</span>
         )}
       </button>
     </form>
@@ -728,7 +742,11 @@ function SignInForm() {
   const renderMfaForm = () => (
     <form onSubmit={handleCodeSubmit} className="space-y-4 text-xs">
       <div className="text-center pb-2">
-        <div className="w-10 h-10 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto mb-2">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 ${
+          portalType === 'applicant'
+            ? 'bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400'
+            : 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400'
+        }`}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
@@ -758,7 +776,11 @@ function SignInForm() {
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           placeholder={copy.codePlaceholder}
-          className="w-full rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-[0.5em] bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-mono"
+          className={`w-full rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-[0.5em] bg-slate-50 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:ring-2 transition-all font-mono ${
+            portalType === 'applicant'
+              ? 'focus:ring-rose-500/20 focus:border-rose-500'
+              : 'focus:ring-indigo-500/20 focus:border-indigo-500'
+          }`}
         />
         <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 text-center">
           {step === 'totp' ? copy.totpHint : copy.codeHint}
@@ -785,7 +807,11 @@ function SignInForm() {
       <button
         type="submit"
         disabled={codeStatus === 'verifying' || code.length !== 6}
-        className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 active:scale-[0.99] transition-all duration-200 shadow-md shadow-teal-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+        className={`w-full py-3 px-4 rounded-xl font-bold text-xs text-white transition-all duration-200 shadow-md active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 ${
+          portalType === 'applicant'
+            ? 'bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 shadow-rose-900/20'
+            : 'bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 shadow-indigo-900/20'
+        }`}
       >
         {codeStatus === 'verifying' ? (
           <>
@@ -818,7 +844,9 @@ function SignInForm() {
             type="button"
             onClick={handleResendCode}
             disabled={cooldownSeconds > 0}
-            className="text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50 disabled:no-underline font-medium"
+            className={`hover:underline disabled:opacity-50 disabled:no-underline font-medium ${
+              portalType === 'applicant' ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'
+            }`}
           >
             {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
           </button>
@@ -980,13 +1008,13 @@ function SignInForm() {
       {/* Main Interactive Stage */}
       <div className="max-w-5xl w-full mx-auto flex flex-col items-center">
         {/* Interactive Segmented Switcher Tabs (Clicking triggers the smooth slide!) */}
-        <div className="mb-6 inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-[#121B2B] border border-slate-200 dark:border-slate-800/80 shadow-inner">
+        <div className="mb-6 inline-flex p-1 rounded-2xl bg-slate-100 dark:bg-[#0D1017] border border-slate-200/80 dark:border-white/10 shadow-inner">
           <button
             type="button"
             onClick={() => setPortalType('applicant')}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
               portalType === 'applicant'
-                ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
+                ? 'bg-white dark:bg-[#181E2C] text-rose-600 dark:text-rose-400 shadow-sm border border-slate-200/60 dark:border-white/10'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -1001,7 +1029,7 @@ function SignInForm() {
             onClick={() => setPortalType('staff')}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
               portalType === 'staff'
-                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
+                ? 'bg-white dark:bg-[#181E2C] text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-white/10'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -1014,7 +1042,7 @@ function SignInForm() {
 
         {/* Double Slider Card (Matches the reference animation perfectly) */}
         <div
-          className={`sliding-auth-card border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1522] shadow-2xl transition-all duration-300 ${
+          className={`sliding-auth-card border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#11141D] transition-all duration-300 ${
             portalType === 'staff' ? 'staff-mode-active' : ''
           }`}
         >
@@ -1026,8 +1054,8 @@ function SignInForm() {
           }`}>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                   {copy.applicantBadge}
                 </span>
                 <span className="text-[11px] text-slate-400 font-mono">PORTAL ACCESS</span>
@@ -1044,12 +1072,12 @@ function SignInForm() {
 
               {/* Demo Quick-Fill helper */}
               {step === 'credentials' && (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Quick Demo Test:</span>
                   <button
                     type="button"
                     onClick={() => fillCredentials('john.doe@example.com')}
-                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:bg-teal-500/10 border border-teal-500/30 transition-colors"
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/30 transition-colors"
                   >
                     {copy.demoCandidatePill}
                   </button>
@@ -1062,11 +1090,11 @@ function SignInForm() {
             </div>
 
             {/* Bottom Registration Link */}
-            <div className="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs text-slate-500 dark:text-slate-400">
+            <div className="pt-4 mt-6 border-t border-slate-100 dark:border-white/5 text-center text-xs text-slate-500 dark:text-slate-400">
               <span>{copy.noAccount} </span>
               <Link
                 href="/auth/signup?accountType=candidate"
-                className="font-bold text-teal-600 dark:text-teal-400 hover:underline"
+                className="font-bold text-rose-600 dark:text-rose-400 hover:underline"
               >
                 {copy.createAccount}
               </Link>
@@ -1099,7 +1127,7 @@ function SignInForm() {
 
               {/* Staff Demo Quick-Fill options */}
               {step === 'credentials' && (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Demo Staff:</span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -1126,7 +1154,7 @@ function SignInForm() {
             </div>
 
             {/* Bottom Staff Registration Link */}
-            <div className="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs text-slate-500 dark:text-slate-400">
+            <div className="pt-4 mt-6 border-t border-slate-100 dark:border-white/5 text-center text-xs text-slate-500 dark:text-slate-400">
               <span>{copy.noStaffAccount} </span>
               <Link
                 href="/auth/signup?accountType=worker"
@@ -1142,10 +1170,10 @@ function SignInForm() {
               Transforms horizontally between left and right!
              ────────────────────────────────────────────────────────── */}
           <div className="sliding-overlay-box hidden md:block" aria-hidden="true">
-            <div className="sliding-overlay-inner bg-gradient-to-br from-[#0F766E] via-[#0E7490] to-[#4338CA] text-white shadow-2xl relative">
+            <div className="sliding-overlay-inner bg-gradient-to-br from-[#E11D48] via-[#F43F5E] to-[#FB7185] dark:from-[#9F1239] dark:via-[#BE123C] dark:to-[#E11D48] text-white shadow-2xl relative">
               {/* Subtle background glow rings */}
               <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-rose-400/20 blur-3xl pointer-events-none" />
 
               {/* Left Overlay Content: Visible when Staff Form is active on right */}
               <div className="sliding-overlay-panel overlay-panel-left space-y-6">
@@ -1159,7 +1187,7 @@ function SignInForm() {
                   <h2 className="text-2xl font-black tracking-tight leading-tight">
                     {copy.staffOverlayTitle}
                   </h2>
-                  <p className="text-xs text-teal-100 leading-relaxed">
+                  <p className="text-xs text-rose-100 leading-relaxed">
                     {copy.staffOverlaySub}
                   </p>
                 </div>
@@ -1168,13 +1196,13 @@ function SignInForm() {
                   <button
                     type="button"
                     onClick={() => setPortalType('applicant')}
-                    className="border-2 border-white/90 text-white rounded-full px-7 py-2.5 font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-slate-900 active:scale-95 transition-all duration-300 shadow-xl"
+                    className="border-2 border-white/90 text-white rounded-full px-8 py-2.5 font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-slate-900 active:scale-95 transition-all duration-300 shadow-xl"
                   >
                     {copy.staffOverlayBtn}
                   </button>
                 </div>
 
-                <div className="pt-4 flex items-center justify-center gap-3 text-[10px] text-teal-100/90 font-mono">
+                <div className="pt-4 flex items-center justify-center gap-3 text-[10px] text-rose-100/90 font-mono">
                   <span>Track Progress</span>
                   <span>•</span>
                   <span>1-Click Apply</span>
@@ -1195,7 +1223,7 @@ function SignInForm() {
                   <h2 className="text-2xl font-black tracking-tight leading-tight">
                     {copy.applicantOverlayTitle}
                   </h2>
-                  <p className="text-xs text-indigo-100 leading-relaxed">
+                  <p className="text-xs text-rose-100 leading-relaxed">
                     {copy.applicantOverlaySub}
                   </p>
                 </div>
@@ -1204,13 +1232,13 @@ function SignInForm() {
                   <button
                     type="button"
                     onClick={() => setPortalType('staff')}
-                    className="border-2 border-white/90 text-white rounded-full px-7 py-2.5 font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-slate-900 active:scale-95 transition-all duration-300 shadow-xl"
+                    className="border-2 border-white/90 text-white rounded-full px-8 py-2.5 font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-slate-900 active:scale-95 transition-all duration-300 shadow-xl"
                   >
                     {copy.applicantOverlayBtn}
                   </button>
                 </div>
 
-                <div className="pt-4 flex items-center justify-center gap-3 text-[10px] text-indigo-100/90 font-mono">
+                <div className="pt-4 flex items-center justify-center gap-3 text-[10px] text-rose-100/90 font-mono">
                   <span>Structured Rubrics</span>
                   <span>•</span>
                   <span>Tamper-Evident Audit</span>
@@ -1224,14 +1252,14 @@ function SignInForm() {
 
         {/* Mobile Switcher Footer (Below card on mobile screens) */}
         <div className="md:hidden mt-4 w-full max-w-sm text-center">
-          <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+          <div className="p-3 rounded-2xl bg-slate-100 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400">
             {portalType === 'applicant' ? (
               <p>
                 Hiring or managing team pipelines?{' '}
                 <button
                   type="button"
                   onClick={() => setPortalType('staff')}
-                  className="font-bold text-teal-600 dark:text-teal-400 underline ml-1"
+                  className="font-bold text-rose-600 dark:text-rose-400 underline ml-1"
                 >
                   Switch to Staff Portal →
                 </button>

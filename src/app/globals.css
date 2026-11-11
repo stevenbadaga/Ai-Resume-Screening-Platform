@@ -12,7 +12,7 @@
    ambient light instead of heavy borders.
    ──────────────────────────────────────────────────────────────── */
 :root {
-  --background: #F8F9FD;
+  --background: #F8FAFC;
   --foreground: #0F172A;
   --muted: #64748B;
 
@@ -23,53 +23,55 @@
   --border: #E2E8F0;
   --border-strong: #CBD5E1;
 
-  --accent: #6366F1;
-  --accent-strong: #4F46E5;
-  --accent-2: #06B6D4;
-  --accent-soft: rgba(99, 102, 241, 0.08);
-  --accent-ring: rgba(99, 102, 241, 0.2);
+  --accent: #4F46E5;
+  --accent-strong: #4338CA;
+  --accent-2: #0284C7;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  --accent-ring: rgba(79, 70, 229, 0.2);
 
-  /* Aurora Cyber Luxe Brand Gradient */
-  --grad-accent: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #06B6D4 100%);
-  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.12));
+  /* Refined, cohesive artisan gradient */
+  --grad-accent: linear-gradient(135deg, #4338CA 0%, #4F46E5 50%, #6366F1 100%);
+  --grad-glow: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(99, 102, 241, 0.08));
 
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
-  --info: #06B6D4;
+  --info: #0284C7;
 
   /* Legacy aliases */
   --coral: var(--danger);
   --amber: var(--warning);
 
-  --shadow-color: 99 102 241;
+  --shadow-color: 79 70 229;
 }
 
 html.dark {
-  --background: #090A15;
-  --foreground: #F8FAFC;
-  --muted: #94A3B8;
+  /* Luxury Obsidian Slate (Linear / Raycast / Stripe craft) */
+  --background: #0B0D13;
+  --foreground: #F1F5F9;
+  --muted: #8E99AC;
 
-  --surface: #121324;
-  --surface-raised: #1A1C33;
-  --surface-muted: #222544;
+  --surface: #11141D;
+  --surface-raised: #181E2C;
+  --surface-muted: #0D1017;
 
-  --border: #232742;
-  --border-strong: #33395E;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
-  --accent: #818CF8;
-  --accent-strong: #A5B4FC;
-  --accent-2: #22D3EE;
-  --accent-soft: rgba(129, 140, 248, 0.14);
-  --accent-ring: rgba(129, 140, 248, 0.28);
+  --accent: #6366F1;
+  --accent-strong: #818CF8;
+  --accent-2: #38BDF8;
+  --accent-soft: rgba(99, 102, 241, 0.12);
+  --accent-ring: rgba(99, 102, 241, 0.28);
 
-  --grad-accent: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #06B6D4 100%);
-  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.2));
+  /* Refined, human-crafted brand gradient (cohesive electric iris, not AI rainbow) */
+  --grad-accent: linear-gradient(135deg, #4F46E5 0%, #6366F1 50%, #818CF8 100%);
+  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(129, 140, 248, 0.15));
 
-  --success: #34D399;
-  --warning: #FBBF24;
-  --danger: #F87171;
-  --info: #38BDF8;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
 
   --shadow-color: 0 0 0;
 }
@@ -88,11 +90,11 @@ body {
   letter-spacing: -0.006em;
   transition: background-color 0.2s ease, color 0.2s ease;
   min-height: 100vh;
-  /* Ambient aurora light: two soft brand glows anchored to the viewport. */
   background-color: var(--background);
-  background-image:
-    radial-gradient(55rem 55rem at 115% -12%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 62%),
-    radial-gradient(48rem 48rem at -18% 112%, color-mix(in srgb, var(--accent-2) 7%, transparent), transparent 62%);
+}
+
+html.dark body {
+  background-image: radial-gradient(80rem 40rem at 50% -10%, rgba(99, 102, 241, 0.04), transparent 70%);
   background-attachment: fixed;
 }
 
@@ -101,27 +103,21 @@ body {
 }
 
 @layer components {
-  /* Dashboard opening panel: luminous editorial header with a quiet orbital mark. */
+  /* Dashboard opening panel: luminous editorial header with clean craft */
   .dashboard-hero {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    min-height: 14rem;
-    padding: 1.65rem 1.8rem;
+    min-height: 12rem;
+    padding: 1.75rem 2rem;
     border: 1px solid var(--border);
     border-radius: 1.25rem;
-    background:
-      radial-gradient(ellipse at 84% 45%, var(--accent-soft), transparent 34%),
-      radial-gradient(ellipse at 72% 5%, var(--accent-ring), transparent 42%),
-      linear-gradient(118deg, var(--surface) 0%, var(--surface) 66%);
-    box-shadow: 0 18px 48px -32px var(--accent-ring);
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   }
   html.dark .dashboard-hero {
-    background:
-      radial-gradient(ellipse at 84% 45%, var(--accent-soft), transparent 34%),
-      radial-gradient(ellipse at 72% 5%, var(--accent-ring), transparent 42%),
-      linear-gradient(118deg, var(--surface-raised) 0%, var(--surface) 68%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 24px 60px -38px rgb(0 0 0 / 0.75);
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-raised) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 40px -20px rgba(0, 0, 0, 0.6);
   }
   .dashboard-hero-content { position: relative; z-index: 2; max-width: 40rem; }
   .dashboard-hero-mark {
@@ -699,11 +695,18 @@ body {
 .dark\:bg-\[\#101A20\],
 .dark\:bg-\[\#101A20\]\/70 { background-color: var(--surface-muted) !important; }
 .dark\:bg-\[\#0B0F19\] { background-color: var(--surface-raised) !important; }
+.dark\:bg-\[\#0F171D\],
+.dark\:bg-\[\#0F171D\]\/80,
+.dark\:bg-\[\#0F171D\]\/90 { background-color: var(--surface-muted) !important; }
 .bg-teal-50\/50 { background-color: var(--accent-soft) !important; }
 
 /* Old warm paper borders → token borders */
 .border-\[\#D8D2C6\] { border-color: var(--border) !important; }
-.dark\:border-\[\#30424A\] { border-color: var(--border) !important; }
+.dark\:border-\[\#30424A\],
+.dark\:border-\[\#30424A\]\/40,
+.dark\:border-\[\#30424A\]\/60 { border-color: var(--border) !important; }
+.dark\:border-\[\#1D2A33\] { border-color: var(--border) !important; }
+.dark\:divide-\[\#30424A\]\/60 { border-color: var(--border) !important; }
 
 /* Old hardcoded accent buttons → token accent */
 .bg-\[\#0F766E\] { background-color: var(--accent) !important; }
@@ -817,19 +820,19 @@ body {
   }
 }
 
-/* ── Cyber Aurora Utilities ─────────────────────────────────── */
+/* ── Modern Obsidian Glass Utilities ─────────────────────────────────── */
 .glass-card {
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
 }
 
 html.dark .glass-card {
-  background: rgba(18, 19, 36, 0.7);
+  background: rgba(17, 20, 29, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 40px -15px rgba(0, 0, 0, 0.7);
 }
 
 .text-gradient-aurora {
@@ -865,31 +868,27 @@ html.dark .glass-card {
 }
 
 .score-badge-high {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.12);
   color: #10B981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 html.dark .score-badge-high {
-  background: rgba(52, 211, 153, 0.15);
+  background: rgba(16, 185, 129, 0.14);
   color: #34D399;
-  border: 1px solid rgba(52, 211, 153, 0.35);
-  box-shadow: 0 0 14px rgba(52, 211, 153, 0.3);
+  border: 1px solid rgba(52, 211, 153, 0.25);
 }
 
 .score-badge-med {
-  background: rgba(6, 182, 212, 0.15);
-  color: #06B6D4;
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+  background: rgba(59, 130, 246, 0.12);
+  color: #3B82F6;
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 html.dark .score-badge-med {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  background: rgba(59, 130, 246, 0.14);
+  color: #60A5FA;
+  border: 1px solid rgba(96, 165, 250, 0.25);
 }
 
 /* Scrollbars tuned to each theme */
@@ -938,6 +937,11 @@ summary:focus-visible {
   max-width: 960px;
   min-height: 640px;
   border-radius: 28px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.15);
+}
+
+html.dark .sliding-auth-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 30px 70px -20px rgba(0, 0, 0, 0.85);
 }
 
 @media (min-width: 768px) {

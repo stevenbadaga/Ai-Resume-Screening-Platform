@@ -158,7 +158,7 @@ export default function SupportWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="px-3.5 py-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-2 text-xs font-semibold transition transform hover:scale-105"
+          className="px-3.5 py-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-xl shadow-indigo-500/20 flex items-center gap-2 text-xs font-semibold transition transform hover:scale-105 active:scale-95"
           title={t('copilot_title')}
         >
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,9 +169,9 @@ export default function SupportWidget() {
       )}
 
       {isOpen && (
-        <div className="w-84 sm:w-[420px] h-[520px] dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-150 text-xs">
+        <div className="w-84 sm:w-[420px] h-[520px] dark:bg-[#11141D] bg-white dark:border-white/10 border-slate-200 border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-150 text-xs">
           {/* Header */}
-          <div className="p-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white flex items-center justify-between shadow-xs">
+          <div className="p-3.5 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-md bg-white/20 flex items-center justify-center text-xs">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,13 +201,13 @@ export default function SupportWidget() {
           </div>
 
           {/* Quick Prompt Suggestions */}
-          <div className="p-2 dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-100 border-b flex items-center gap-1.5 overflow-x-auto text-[10px] scrollbar-none">
+          <div className="p-2 dark:bg-[#0D1017] bg-slate-50 dark:border-white/10 border-slate-100 border-b flex items-center gap-1.5 overflow-x-auto text-[10px] scrollbar-none">
             {quickPrompts.map((qp, idx) => (
               <button
                 key={idx}
                 onClick={() => sendQuery(qp.prompt)}
                 disabled={loading}
-                className="px-2 py-1 rounded-md dark:bg-slate-900 bg-white dark:hover:bg-slate-800 hover:bg-slate-100 border dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-700 font-medium whitespace-nowrap transition shrink-0"
+                className="px-2 py-1 rounded-md dark:bg-[#181E2C] bg-white dark:hover:bg-white/10 hover:bg-slate-100 border dark:border-white/10 border-slate-200 dark:text-slate-300 text-slate-700 font-medium whitespace-nowrap transition shrink-0"
               >
                 {qp.label}
               </button>

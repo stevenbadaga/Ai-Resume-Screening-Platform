@@ -31,8 +31,12 @@ export default async function SystemHealthPage() {
   if (!roleHasPermission(userRole, Permission.ViewAuditLog)) {
     return (
       <div className="max-w-xl mx-auto py-12 text-center space-y-4">
-        <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-2xl p-8 shadow-xl space-y-3">
-          <span className="text-3xl block">🩺</span>
+        <div className="dark:bg-[#11141D] bg-white dark:border-white/10 border-slate-200 border rounded-2xl p-8 shadow-xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center mx-auto shadow-xs">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
           <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-rose-950/80 bg-rose-50 dark:text-rose-300 text-rose-700 border dark:border-rose-800/80 border-rose-200">
             RESTRICTED OPERATIONS VIEW
           </span>
@@ -63,7 +67,7 @@ export default async function SystemHealthPage() {
     title: string,
     entries: Array<{ label: string; value: string; tone?: 'ok' | 'warn' | 'bad' | 'neutral' }>
   ) => (
-    <div key={title} className="dark:bg-[#0F171D] bg-white dark:border-[#1D2A33] border-slate-200 border rounded-xl p-4 space-y-2">
+    <div key={title} className="dark:bg-[#11141D] bg-white dark:border-white/10 border-slate-200 border rounded-xl p-4 space-y-2">
       <h2 className="text-sm font-bold dark:text-white text-slate-900">{title}</h2>
       <dl className="space-y-1">
         {entries.map((e) => (
@@ -104,7 +108,7 @@ export default async function SystemHealthPage() {
         </div>
         <Link
           href="/dashboard"
-          className="px-3 py-1.5 dark:bg-[#17242B] bg-white dark:border-[#30424A] border-slate-200 border rounded-lg text-xs font-medium dark:text-slate-300 text-slate-600 transition"
+          className="px-3 py-1.5 dark:bg-[#181E2C] bg-white dark:border-white/10 border-slate-200 border rounded-lg text-xs font-medium dark:text-slate-300 text-slate-600 transition"
         >
           &larr; Back to Dashboard
         </Link>

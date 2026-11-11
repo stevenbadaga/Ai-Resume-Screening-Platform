@@ -426,7 +426,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           }`}
         >
           <span>{t('tab_external_candidates').replace(/^📄\s*/, '')}</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-[#17242B] bg-slate-100 border dark:border-[#30424A] border-slate-200">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-[#181E2C] bg-slate-100 border dark:border-white/10 border-slate-200">
             {candidateAccounts.length}
           </span>
         </button>
