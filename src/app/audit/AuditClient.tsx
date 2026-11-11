@@ -51,7 +51,7 @@ export default function AuditClient({
   };
 
   const inputClass =
-    'dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500';
+    'dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2.5 py-1.5 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]';
 
   const getActorDisplay = (evt: any) => {
     if (evt.actor?.name) return evt.actor.name;
@@ -130,7 +130,7 @@ export default function AuditClient({
           />
           <button
             type="submit"
-            className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition"
+            className="px-2.5 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white rounded-lg text-xs font-semibold transition"
           >
             {t('btn_search')}
           </button>
@@ -192,7 +192,7 @@ export default function AuditClient({
                     {new Date(evt.timestamp).toLocaleString()}
                   </td>
                   <td className="p-3">
-                    <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold dark:bg-teal-950/80 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/80 border-teal-200 inline-block">
+                    <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)] inline-block">
                       {evt.action}
                     </span>
                   </td>
@@ -200,8 +200,8 @@ export default function AuditClient({
                     <div className="flex items-center gap-2">
                       <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold shrink-0 ${
                         isAutomated
-                          ? 'bg-teal-600/20 text-teal-400 border border-teal-500/30'
-                          : 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                          ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]'
+                          : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20'
                       }`}>
                         {isAutomated ? 'SYS' : (actorName[0]?.toUpperCase() || 'U')}
                       </div>

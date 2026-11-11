@@ -129,12 +129,12 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
       if (data.tempPassword) {
         body += `<div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 18px 0;">
           <p style="margin: 0 0 6px 0; font-size: 13px; color: #475569;"><strong>Temporary Sign-in Password:</strong></p>
-          <p style="margin: 0; font-size: 24px; letter-spacing: 3px; font-weight: 700; font-family: monospace; color: #0f766e; background: #ffffff; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-block;">${safe(data.tempPassword)}</p>
+          <p style="margin: 0; font-size: 24px; letter-spacing: 3px; font-weight: 700; font-family: monospace; color: #E11D48; background: #ffffff; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-block;">${safe(data.tempPassword)}</p>
         </div>`;
       }
       if (data.joinLink) {
         body += `<p style="margin: 22px 0 16px 0;">
-          <a href="${safe(data.joinLink)}" style="background-color: #0f766e; color: #ffffff; font-weight: 600; font-size: 14px; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block;">Sign In to Workspace &rarr;</a>
+          <a href="${safe(data.joinLink)}" style="background-color: #E11D48; color: #ffffff; font-weight: 600; font-size: 14px; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block;">Sign In to Workspace &rarr;</a>
         </p>`;
       }
       body += `<p style="font-size: 12px; color: #64748b; margin-top: 16px;">This temporary credential is for your first login only. You will be prompted to choose a permanent password immediately upon signing in.</p>`;
@@ -146,7 +146,7 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
       break;
     case 'EMAIL_VERIFICATION_CODE':
       body += `<p>Your verification code is:</p>
-        <p style="font-size: 32px; letter-spacing: 8px; font-weight: 700; font-family: monospace; color: #0f766e;">${safe(data.verificationCode)}</p>
+        <p style="font-size: 32px; letter-spacing: 8px; font-weight: 700; font-family: monospace; color: #E11D48;">${safe(data.verificationCode)}</p>
         <p>This code expires in 10 minutes and can be used once. Enter it on the
         verification screen to continue. If you did not request it, you can
         safely ignore this email.</p>`;
@@ -154,7 +154,7 @@ function renderEmailHtml(template: EmailTemplateType, data: EmailPayload['data']
   }
 
   return `<div style="font-family: sans-serif; padding: 24px; color: #1e293b; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
-    <h2 style="color: #4f46e5;">RecruitAI</h2>
+    <h2 style="color: #E11D48;">RecruitAI</h2>
     ${body}
     <p style="margin-top: 24px; font-size: 12px; color: #64748b;">Powered by RecruitAI.</p>
   </div>`;
@@ -312,7 +312,7 @@ export async function sendTransactionalEmail(
   const subject = SUBJECT_MAP[payload.template](payload.data);
   const html = customHtmlBody
     ? `<div style="font-family: sans-serif; padding: 24px; color: #1e293b; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
-    <h2 style="color: #4f46e5;">RecruitAI</h2>
+    <h2 style="color: #E11D48;">RecruitAI</h2>
     ${customHtmlBody}
     <p style="margin-top: 24px; font-size: 12px; color: #64748b;">Powered by RecruitAI.</p>
   </div>`

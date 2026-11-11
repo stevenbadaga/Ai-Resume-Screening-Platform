@@ -126,7 +126,7 @@ export default function CandidateProfileClient({
     return (
       <>
         {before}
-        <mark id="evidence-quote-anchor" className="bg-teal-500/30 text-teal-300 dark:text-teal-200 px-1 py-0.5 rounded font-bold ring-2 ring-teal-500 animate-pulse">
+        <mark id="evidence-quote-anchor" className="bg-[var(--accent-soft)] text-[var(--accent)] px-1 py-0.5 rounded font-bold ring-2 ring-[var(--accent)] animate-pulse">
           {match}
         </mark>
         {after}
@@ -506,7 +506,7 @@ export default function CandidateProfileClient({
               &larr; {t('nav_candidates')}
             </Link>
             <span className="dark:text-slate-600 text-slate-300">/</span>
-            <span className="font-mono text-[10px] text-teal-600 dark:text-teal-300 font-semibold">{t('eval_title')}</span>
+            <span className="font-mono text-[10px] text-[var(--accent)] font-semibold">{t('eval_title')}</span>
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
@@ -608,7 +608,7 @@ export default function CandidateProfileClient({
           {canSubmitScorecards && (isShortlisted || isInterviewing) && (
             <button
               onClick={() => setShowScorecardModal(true)}
-              className="btn btn-secondary btn-sm !text-xs font-bold text-teal-600 dark:text-teal-400"
+              className="btn btn-secondary btn-sm !text-xs font-bold text-[var(--accent)]"
               title="Submit structured scorecard evaluation"
             >
               <span>{t('btn_scorecard')}</span>
@@ -729,7 +729,7 @@ export default function CandidateProfileClient({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[
-          { label: t('match_score'), value: `${score}%`, tone: 'text-teal-700 dark:text-teal-300' },
+          { label: t('match_score'), value: `${score}%`, tone: 'text-[var(--accent)]' },
           { label: t('scored_criteria'), value: criteriaScores.length, tone: 'text-slate-900 dark:text-white' },
           { label: t('cprofile_status_label'), value: app.resumeDocument?.processingStatus || 'NOT_STARTED', tone: app.resumeDocument?.processingStatus === 'NEEDS_REVIEW' ? 'text-amber-600 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' },
           { label: t('stage_col'), value: app.stage || app.status || t('stage_ingested'), tone: 'text-sky-700 dark:text-sky-300' }
@@ -755,7 +755,7 @@ export default function CandidateProfileClient({
                   type="button"
                   onClick={() => setResumeViewTab('text')}
                   className={`px-2 py-0.5 rounded transition ${resumeViewTab === 'text'
-                      ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 font-bold shadow-xs'
+                      ? 'bg-white dark:bg-slate-800 text-[var(--accent)] font-bold shadow-xs'
                       : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                     }`}
                 >
@@ -765,7 +765,7 @@ export default function CandidateProfileClient({
                   type="button"
                   onClick={() => setResumeViewTab('original')}
                   className={`px-2 py-0.5 rounded transition ${resumeViewTab === 'original'
-                      ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 font-bold shadow-xs'
+                      ? 'bg-white dark:bg-slate-800 text-[var(--accent)] font-bold shadow-xs'
                       : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                     }`}
                 >
@@ -779,7 +779,7 @@ export default function CandidateProfileClient({
                 href={`/api/resumes/${app.resumeDocument?.id || app.id}?view=inline`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1"
+                className="text-[11px] font-semibold text-[var(--accent)] hover:underline flex items-center gap-1"
                 title="Open resume document in a new browser tab"
               >
                 <span>View Fullscreen</span>
@@ -805,13 +805,13 @@ export default function CandidateProfileClient({
               />
             </div>
           ) : (
-            <div className="dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A]/40 border-slate-200 border rounded-lg p-4 font-mono text-xs dark:text-slate-300 text-slate-800 leading-relaxed max-h-[580px] overflow-y-auto whitespace-pre-wrap selection:bg-teal-500/20">
+            <div className="dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A]/40 border-slate-200 border rounded-lg p-4 font-mono text-xs dark:text-slate-300 text-slate-800 leading-relaxed max-h-[580px] overflow-y-auto whitespace-pre-wrap selection:bg-[var(--accent-soft)]">
               {highlightedSnippet && (
-                <div className="mb-3 p-2.5 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-300 font-sans text-xs flex items-center justify-between">
+                <div className="mb-3 p-2.5 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent-ring)] text-[var(--accent)] font-sans text-xs flex items-center justify-between">
                   <span>Target Evidence: <em>"{highlightedSnippet}"</em></span>
                   <button
                     onClick={() => setHighlightedSnippet(null)}
-                    className="text-teal-400 hover:text-white font-bold ml-2 text-sm leading-none"
+                    className="text-[var(--accent)] hover:text-white font-bold ml-2 text-sm leading-none"
                     aria-label="Clear highlight"
                   >
                     &times;
@@ -931,7 +931,7 @@ export default function CandidateProfileClient({
                           {Number.isFinite(runScore) ? `${Math.round(runScore)}%` : '—'}
                         </span>
                         {idx === 0 && (
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/30">
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]">
                             {t('screening_history_latest')}
                           </span>
                         )}

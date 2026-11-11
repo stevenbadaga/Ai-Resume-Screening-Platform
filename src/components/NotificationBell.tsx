@@ -71,7 +71,7 @@ export default function NotificationBell() {
         </svg>
 
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-4 px-1 bg-indigo-600 text-white rounded-full text-[9px] font-extrabold flex items-center justify-center shadow-md shadow-indigo-500/40 animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-4 px-1 bg-[var(--accent)] text-white rounded-full text-[9px] font-extrabold flex items-center justify-center shadow-md shadow-rose-900/20 animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -102,7 +102,7 @@ export default function NotificationBell() {
                   key={n.id}
                   onClick={() => !n.isRead && markAsRead(n.id)}
                   className={`p-3 transition cursor-pointer ${
-                    !n.isRead ? 'dark:bg-indigo-950/20 bg-indigo-50/50' : 'dark:hover:bg-slate-900 hover:bg-slate-50'
+                    !n.isRead ? 'bg-[var(--accent-soft)]' : 'dark:hover:bg-slate-900 hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -116,7 +116,7 @@ export default function NotificationBell() {
                     <Link
                       href={n.link}
                       onClick={() => setIsOpen(false)}
-                      className="inline-block text-[10px] text-indigo-500 hover:underline font-semibold mt-1"
+                      className="inline-block text-[10px] text-[var(--accent)] hover:underline font-semibold mt-1"
                     >
                       {t('view_details') || 'View Details'} &rarr;
                     </Link>

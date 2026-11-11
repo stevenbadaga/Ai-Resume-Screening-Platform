@@ -96,8 +96,8 @@ function VerifyEmailPanel() {
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center py-8 px-4">
-      <div className="relative max-w-md w-full dark:bg-[#17242B]/95 bg-[#FFFDF8]/95 dark:border-[#30424A] border-[#D8D2C6] border rounded-2xl p-8 shadow-xl space-y-5 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[#0F766E] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-teal-900/20 ring-4 ring-teal-700/10">
+      <div className="relative max-w-md w-full bg-white dark:bg-[#11141D] border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 shadow-2xl space-y-5 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E11D48] via-[#F43F5E] to-[#FB7185] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-rose-900/20 ring-4 ring-rose-500/20">
           R
         </div>
 
@@ -107,7 +107,7 @@ function VerifyEmailPanel() {
 
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3 py-4">
-            <span className="w-6 h-6 rounded-full border-2 border-teal-600/30 border-t-teal-600 animate-spin" />
+            <span className="w-6 h-6 rounded-full border-2 border-rose-500/20 border-t-rose-500 animate-spin" />
             <p className="text-xs dark:text-slate-400 text-slate-500">{copy.verifying}</p>
           </div>
         )}
@@ -142,7 +142,7 @@ function VerifyEmailPanel() {
 
         <Link
           href="/auth/signin"
-          className="inline-block w-full py-2.5 bg-[#0F766E] hover:bg-[#115E59] text-white font-bold rounded-xl text-xs transition shadow-lg shadow-teal-900/20"
+          className="inline-block w-full py-2.5 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-rose-900/20"
         >
           {copy.goSignIn}
         </Link>

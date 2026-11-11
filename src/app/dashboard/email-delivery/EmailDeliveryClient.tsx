@@ -213,7 +213,7 @@ function RowFragment({
                 onRetry();
               }}
               disabled={retrying}
-              className="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+              className="mt-2 btn btn-primary px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50"
             >
               {retrying ? t('email_retrying') : t('btn_retry_delivery')}
             </button>

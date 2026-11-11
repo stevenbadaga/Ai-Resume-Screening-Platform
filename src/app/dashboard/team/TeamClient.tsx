@@ -322,7 +322,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
               {t('nav_team')}
             </h1>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold dark:bg-teal-950/60 bg-teal-50 dark:text-teal-300 text-teal-800 border dark:border-teal-800/50 border-teal-200">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]">
               {t('team_accounts_badge').replace('{count}', String(users.length))}
             </span>
           </div>
@@ -333,7 +333,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
 
         <button
           onClick={() => setShowInviteModal(true)}
-          className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto"
+          className="px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white font-semibold rounded-lg text-xs transition flex items-center gap-1 shadow-xs self-start sm:self-auto"
         >
           <span>+</span>
           <span>{t('btn_invite_member')}</span>
@@ -367,12 +367,12 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               value={claimDomain}
               onChange={(e) => setClaimDomain(e.target.value)}
               placeholder={t('team_domain_placeholder')}
-              className="flex-1 dark:bg-slate-950 bg-white dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-500"
+              className="flex-1 dark:bg-slate-950 bg-white dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)]"
             />
             <button
               onClick={handleStartClaim}
               disabled={claimBusy || !claimDomain.trim()}
-              className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition whitespace-nowrap"
+              className="px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition whitespace-nowrap"
             >
               {claimBusy ? t('team_btn_working') : t('team_btn_start_verification')}
             </button>
@@ -384,12 +384,12 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
             <p className="text-[10px] font-mono dark:text-slate-300 text-slate-700">
               {t('team_dns_step')}
             </p>
-            <p className="text-[11px] font-mono font-bold dark:text-teal-300 text-teal-700 break-all">{claimRecord.host}</p>
-            <p className="text-[11px] font-mono font-bold dark:text-teal-300 text-teal-700 break-all">{claimRecord.txt}</p>
+            <p className="text-[11px] font-mono font-bold text-[var(--accent)] break-all">{claimRecord.host}</p>
+            <p className="text-[11px] font-mono font-bold text-[var(--accent)] break-all">{claimRecord.txt}</p>
             <button
               onClick={handleVerifyClaim}
               disabled={claimBusy}
-              className="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition"
+              className="mt-1 px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] disabled:opacity-50 text-white font-semibold rounded-lg text-xs transition"
             >
               {claimBusy ? t('team_btn_checking_dns') : t('team_btn_verify_now')}
             </button>
@@ -407,12 +407,12 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           onClick={() => setActiveTab('staff')}
           className={`pb-2.5 px-3 flex items-center gap-2 transition border-b-2 ${
             activeTab === 'staff'
-              ? 'border-teal-500 text-teal-600 dark:text-teal-400 font-bold'
+              ? 'border-[var(--accent)] text-[var(--accent)] font-bold'
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <span>{t('tab_internal_staff').replace(/^🏢\s*/, '')}</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono dark:bg-teal-950 bg-teal-50 border dark:border-teal-800/60 border-teal-200">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]">
             {staffMembers.length}
           </span>
         </button>
@@ -421,7 +421,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
           onClick={() => setActiveTab('candidates')}
           className={`pb-2.5 px-3 flex items-center gap-2 transition border-b-2 ${
             activeTab === 'candidates'
-              ? 'border-teal-500 text-teal-600 dark:text-teal-400 font-bold'
+              ? 'border-[var(--accent)] text-[var(--accent)] font-bold'
               : 'border-transparent dark:text-slate-400 text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -435,7 +435,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
       {/* Notice Banner */}
       <div className="p-3 rounded-xl dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border flex items-center justify-between text-xs dark:text-slate-300 text-slate-700">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider text-[10px]">
+          <span className="font-semibold text-[var(--accent)] uppercase tracking-wider text-[10px]">
             {activeTab === 'staff' ? 'Workspace Staff' : 'External Applicants'}
           </span>
           <span className="text-slate-400 dark:text-slate-500">&bull;</span>
@@ -448,7 +448,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
         {activeTab === 'candidates' && (
           <Link
             href="/candidates"
-            className="px-2.5 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold text-[10px] shrink-0 ml-2 shadow-xs"
+            className="px-2.5 py-1 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white font-semibold text-[10px] shrink-0 ml-2 shadow-xs"
           >
             {t('nav_candidates')} &rarr;
           </Link>
@@ -488,7 +488,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                         <div
                           className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-mono font-bold ${
                             isStaff
-                              ? 'bg-teal-600/15 border border-teal-500/20 text-teal-600 dark:text-teal-400'
+                              ? 'bg-[var(--accent-soft)] border border-[var(--accent-ring)] text-[var(--accent)]'
                               : 'bg-emerald-600/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                           }`}
                         >
@@ -508,7 +508,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                           user.accessStatus === 'SUSPENDED'
                             ? 'dark:bg-rose-950/80 bg-rose-50 dark:text-rose-300 text-rose-700 border dark:border-rose-800/80 border-rose-200'
                             : isStaff
-                            ? 'dark:bg-teal-950/80 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/80 border-teal-200'
+                            ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]'
                             : 'dark:bg-emerald-950/60 bg-emerald-50 dark:text-emerald-300 text-emerald-800 border dark:border-emerald-800/60 border-emerald-200'
                         }`}
                       >
@@ -542,7 +542,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                           )}
                           <button
                             onClick={() => handleOpenEdit(user)}
-                            className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
+                            className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-[var(--accent)] hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
                           >
                             {t('btn_edit_role')}
                           </button>
@@ -569,13 +569,13 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href="/candidates"
-                            className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-teal-700 hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
+                            className="px-2.5 py-1 dark:bg-[#0F171D] bg-slate-100 hover:bg-[var(--accent)] hover:text-white dark:border-[#30424A] border-slate-200 border dark:text-slate-300 text-slate-700 rounded text-xs font-semibold transition"
                           >
                             {t('team_view_applications')} &rarr;
                           </Link>
                           <button
                             onClick={() => handleOpenEdit(user)}
-                            className="px-2 py-1 text-[10px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 font-semibold"
+                            className="px-2 py-1 text-[10px] text-slate-400 hover:text-[var(--accent)] font-semibold"
                             title={t('team_promote_title')}
                           >
                             {t('promote_btn')}
@@ -618,7 +618,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-teal-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-[var(--accent)]"
                 >
                   <option value="Admin">{t('team_role_admin')}</option>
                   <option value="Recruiter">{t('team_role_recruiter')}</option>
@@ -640,7 +640,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 <button
                   type="submit"
                   disabled={savingRole}
-                  className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs"
+                  className="px-4 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white font-semibold rounded-lg shadow-xs"
                 >
                   {savingRole ? t('loading') : t('confirm')}
                 </button>
@@ -654,7 +654,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                   <span>{key}</span>
                 </label>)}
               </div>
-              <button type="button" onClick={handleSavePermissions} disabled={savingPermissions} className="px-3 py-1.5 bg-teal-700 text-white rounded-lg font-semibold">{savingPermissions ? t('loading') : 'Save permissions'}</button>
+              <button type="button" onClick={handleSavePermissions} disabled={savingPermissions} className="px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white rounded-lg font-semibold">{savingPermissions ? t('loading') : 'Save permissions'}</button>
             </div>
           </div>
         </div>
@@ -683,7 +683,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   placeholder={t('team_full_name_placeholder')}
-                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -695,7 +695,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder={t('team_work_email_placeholder')}
-                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-teal-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -704,7 +704,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-teal-500"
+                  className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-[var(--accent)]"
                 >
                   <option value="Admin">Admin</option>
                   <option value="Recruiter">Recruiter</option>
@@ -735,7 +735,7 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                 <button
                   type="submit"
                   disabled={inviting}
-                  className="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-semibold rounded-lg shadow-xs"
+                  className="px-4 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white font-semibold rounded-lg shadow-xs"
                 >
                   {inviting ? t('loading') : t('team_send_invite')}
                 </button>

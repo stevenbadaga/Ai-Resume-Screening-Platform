@@ -46,9 +46,9 @@ export default function MyApplicationsClient({
     if (s === 'WITHDRAWN') return { step: 0, label: 'Withdrawn', tone: 'text-slate-400', isTerminal: true };
     if (s === 'OFFERED' || s === 'HIRED') return { step: 4, label: 'Offer Received', tone: 'text-emerald-500' };
     if (s.includes('INTERVIEW')) return { step: 3, label: 'Interview Scheduled', tone: 'text-sky-500' };
-    if (s === 'SHORTLISTED') return { step: 2, label: 'Shortlisted by Recruiter', tone: 'text-teal-500' };
+    if (s === 'SHORTLISTED') return { step: 2, label: 'Shortlisted by Recruiter', tone: 'text-[var(--accent)]' };
     if (s === 'SCREENING' || s === 'NEEDS_REVIEW') return { step: 1, label: 'Under AI & Staff Review', tone: 'text-amber-500' };
-    return { step: 0, label: 'Application Received', tone: 'text-teal-500' };
+    return { step: 0, label: 'Application Received', tone: 'text-[var(--accent)]' };
   };
 
   const filteredApplications = initialApplications.filter((app) => {
@@ -292,7 +292,7 @@ export default function MyApplicationsClient({
                       <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-1 bg-[var(--border)] rounded-full -z-0" />
                       {/* Active progress fill */}
                       <div
-                        className="absolute top-1/2 left-4 -translate-y-1/2 h-1 bg-gradient-to-r from-teal-500 to-[var(--accent)] rounded-full transition-all duration-500 -z-0"
+                        className="absolute top-1/2 left-4 -translate-y-1/2 h-1 bg-[var(--grad-accent)] rounded-full transition-all duration-500 -z-0"
                         style={{
                           width: `${Math.min(100, Math.max(15, (milestone.step / 4) * 100))}%`,
                         }}
@@ -312,7 +312,7 @@ export default function MyApplicationsClient({
                               key={s.step}
                               className={`flex flex-col items-center text-center p-2 rounded-xl border backdrop-blur-sm transition-all ${
                                 isDone
-                                  ? 'bg-[var(--surface)] border-teal-500/40 text-teal-600 dark:text-teal-400 font-bold shadow-xs'
+                                  ? 'bg-[var(--surface)] border-[var(--accent-ring)] text-[var(--accent)] font-bold shadow-xs'
                                   : isCurrent
                                   ? 'bg-[var(--surface)] border-[var(--accent)] ring-2 ring-[var(--accent)]/30 text-[var(--foreground)] font-bold shadow-sm'
                                   : 'bg-[var(--surface-muted)]/60 border-[var(--border)] text-[var(--muted)] opacity-70'
@@ -321,7 +321,7 @@ export default function MyApplicationsClient({
                               <div className="flex items-center gap-1.5 mb-0.5">
                                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${
                                   isDone
-                                    ? 'bg-teal-500 text-white'
+                                    ? 'bg-[var(--accent)] text-white'
                                     : isCurrent
                                     ? 'bg-[var(--accent)] text-white animate-pulse'
                                     : 'bg-[var(--border)] text-[var(--muted)]'

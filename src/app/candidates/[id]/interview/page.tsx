@@ -82,7 +82,7 @@ export default function ScheduleInterviewPage() {
 
       <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6 backdrop-blur-xl">
         <div>
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-800/80">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]">
             {t('interview_badge')}
           </span>
           <h1 className="text-2xl font-extrabold text-white tracking-tight mt-2">
@@ -125,7 +125,7 @@ export default function ScheduleInterviewPage() {
                 required
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -137,7 +137,7 @@ export default function ScheduleInterviewPage() {
                 <select
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 font-bold"
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[var(--accent)] font-bold"
                 >
                   <option value={30}>{t('interview_30')}</option>
                   <option value={45}>{t('interview_45')}</option>
@@ -152,7 +152,7 @@ export default function ScheduleInterviewPage() {
                 <select
                   value={meetingType}
                   onChange={(e) => setMeetingType(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 font-bold"
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[var(--accent)] font-bold"
                 >
                   <option value="Google Meet">{t('interview_google_meet')}</option>
                   <option value="Zoom">{t('interview_zoom')}</option>
@@ -164,7 +164,7 @@ export default function ScheduleInterviewPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+              className="w-full py-3.5 btn btn-primary !text-xs disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

@@ -158,7 +158,7 @@ export default function SupportWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="px-3.5 py-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-xl shadow-indigo-500/20 flex items-center gap-2 text-xs font-semibold transition transform hover:scale-105 active:scale-95"
+          className="px-3.5 py-2.5 rounded-full bg-[var(--grad-accent)] hover:opacity-95 text-white shadow-xl shadow-rose-900/20 flex items-center gap-2 text-xs font-semibold transition transform hover:scale-105 active:scale-95"
           title={t('copilot_title')}
         >
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,7 +171,7 @@ export default function SupportWidget() {
       {isOpen && (
         <div className="w-84 sm:w-[420px] h-[520px] dark:bg-[#11141D] bg-white dark:border-white/10 border-slate-200 border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-150 text-xs">
           {/* Header */}
-          <div className="p-3.5 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white flex items-center justify-between shadow-xs">
+          <div className="p-3.5 bg-[var(--grad-accent)] text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-md bg-white/20 flex items-center justify-center text-xs">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,7 +180,7 @@ export default function SupportWidget() {
               </div>
               <div>
                 <h3 className="font-bold text-xs leading-none">{t('copilot_title')}</h3>
-                <span className="text-[9px] text-indigo-100 font-mono">{t('copilot_subtitle')}</span>
+                <span className="text-[9px] text-rose-100 font-mono">{t('copilot_subtitle')}</span>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
@@ -226,7 +226,7 @@ export default function SupportWidget() {
                 >
                   <div
                     className={`p-3 rounded-xl max-w-[90%] leading-relaxed whitespace-pre-wrap ${m.role === 'user'
-                        ? 'bg-indigo-600 text-white rounded-br-none text-xs font-medium'
+                        ? 'bg-[var(--accent)] text-white rounded-br-none text-xs font-medium'
                         : 'dark:bg-slate-900 bg-slate-100 dark:text-slate-200 text-slate-800 border dark:border-slate-800 border-slate-200 rounded-bl-none text-xs'
                       }`}
                   >
@@ -255,7 +255,7 @@ export default function SupportWidget() {
                             key={actIdx}
                             href={act.href}
                             onClick={() => setIsOpen(false)}
-                            className="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[10px] transition shadow-xs"
+                            className="btn btn-primary !py-1 !px-2.5 !text-[10px]"
                           >
                             <span>{act.title} &rarr;</span>
                           </Link>
@@ -284,9 +284,9 @@ export default function SupportWidget() {
 
             {loading && (
               <div className="flex items-center gap-1.5 p-2.5 rounded-lg dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-500 text-[11px] w-fit">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce delay-100"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce delay-200"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-bounce"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-bounce delay-100"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-bounce delay-200"></span>
                 <span className="ml-1 font-mono text-[10px]">{t('copilot_thinking')}</span>
               </div>
             )}
@@ -301,12 +301,12 @@ export default function SupportWidget() {
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('copilot_input_placeholder')}
               aria-label={t('copilot_input_label')}
-              className="flex-1 dark:bg-slate-900 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-xs"
+              className="flex-1 dark:bg-slate-900 bg-slate-50 border dark:border-slate-800 border-slate-200 rounded-lg px-3 py-1.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[var(--accent)] text-xs"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg font-semibold transition text-xs shadow-xs"
+              className="btn btn-primary !py-1.5 !px-3.5 !text-xs disabled:opacity-50"
             >
               {t('copilot_ask_btn')}
             </button>

@@ -26,7 +26,7 @@ export default function CompareRestricted() {
         <div className="pt-4 flex items-center justify-center gap-3">
           <Link
             href="/dashboard"
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition"
+            className="px-5 py-2.5 bg-[var(--accent)] hover:opacity-90 text-white font-bold rounded-xl text-xs transition shadow-sm"
           >
             {t('compare_restricted_cta')} &rarr;
           </Link>

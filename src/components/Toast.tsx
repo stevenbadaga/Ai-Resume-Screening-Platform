@@ -58,7 +58,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       case 'info':
       default:
         return (
-          <svg className="w-4 h-4 shrink-0 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 shrink-0 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
@@ -75,7 +75,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         return 'dark:bg-slate-900/95 bg-white border-amber-500/50 text-amber-600 dark:text-amber-400';
       case 'info':
       default:
-        return 'dark:bg-slate-900/95 bg-white border-indigo-500/50 text-indigo-600 dark:text-indigo-400';
+        return 'dark:bg-slate-900/95 bg-white border-[var(--accent)]/40 text-[var(--accent)]';
     }
   };
 

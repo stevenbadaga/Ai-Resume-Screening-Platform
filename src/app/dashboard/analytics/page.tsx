@@ -33,7 +33,7 @@ export default async function AnalyticsPage() {
     return (
       <div className="max-w-xl mx-auto py-12 text-center space-y-4">
         <div className="dark:bg-[#0B0F19] bg-white dark:border-slate-800 border-slate-200 border rounded-2xl p-8 shadow-xl space-y-3">
-          <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto text-teal-600 dark:text-teal-400">
+          <div className="w-12 h-12 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-ring)] flex items-center justify-center mx-auto text-[var(--accent)]">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>

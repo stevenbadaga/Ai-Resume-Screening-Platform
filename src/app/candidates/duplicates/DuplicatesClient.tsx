@@ -169,7 +169,7 @@ export default function DuplicatesClient({
                 <div className="flex items-start justify-between gap-3 pb-3 border-b border-[var(--border)]">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded bg-teal-500/15 border border-teal-500/30 text-teal-600 dark:text-teal-400 font-mono text-[10px] font-bold flex items-center justify-center">
+                      <span className="w-5 h-5 rounded bg-[var(--accent-soft)] border border-[var(--accent-ring)] text-[var(--accent)] font-mono text-[10px] font-bold flex items-center justify-center">
                         #{idx + 1}
                       </span>
                       <h3 className="font-bold text-[var(--foreground)] text-sm">{dup.email}</h3>
@@ -298,7 +298,7 @@ export default function DuplicatesClient({
                     All {confirmModalData.candidates.reduce((a: number, c: any) => a + (c.applications?.length || 0), 0)} application histories, screening runs, and scorecards will be re-linked to the primary profile.
                   </li>
                   <li>
-                    Duplicate candidate identity rows will be cleanly removed, and an audited event (<code className="font-mono text-teal-600">CANDIDATES_MERGED</code>) will be recorded.
+                    Duplicate candidate identity rows will be cleanly removed, and an audited event (<code className="font-mono text-[var(--accent)]">CANDIDATES_MERGED</code>) will be recorded.
                   </li>
                 </ul>
               </div>

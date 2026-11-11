@@ -133,7 +133,7 @@ export default function CompareClient({
               {applications.length} {t('compare_candidates_count') || 'Candidates Selected'}
             </span>
             {canonicalCriteria.length > 0 && (
-              <span className="chip text-[11px] font-mono text-teal-600 dark:text-teal-400 border-teal-500/30">
+              <span className="chip text-[11px] font-mono text-[var(--accent)] border-[var(--accent-ring)]">
                 {canonicalCriteria.length} {t('compare_approved_criteria') || 'Approved Criteria'}
               </span>
             )}
@@ -610,7 +610,7 @@ export default function CompareClient({
 
                                   {/* Reviewer Override / Correction (§6.5) */}
                                   {reviewerCorrection && (
-                                    <div className="text-[10px] bg-teal-500/10 border border-teal-500/30 p-1.5 rounded text-teal-700 dark:text-teal-300">
+                                    <div className="text-[10px] bg-[var(--accent-soft)] border border-[var(--accent-ring)] p-1.5 rounded text-[var(--accent)]">
                                       <strong>Recruiter Note:</strong> {reviewerCorrection}
                                     </div>
                                   )}
@@ -668,7 +668,7 @@ export default function CompareClient({
                             {skills.map((skill, sIdx) => (
                               <span
                                 key={sIdx}
-                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20"
+                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]"
                               >
                                 {skill}
                               </span>

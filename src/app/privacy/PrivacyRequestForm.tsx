@@ -25,7 +25,7 @@ interface RequestRow {
 }
 
 const inputClass =
-  'w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-teal-500';
+  'w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[var(--accent)]';
 
 export default function PrivacyRequestForm() {
   const { t } = useLanguage();
@@ -102,7 +102,7 @@ export default function PrivacyRequestForm() {
               key={r.value}
               className={`cursor-pointer rounded-lg border px-3 py-2 text-xs font-semibold transition ${
                 requestType === r.value
-                  ? 'dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 dark:border-teal-800/60 border-teal-200'
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--accent-ring)]'
                   : 'dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-600'
               }`}
             >
@@ -143,13 +143,13 @@ export default function PrivacyRequestForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+          className="btn btn-primary text-xs font-bold disabled:opacity-50"
         >
           {submitting ? t('privacy_submitting') : t('privacy_submit_request')}
         </button>
 
         {message && (
-          <p className="text-xs dark:text-teal-300 text-teal-700" role="status">
+          <p className="text-xs text-[var(--accent)] font-medium" role="status">
             {message}
           </p>
         )}

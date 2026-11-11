@@ -38,7 +38,7 @@ export default async function TeamPage() {
           <div className="pt-2">
             <Link
               href="/dashboard"
-              className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg text-xs transition"
+              className="btn btn-primary px-4 py-1.5 font-medium rounded-lg text-xs transition shadow-sm"
             >
               Return to Dashboard &rarr;
             </Link>

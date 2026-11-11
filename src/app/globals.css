@@ -3,35 +3,34 @@
 @tailwind utilities;
 
 /* ────────────────────────────────────────────────────────────────
-   RecruitAI design tokens — "Aurora" identity.
+   RecruitAI design tokens — "Pinterest Sunset Rose" craft identity.
 
-   One brand idea everywhere: an electric indigo→violet gradient
-   ("the aurora") on calm, violet-tinted neutrals. Light mode is a
-   luminous porcelain workspace; dark mode is deep ink with glowing
-   accents. Depth comes from layered, violet-tinted shadows and soft
-   ambient light instead of heavy borders.
+   One unified, world-class brand palette across every screen:
+   A vibrant, warm Sunset Rose / Coral brand gradient on calm,
+   high-craft porcelain neutrals (light mode) and luxury obsidian
+   slate with radiant, luminous rose highlights (dark mode).
    ──────────────────────────────────────────────────────────────── */
 :root {
-  --background: #F8FAFC;
-  --foreground: #0F172A;
-  --muted: #64748B;
+  --background: #FDFBF9;
+  --foreground: #18181B;
+  --muted: #71717A;
 
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-muted: #F1F5F9;
+  --surface-muted: #F5F2EE;
 
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --border: #E5E0D8;
+  --border-strong: #CDC7B9;
 
-  --accent: #4F46E5;
-  --accent-strong: #4338CA;
-  --accent-2: #0284C7;
-  --accent-soft: rgba(79, 70, 229, 0.08);
-  --accent-ring: rgba(79, 70, 229, 0.2);
+  --accent: #E11D48;
+  --accent-strong: #BE123C;
+  --accent-2: #F97316;
+  --accent-soft: rgba(225, 29, 72, 0.08);
+  --accent-ring: rgba(225, 29, 72, 0.22);
 
-  /* Refined, cohesive artisan gradient */
-  --grad-accent: linear-gradient(135deg, #4338CA 0%, #4F46E5 50%, #6366F1 100%);
-  --grad-glow: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(99, 102, 241, 0.08));
+  /* Refined, cohesive Pinterest Sunset Rose artisan gradient */
+  --grad-accent: linear-gradient(135deg, #BE123C 0%, #E11D48 50%, #FB7185 100%);
+  --grad-glow: linear-gradient(135deg, rgba(225, 29, 72, 0.12), rgba(251, 113, 133, 0.08));
 
   --success: #10B981;
   --warning: #F59E0B;
@@ -39,39 +38,39 @@
   --info: #0284C7;
 
   /* Legacy aliases */
-  --coral: var(--danger);
+  --coral: var(--accent);
   --amber: var(--warning);
 
-  --shadow-color: 79 70 229;
+  --shadow-color: 225 29 72;
 }
 
 html.dark {
-  /* Luxury Obsidian Slate (Linear / Raycast / Stripe craft) */
+  /* Luxury Obsidian Slate with Radiant Sunset Rose highlights */
   --background: #0B0D13;
-  --foreground: #F1F5F9;
-  --muted: #8E99AC;
+  --foreground: #F8FAFC;
+  --muted: #94A3B8;
 
-  --surface: #11141D;
-  --surface-raised: #181E2C;
-  --surface-muted: #0D1017;
+  --surface: #111520;
+  --surface-raised: #161C2C;
+  --surface-muted: #0D111A;
 
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
 
-  --accent: #6366F1;
-  --accent-strong: #818CF8;
-  --accent-2: #38BDF8;
-  --accent-soft: rgba(99, 102, 241, 0.12);
-  --accent-ring: rgba(99, 102, 241, 0.28);
+  --accent: #F43F5E;
+  --accent-strong: #FB7185;
+  --accent-2: #FB923C;
+  --accent-soft: rgba(244, 63, 94, 0.12);
+  --accent-ring: rgba(244, 63, 94, 0.28);
 
-  /* Refined, human-crafted brand gradient (cohesive electric iris, not AI rainbow) */
-  --grad-accent: linear-gradient(135deg, #4F46E5 0%, #6366F1 50%, #818CF8 100%);
-  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(129, 140, 248, 0.15));
+  /* Refined, luminous brand gradient */
+  --grad-accent: linear-gradient(135deg, #E11D48 0%, #F43F5E 50%, #FB7185 100%);
+  --grad-glow: linear-gradient(135deg, rgba(244, 63, 94, 0.22), rgba(251, 113, 133, 0.14));
 
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
-  --info: #3B82F6;
+  --info: #38BDF8;
 
   --shadow-color: 0 0 0;
 }
@@ -94,12 +93,12 @@ body {
 }
 
 html.dark body {
-  background-image: radial-gradient(80rem 40rem at 50% -10%, rgba(99, 102, 241, 0.04), transparent 70%);
+  background-image: radial-gradient(80rem 40rem at 50% -10%, rgba(244, 63, 94, 0.05), transparent 70%);
   background-attachment: fixed;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 @layer components {
@@ -722,15 +721,24 @@ html.dark body {
 /* Dark text on gradient tiles would vanish — brand tiles are white-label. */
 .dark\:text-\[\#0B0F14\] { color: #FFFFFF !important; }
 
-/* Legacy indigo/violet accents → the accent token */
-.bg-indigo-600 { background-color: var(--accent) !important; }
-.hover\:bg-indigo-500:hover { background-color: var(--accent-strong) !important; }
-.hover\:bg-indigo-700:hover { background-color: var(--accent-strong) !important; }
-.text-indigo-600, .text-indigo-500, .text-indigo-400 { color: var(--accent) !important; }
-.dark\:text-indigo-400, .dark\:text-indigo-300 { color: var(--accent) !important; }
-.border-indigo-200, .border-indigo-500, .dark\:border-indigo-500\/20 { border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important; }
+/* Legacy indigo/violet/teal accents → unified Sunset Rose accent token */
+.bg-indigo-600, .bg-teal-600, .bg-teal-700, .dark\:bg-teal-600 { background-color: var(--accent) !important; }
+.hover\:bg-indigo-500:hover, .hover\:bg-indigo-700:hover, .hover\:bg-teal-800:hover, .dark\:hover\:bg-teal-500:hover { background-color: var(--accent-strong) !important; }
+.text-indigo-600, .text-indigo-500, .text-indigo-400, .dark\:text-indigo-400, .dark\:text-indigo-300,
+.text-teal-600, .text-teal-700, .dark\:text-teal-300, .dark\:text-teal-400 { color: var(--accent) !important; }
+.border-indigo-200, .border-indigo-500, .dark\:border-indigo-500\/20,
+.border-teal-500, .border-teal-500\/30, .border-teal-500\/40, .dark\:border-teal-800\/60, .border-teal-200, .dark\:border-teal-800 {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important;
+}
 .bg-violet-600 { background-color: var(--accent-strong) !important; }
-/* Legacy indigo→violet gradients become the full aurora brand gradient. */
+
+/* Focus states */
+.focus\:border-indigo-500:focus, .focus\:border-teal-500:focus { border-color: var(--accent) !important; }
+.focus\:ring-indigo-500\/10:focus, .focus\:ring-indigo-500\/20:focus, .focus\:ring-teal-500\/20:focus {
+  --tw-ring-color: var(--accent-ring) !important;
+}
+
+/* Legacy gradients become the cohesive brand gradient */
 .bg-gradient-to-r.from-indigo-600,
 .bg-gradient-to-br.from-indigo-600,
 .bg-gradient-to-l.from-indigo-600 {
@@ -740,18 +748,20 @@ html.dark body {
 .to-violet-600 { --tw-gradient-to: var(--accent-strong) var(--tw-gradient-to-position) !important; }
 .from-indigo-500 { --tw-gradient-from: var(--accent-strong) var(--tw-gradient-from-position) !important; }
 .to-violet-500 { --tw-gradient-to: var(--accent) var(--tw-gradient-to-position) !important; }
-.bg-indigo-500\/10, .bg-indigo-500\/20 { background-color: var(--accent-soft) !important; }
+.bg-indigo-500\/10, .bg-indigo-500\/20,
+.bg-teal-500\/10, .bg-teal-950\/50, .bg-teal-950\/60, .bg-teal-950\/70,
+.dark\:bg-teal-950\/50, .dark\:bg-teal-950\/60, .dark\:bg-teal-950\/70,
+.dark\:bg-teal-950, .dark\:bg-teal-950\/80, .bg-teal-50 {
+  background-color: var(--accent-soft) !important;
+}
+.shadow-indigo-900\/20, .shadow-indigo-500\/20, .shadow-indigo-500\/40, .shadow-teal-900\/20 {
+  box-shadow: 0 8px 24px -6px var(--accent-ring) !important;
+}
+.ring-teal-700\/10, .ring-indigo-700\/10 {
+  --tw-ring-color: var(--accent-ring) !important;
+}
 
-/* Legacy rose/red accents → danger token */
-.bg-rose-950\/80 { background-color: color-mix(in srgb, var(--danger) 16%, var(--surface)) !important; }
-.bg-rose-950\/40, .bg-rose-950\/60 { background-color: color-mix(in srgb, var(--danger) 10%, var(--surface)) !important; }
-.bg-rose-50 { background-color: color-mix(in srgb, var(--danger) 7%, var(--surface)) !important; }
-.dark\:bg-rose-950\/60 { background-color: color-mix(in srgb, var(--danger) 10%, var(--surface)) !important; }
-.border-rose-300, .dark\:border-rose-800, .border-rose-800\/60 { border-color: color-mix(in srgb, var(--danger) 35%, transparent) !important; }
-.text-rose-800, .dark\:text-rose-200 { color: var(--danger) !important; }
-.text-rose-300, .text-rose-400, .text-rose-500 { color: var(--danger) !important; }
-
-/* Legacy emerald/amber semantic colors → tokens */
+/* Semantic success & warning tokens */
 .text-emerald-500, .text-emerald-600, .dark\:text-emerald-400, .text-emerald-700, .dark\:text-emerald-300 { color: var(--success) !important; }
 .border-emerald-500\/40, .border-emerald-200, .dark\:border-emerald-400\/20 { border-color: color-mix(in srgb, var(--success) 35%, transparent) !important; }
 .bg-emerald-50, .dark\:bg-emerald-400\/10 { background-color: color-mix(in srgb, var(--success) 8%, var(--surface)) !important; }
@@ -759,11 +769,6 @@ html.dark body {
 .text-amber-500, .text-amber-600, .dark\:text-amber-400, .dark\:text-amber-200, .text-amber-200 { color: var(--warning) !important; }
 .bg-amber-950\/70, .bg-amber-800 { background-color: color-mix(in srgb, var(--warning) 12%, var(--surface)) !important; }
 .border-amber-800 { border-color: color-mix(in srgb, var(--warning) 35%, transparent) !important; }
-.text-teal-600, .text-teal-700, .dark\:text-teal-300, .dark\:text-teal-400 { color: var(--accent) !important; }
-.bg-teal-700, .dark\:bg-teal-600, .bg-teal-600 { background-color: var(--accent) !important; }
-.hover\:bg-teal-800:hover, .dark\:hover\:bg-teal-500:hover { background-color: var(--accent-strong) !important; }
-.bg-teal-500\/10, .bg-teal-950\/50, .bg-teal-950\/60, .bg-teal-950\/70, .dark\:bg-teal-950\/50, .dark\:bg-teal-950\/60, .dark\:bg-teal-950\/70 { background-color: var(--accent-soft) !important; }
-.border-teal-500\/30, .border-teal-500\/40, .dark\:border-teal-800\/60, .border-teal-200, .dark\:border-teal-800 { border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important; }
 .accent-teal-600 { accent-color: var(--accent) !important; }
 .text-purple-500, .dark\:text-purple-400 { color: var(--accent) !important; }
 .text-sky-500, .text-sky-700, .dark\:text-sky-300 { color: var(--info) !important; }

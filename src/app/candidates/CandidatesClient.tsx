@@ -698,7 +698,7 @@ function FilterBar({ filters }: { filters: FilterFacets }) {
             type="checkbox"
             checked={current.archived === 'true'}
             onChange={(e) => setParam('archived', e.target.checked ? 'true' : 'ALL')}
-            className="accent-teal-600"
+            className="accent-[var(--accent)]"
           />
           {t('filter_show_archived')}
         </label>

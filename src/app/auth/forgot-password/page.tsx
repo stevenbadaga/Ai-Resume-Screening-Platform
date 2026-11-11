@@ -39,10 +39,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
-      <div className="w-full max-w-md dark:bg-slate-900/80 bg-white rounded-3xl shadow-2xl border dark:border-slate-800 border-slate-200 p-8 space-y-6">
+    <div className="min-h-[80vh] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white dark:bg-[#11141D] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-white/10 p-8 space-y-6">
         <div className="text-center space-y-3 pt-1">
-          <div className="w-14 h-14 rounded-2xl bg-[#0F766E] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-teal-900/20 ring-4 ring-teal-700/10">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E11D48] via-[#F43F5E] to-[#FB7185] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-rose-900/20 ring-4 ring-rose-500/20">
             R
           </div>
           <h1 className="text-2xl font-extrabold dark:text-white text-slate-900 tracking-tight">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
               </div>
             )}
             <div className="text-center">
-              <Link href="/auth/signin" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+              <Link href="/auth/signin" className="text-rose-600 dark:text-rose-400 font-bold hover:underline">
                 Back to sign in
               </Link>
             </div>
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@codafriqa.rw"
-                className="w-full dark:bg-slate-950/80 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-xl px-4 py-2.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                className="w-full dark:bg-[#0D1017] bg-slate-50 dark:border-white/10 border-slate-200 border rounded-xl px-4 py-2.5 dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 transition"
               />
             </div>
 
@@ -112,13 +112,13 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white font-bold rounded-xl transition shadow-lg shadow-teal-900/20 hover:-translate-y-0.5"
+              className="w-full py-3 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-lg shadow-rose-900/20 hover:-translate-y-0.5"
             >
               {loading ? 'Sending…' : 'Send reset link'}
             </button>
 
             <div className="pt-2 text-center text-xs dark:text-slate-400 text-slate-500">
-              <Link href="/auth/signin" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+              <Link href="/auth/signin" className="text-rose-600 dark:text-rose-400 font-bold hover:underline">
                 Back to sign in
               </Link>
             </div>

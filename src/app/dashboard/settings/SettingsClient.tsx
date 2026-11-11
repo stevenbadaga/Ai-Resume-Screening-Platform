@@ -29,7 +29,7 @@ interface Branding {
 }
 
 const inputClass =
-  'w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-teal-500';
+  'w-full dark:bg-slate-950 bg-slate-50 dark:border-slate-800 border-slate-200 border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[var(--accent)]';
 
 export default function SettingsClient({
   organizationName,
@@ -188,7 +188,7 @@ export default function SettingsClient({
             onClick={() => setTab(key)}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
               tab === key
-                ? 'dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 dark:border-teal-800/60 border-teal-200'
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--accent-ring)]'
                 : 'dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-600'
             }`}
           >
@@ -198,7 +198,7 @@ export default function SettingsClient({
       </div>
 
       {message && (
-        <div className="rounded-lg px-3 py-2 text-xs dark:bg-teal-950/40 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/60 border-teal-200">
+        <div className="rounded-lg px-3 py-2 text-xs bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]">
           {message}
         </div>
       )}
@@ -247,7 +247,7 @@ export default function SettingsClient({
               />
               <button
                 onClick={addReason}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90"
+                className="btn btn-primary px-3 py-1.5 rounded-lg text-xs font-semibold"
               >
                 {t('settings_add_reason')}
               </button>
@@ -289,7 +289,7 @@ export default function SettingsClient({
               />
               <button
                 onClick={addCategory}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90"
+                className="btn btn-primary px-3 py-1.5 rounded-lg text-xs font-semibold"
               >
                 {t('profile_add')}
               </button>
@@ -333,7 +333,7 @@ export default function SettingsClient({
           <button
             onClick={saveWorkflow}
             disabled={saving}
-            className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+            className="btn btn-primary px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
           >
             {saving ? t('settings_saving') : t('settings_save_workflow')}
           </button>
@@ -376,7 +376,7 @@ export default function SettingsClient({
           <button
             onClick={saveRetention}
             disabled={saving}
-            className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+            className="btn btn-primary px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
           >
             {saving ? t('settings_saving') : t('settings_save_retention')}
           </button>
@@ -420,7 +420,7 @@ export default function SettingsClient({
           <button
             onClick={saveBranding}
             disabled={saving}
-            className="px-4 py-2 rounded-lg text-xs font-bold dark:bg-teal-600 bg-teal-500 text-white hover:opacity-90 disabled:opacity-50"
+            className="btn btn-primary px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50"
           >
             {saving ? t('settings_saving') : t('settings_save_branding')}
           </button>

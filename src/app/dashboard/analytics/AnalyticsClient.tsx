@@ -111,7 +111,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
             <h1 className="text-xl font-bold dark:text-white text-slate-900 tracking-tight">
               {t('nav_analytics') || 'Manager Analytics'}
             </h1>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold dark:bg-teal-950/50 bg-teal-50 dark:text-teal-300 text-teal-700 border dark:border-teal-800/60 border-teal-200">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent-ring)]">
               {t('analytics_metrics_badge')}
             </span>
           </div>
@@ -129,7 +129,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]"
           />
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
@@ -138,7 +138,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]"
           />
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wider dark:text-slate-400 text-slate-500 space-y-1">
@@ -146,7 +146,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           <select
             value={jobId}
             onChange={(e) => setJobId(e.target.value)}
-            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]"
           >
             <option value="ALL">{t('filter_all_jobs')}</option>
             {jobs.map((j) => (
@@ -159,10 +159,11 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           <select
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
-            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]"
           >
+            <option value="ALL">{t('all_departments')}</option>
             {departments.map((d) => (
-              <option key={d} value={d}>{d === 'ALL' ? t('all_departments') : d}</option>
+              <option key={d} value={d}>{d}</option>
             ))}
           </select>
         </label>
@@ -171,7 +172,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           <select
             value={recruiterId}
             onChange={(e) => setRecruiterId(e.target.value)}
-            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]"
           >
             <option value="ALL">{t('filter_all_recruiters')}</option>
             {recruiters.map((r) => (
@@ -184,7 +185,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           <select
             value={stage}
             onChange={(e) => setStage(e.target.value)}
-            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-teal-500"
+            className="w-full dark:bg-[#0F171D] bg-white border dark:border-[#30424A] border-slate-200 rounded-lg px-2 py-1.5 text-xs font-normal normal-case dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[var(--accent)]"
           >
             {STAGE_FILTERS.map((s) => (
               <option key={s} value={s}>{s === 'ALL' ? t('filter_all_stages') : s}</option>
@@ -207,11 +208,11 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-2.5">
             {[
               { label: t('analytics_metric_applications'), value: summary.totalApplications, tone: 'text-slate-900 dark:text-white', hint: t('analytics_hint_screened').replace('{count}', String(summary.screenedCount)) },
-              { label: t('analytics_metric_time_to_screen'), value: formatHours(summary.timeToScreenHours), tone: 'text-teal-700 dark:text-teal-300', hint: t('analytics_hint_median') },
+              { label: t('analytics_metric_time_to_screen'), value: formatHours(summary.timeToScreenHours), tone: 'text-[var(--accent)]', hint: t('analytics_hint_median') },
               { label: t('analytics_metric_interviewer_completion'), value: `${summary.interviewerCompletionPct}%`, tone: 'text-sky-700 dark:text-sky-300', hint: t('analytics_hint_scorecards').replace('{submitted}', String(summary.submittedParticipants)).replace('{total}', String(summary.totalParticipants)) },
               { label: t('analytics_metric_processing_failures'), value: summary.failedProcessingCount, tone: summary.failedProcessingCount > 0 ? 'text-rose-600 dark:text-rose-300' : 'text-slate-400', hint: t('analytics_hint_failed_processing') },
               { label: t('analytics_metric_low_confidence'), value: summary.needsReviewCount, tone: summary.needsReviewCount > 0 ? 'text-amber-600 dark:text-amber-300' : 'text-slate-400', hint: t('analytics_hint_needs_review') },
-              { label: t('analytics_metric_active_recruiters'), value: data.recruiterWorkload.length, tone: 'text-indigo-600 dark:text-indigo-300', hint: t('analytics_hint_open_workload') },
+              { label: t('analytics_metric_active_recruiters'), value: data.recruiterWorkload.length, tone: 'text-[var(--accent)]', hint: t('analytics_hint_open_workload') },
             ].map((metric) => (
               <div key={metric.label} className="dark:bg-[#17242B]/90 bg-[#FFFDF8]/90 dark:border-[#30424A] border-[#D8D2C6] border rounded-xl px-3.5 py-3">
                 <p className="text-[10px] uppercase tracking-wider font-semibold dark:text-slate-500 text-slate-500">{metric.label}</p>
@@ -243,7 +244,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
                       </div>
                       <div className="w-full h-1.5 dark:bg-slate-800 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-teal-600 rounded-full transition-all duration-500"
+                          className="h-full bg-[var(--accent)] rounded-full transition-all duration-500"
                           style={{ width: `${Math.max(row.conversionPct, 2)}%` }}
                         />
                       </div>
@@ -315,7 +316,7 @@ export default function AnalyticsClient({ jobs, recruiters, userRole }: Props) {
             <dl className="mt-3 space-y-2 text-xs dark:text-slate-300 text-slate-700">
               {Object.entries(data.metricDefinitions).map(([key, definition]) => (
                 <div key={key}>
-                  <dt className="font-mono text-[10px] font-bold text-teal-600 dark:text-teal-400">{key}</dt>
+                  <dt className="font-mono text-[10px] font-bold text-[var(--accent)]">{key}</dt>
                   <dd className="dark:text-slate-400 text-slate-600">{definition}</dd>
                 </div>
               ))}

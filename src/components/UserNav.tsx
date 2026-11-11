@@ -48,7 +48,7 @@ export default function UserNav() {
     return (
       <Link
         href="/auth/signin"
-        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-xs"
+        className="btn btn-primary text-xs"
       >
         {t('sign_in')}
       </Link>
@@ -63,7 +63,7 @@ export default function UserNav() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-[var(--surface-muted)] transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
       >
-        <div className="w-8 h-8 rounded-xl bg-[var(--grad-accent)] text-white shadow-md shadow-indigo-500/20 flex items-center justify-center text-xs font-extrabold font-mono group-hover:scale-105 transition-transform">
+        <div className="w-8 h-8 rounded-xl bg-[var(--grad-accent)] text-white shadow-md shadow-rose-900/20 flex items-center justify-center text-xs font-extrabold font-mono group-hover:scale-105 transition-transform">
           {initials}
         </div>
         <div className="hidden sm:block text-left text-xs">
