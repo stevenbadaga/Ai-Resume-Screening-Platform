@@ -88,6 +88,41 @@ export async function POST(req: Request) {
       );
     }
 
+    // Demo / evaluation accounts bypass 2FA so synthetic and walkthrough accounts
+    // can be accessed immediately without requiring external mailbox delivery.
+    const isDemoAccount = email.endsWith('@demo.local') || email.endsWith('@example.com');
+    if (isDemoAccount) {
+      const solvedHash = Buffer.from('demo:' + user.id + ':' + Date.now().toString(36)).toString('base64');
+      await prisma.verificationCode.create({
+        data: {
+          userId: user.id,
+          purpose: 'LOGIN_MFA',
+          codeHash: solvedHash,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+          verifiedAt: new Date(),
+          maxAttempts: 1,
+        },
+      });
+
+      const mfaTicket = `v1:${user.id}:${Date.now()}`;
+      const response = NextResponse.json({
+        success: true,
+        email,
+        bypassMfa: true,
+        mfaTicket,
+      });
+
+      response.cookies.set('nextauth.mfa', mfaTicket, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        maxAge: 120,
+      });
+
+      return response;
+    }
+
     // Load the 2FA state to decide which second factor to require.
     const mfaUser = await prisma.user.findUnique({
       where: { id: user.id },

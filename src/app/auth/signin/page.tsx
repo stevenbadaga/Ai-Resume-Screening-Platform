@@ -66,9 +66,6 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   registeredSuccess: string;
   forgotPassword: string;
   loadingText: string;
-  demoCandidatePill: string;
-  demoRecruiterPill: string;
-  demoAdminPill: string;
 }> = {
   en: {
     title: 'Sign In to RecruitAI',
@@ -129,9 +126,6 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Account created. Sign in with your email and password — you will then be asked for the verification code we emailed you.',
     forgotPassword: 'Forgot your password?',
     loadingText: 'Loading…',
-    demoCandidatePill: 'Demo Candidate',
-    demoRecruiterPill: 'Demo Recruiter',
-    demoAdminPill: 'Demo Admin',
   },
   fr: {
     title: 'Se connecter à RecruitAI',
@@ -192,9 +186,6 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Compte créé. Connectez-vous avec votre e-mail et votre mot de passe — le code de vérification qui vous a été envoyé vous sera ensuite demandé.',
     forgotPassword: 'Mot de passe oublié ?',
     loadingText: 'Chargement…',
-    demoCandidatePill: 'Démo Candidat',
-    demoRecruiterPill: 'Démo Recruteur',
-    demoAdminPill: 'Démo Admin',
   },
   es: {
     title: 'Iniciar sesión en RecruitAI',
@@ -255,9 +246,6 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Cuenta creada. Inicie sesión con su correo y contraseña; después se le pedirá el código de verificación que le enviamos.',
     forgotPassword: '¿Olvidó su contraseña?',
     loadingText: 'Cargando…',
-    demoCandidatePill: 'Demo Candidato',
-    demoRecruiterPill: 'Demo Reclutador',
-    demoAdminPill: 'Demo Admin',
   },
   de: {
     title: 'Bei RecruitAI anmelden',
@@ -318,9 +306,6 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Konto erstellt. Melden Sie sich mit E-Mail und Passwort an — anschließend werden Sie nach dem per E-Mail gesendeten Bestätigungscode gefragt.',
     forgotPassword: 'Passwort vergessen?',
     loadingText: 'Wird geladen…',
-    demoCandidatePill: 'Demo Bewerber',
-    demoRecruiterPill: 'Demo Recruiter',
-    demoAdminPill: 'Demo Admin',
   },
   rw: {
     title: 'Injira muri RecruitAI',
@@ -381,9 +366,6 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     registeredSuccess: 'Konti yafunguwe. Injira ukoresha imeyili n’ijambo ry’ibanga — hanyuma ugasabwa kode yo kwemeza twoherejwe.',
     forgotPassword: 'Wibagiwe ijambo ry’ibanga?',
     loadingText: 'Birimo gupakura…',
-    demoCandidatePill: 'Demo Usaba Akazi',
-    demoRecruiterPill: 'Demo Ushakisha',
-    demoAdminPill: 'Demo Admin',
   },
 };
 
@@ -490,6 +472,26 @@ function SignInForm() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.success) {
+        if (data.bypassMfa && data.mfaTicket) {
+          const result = await signIn('credentials', {
+            redirect: false,
+            email,
+            password,
+            mfaTicket: data.mfaTicket,
+          });
+          if (result?.error) {
+            setError(copy.invalidCredentials);
+          } else {
+            const requestedDestination = searchParams.get('callbackUrl');
+            const destination = requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
+              ? requestedDestination
+              : '/dashboard';
+            router.push(destination);
+            router.refresh();
+          }
+          return;
+        }
+
         if (data.next === 'totp') {
           setStep('totp');
         } else {
@@ -622,13 +624,6 @@ function SignInForm() {
     } catch {
       setCodeStatus('delivery-failed');
     }
-  };
-
-  const fillCredentials = (targetEmail: string) => {
-    setEmail(targetEmail);
-    setPassword('Password123!');
-    setError('');
-    setEmailFormatError(false);
   };
 
   // Reusable credential form markup
@@ -1036,20 +1031,6 @@ function SignInForm() {
                 </p>
               </div>
 
-              {/* Demo Quick-Fill helper */}
-              {step === 'credentials' && (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Quick Demo Test:</span>
-                  <button
-                    type="button"
-                    onClick={() => fillCredentials('john.doe@example.com')}
-                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/30 transition-colors"
-                  >
-                    {copy.demoCandidatePill}
-                  </button>
-                </div>
-              )}
-
               {portalType === 'applicant' && renderAlerts()}
 
               {step === 'credentials' ? renderCredentialsForm('applicant') : renderMfaForm()}
@@ -1089,29 +1070,6 @@ function SignInForm() {
                   {step === 'credentials' ? copy.staffSub : copy.codeSentTo}
                 </p>
               </div>
-
-              {/* Staff Demo Quick-Fill options */}
-              {step === 'credentials' && (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0D1017] border border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Demo Staff:</span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => fillCredentials('recruiter@codafriqa.rw')}
-                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/30 transition-colors"
-                    >
-                      {copy.demoRecruiterPill}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => fillCredentials('admin@codafriqa.rw')}
-                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/30 transition-colors"
-                    >
-                      {copy.demoAdminPill}
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {portalType === 'staff' && renderAlerts()}
 
