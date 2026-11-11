@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { SupportedLanguage } from '@/lib/i18n/translations';
-import LanguageSelector from '@/components/LanguageSelector';
 
 const SIGN_IN_COPY: Record<SupportedLanguage, {
   title: string;
@@ -977,30 +976,9 @@ function SignInForm() {
   );
 
   return (
-    <div className="min-h-[90vh] flex flex-col justify-between py-6 px-3 sm:px-6">
-      {/* Top Navbar */}
-      <header className="max-w-5xl w-full mx-auto flex items-center justify-between pb-6">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-base shadow-md group-hover:scale-105 transition-transform">
-            R
-          </div>
-          <div>
-            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white leading-none block">
-              RecruitAI
-            </span>
-            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">
-              ENTERPRISE ATS
-            </span>
-          </div>
-        </Link>
-
-        <div className="flex items-center gap-3">
-          <LanguageSelector />
-        </div>
-      </header>
-
+    <div className="w-full flex-1 flex flex-col justify-center items-center py-6 px-3 sm:px-6">
       {/* Main Interactive Stage */}
-      <main className="max-w-5xl w-full mx-auto my-auto flex flex-col items-center">
+      <div className="max-w-5xl w-full mx-auto flex flex-col items-center">
         {/* Interactive Segmented Switcher Tabs (Clicking triggers the smooth slide!) */}
         <div className="mb-6 inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-[#121B2B] border border-slate-200 dark:border-slate-800/80 shadow-inner">
           <button
@@ -1272,7 +1250,7 @@ function SignInForm() {
             )}
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Trust & Security Footnote */}
       <footer className="max-w-5xl w-full mx-auto pt-6 text-center text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center justify-center gap-2">
