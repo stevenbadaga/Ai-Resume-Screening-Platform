@@ -54,7 +54,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="app-shell flex h-screen overflow-hidden">
         <Navigation />
 
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[var(--background)]">
           <header className="app-header z-20 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/75 px-3 backdrop-blur-xl backdrop-saturate-150 sm:px-5">
             <button
               type="button"

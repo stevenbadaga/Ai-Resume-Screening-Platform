@@ -18,6 +18,7 @@
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
   --surface-muted: #F5F2EE;
+  --surface-sidebar: #1E1226; /* Deep luxury artisan sidebar tone matching Jobie Pinterest contrast */
 
   --border: #E5E0D8;
   --border-strong: #CDC7B9;
@@ -53,6 +54,7 @@ html.dark {
   --surface: #111520;
   --surface-raised: #161C2C;
   --surface-muted: #0D111A;
+  --surface-sidebar: #121724; /* Obsidian slate for dark mode sidebar */
 
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
@@ -525,31 +527,72 @@ html.dark body {
   .table tbody tr { transition: background-color 0.1s ease; }
   .table tbody tr:hover { background-color: var(--surface-muted); }
 
-  /* ── Sidebar navigation links ──────────────────────────────── */
+  /* ── Sidebar navigation links (Jobie / Pinterest curved active tab cutout) ── */
+  .app-sidebar {
+    background-color: var(--surface-sidebar);
+  }
+
   .nav-link {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    padding: 0.58rem 0.7rem;
-    border-radius: 0.7rem;
-    font-size: 12px;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 12.5px;
     font-weight: 500;
-    color: color-mix(in srgb, var(--foreground) 68%, transparent);
-    transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+    color: rgba(255, 255, 255, 0.7);
+    margin-right: 1rem;
+    border-radius: 0.75rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
-  .nav-link:hover {
-    background-color: var(--surface-muted);
-    color: var(--foreground);
-  }
-  /* Active destination: the aurora pill with a soft glow. */
-  .nav-link.active {
-    background-image: var(--grad-accent);
+  .nav-link:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.08);
     color: #FFFFFF;
-    font-weight: 600;
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.18),
-      0 4px 14px -5px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  /* Active destination: the curved cutout tab merging flush into the dashboard canvas */
+  .nav-link.active {
+    background-color: var(--background) !important;
+    background-image: none !important;
+    color: var(--accent) !important;
+    font-weight: 700;
+    margin-right: -1px;
+    padding-right: 1.25rem;
+    border-radius: 9999px 0 0 9999px !important;
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.04);
+    z-index: 20;
+  }
+  .nav-link.active svg {
+    color: var(--accent) !important;
+  }
+
+  /* Top-right inverted concave curve */
+  .nav-link.active::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-bottom-right-radius: 20px;
+    box-shadow: 6px 6px 0 6px var(--background);
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  /* Bottom-right inverted concave curve */
+  .nav-link.active::after {
+    content: "";
+    position: absolute;
+    bottom: -20px;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-top-right-radius: 20px;
+    box-shadow: 6px -6px 0 6px var(--background);
+    pointer-events: none;
+    z-index: 20;
   }
 
   /* Brand tile (logo mark) — the gradient with a glow. */

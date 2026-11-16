@@ -95,49 +95,51 @@ export default function Navigation() {
 
   return (
     <>
-      <aside className="app-sidebar w-60 shrink-0 bg-[var(--surface)]/90 backdrop-blur-xl border-r border-[var(--border)] flex-col justify-between hidden md:flex z-30 transition-all duration-300">
-        <div className="p-4 space-y-5">
-          {/* Brand Logo & Name */}
-          <Link href="/dashboard" className="flex items-center gap-3 px-2 pt-1 pb-2 group">
-            <div className="brand-mark w-9 h-9 rounded-xl flex items-center justify-center text-[14px] font-extrabold group-hover:scale-105 transition-all duration-300">
-              R
-            </div>
-            <div className="leading-none">
-              <span className="font-extrabold text-sm tracking-tight text-[var(--foreground)] block group-hover:text-[var(--accent)] transition-colors">
-                Recruit<span className="text-gradient-aurora">AI</span>
-              </span>
-              <span className="text-[9px] font-mono text-[var(--muted)] font-semibold tracking-[0.14em] uppercase mt-1 block">
-                {t('brand_tagline')}
-              </span>
-            </div>
-          </Link>
+      <aside className="app-sidebar w-60 shrink-0 bg-[var(--surface-sidebar)] border-r border-[var(--border)] flex-col justify-between hidden md:flex z-30 transition-all duration-300">
+        <div className="py-4 pl-4 pr-0 space-y-5 flex-1 flex flex-col justify-between overflow-x-hidden">
+          <div className="space-y-5">
+            {/* Brand Logo & Name */}
+            <Link href="/dashboard" className="flex items-center gap-3 px-2 pt-1 pb-2 mr-4 group">
+              <div className="brand-mark w-9 h-9 rounded-xl flex items-center justify-center text-[14px] font-extrabold group-hover:scale-105 transition-all duration-300">
+                R
+              </div>
+              <div className="leading-none">
+                <span className="font-extrabold text-sm tracking-tight text-white block group-hover:text-[var(--accent)] transition-colors">
+                  Recruit<span className="text-gradient-aurora">AI</span>
+                </span>
+                <span className="text-[9px] font-mono text-slate-400 font-semibold tracking-[0.14em] uppercase mt-1 block">
+                  {t('brand_tagline')}
+                </span>
+              </div>
+            </Link>
 
-          {/* Navigation Items List */}
-          <nav className="space-y-1" aria-label="Primary">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`nav-link ${isActive ? 'active' : ''}`}
-                >
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d={item.icon} />
-                  </svg>
-                  <span className="truncate">{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+            {/* Navigation Items List */}
+            <nav className="space-y-1 relative" aria-label="Primary">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`nav-link ${isActive ? 'active' : ''}`}
+                  >
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d={item.icon} />
+                    </svg>
+                    <span className="truncate">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
-        {/* Footer Role Badge */}
-        <div className="p-4 border-t border-[var(--border)]">
-          <div className="flex items-center justify-between text-[10px] font-mono px-1">
-            <span className="text-[var(--muted)]">{t('active_role')}</span>
-            <span className="chip chip-accent">{userRole}</span>
+          {/* Footer Role Badge */}
+          <div className="p-4 mr-4 border-t border-white/10">
+            <div className="flex items-center justify-between text-[10px] font-mono px-1">
+              <span className="text-slate-400">{t('active_role')}</span>
+              <span className="chip chip-accent">{userRole}</span>
+            </div>
           </div>
         </div>
       </aside>
