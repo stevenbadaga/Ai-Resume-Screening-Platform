@@ -95,9 +95,9 @@ export default function Navigation() {
 
   return (
     <>
-      <aside className="app-sidebar w-60 shrink-0 bg-[var(--surface-sidebar)] border-r border-[var(--border)] flex-col justify-between hidden md:flex z-30 transition-all duration-300">
-        <div className="py-4 pl-4 pr-0 space-y-5 flex-1 flex flex-col justify-between overflow-x-hidden">
-          <div className="space-y-5">
+      <aside className="app-sidebar w-60 shrink-0 bg-[var(--surface-sidebar)] flex-col justify-between hidden md:flex z-30 transition-all duration-300">
+        <div className="app-sidebar-scroll flex-1 flex flex-col justify-between">
+          <div className="app-sidebar-content py-4 pl-4 pr-0 space-y-5">
             {/* Brand Logo & Name */}
             <Link href="/dashboard" className="flex items-center gap-3 px-2 pt-1 pb-2 mr-4 group">
               <div className="brand-mark w-9 h-9 rounded-xl flex items-center justify-center text-[14px] font-extrabold group-hover:scale-105 transition-all duration-300">
@@ -135,7 +135,7 @@ export default function Navigation() {
           </div>
 
           {/* Footer Role Badge */}
-          <div className="p-4 mr-4 border-t border-white/10">
+          <div className="app-sidebar-content p-4 mr-4 border-t border-white/10">
             <div className="flex items-center justify-between text-[10px] font-mono px-1">
               <span className="text-slate-400">{t('active_role')}</span>
               <span className="chip chip-accent">{userRole}</span>
@@ -153,11 +153,10 @@ export default function Navigation() {
               key={item.href}
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
-              className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[9px] font-semibold transition ${
-                isActive
-                  ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-bold'
-                  : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
-              }`}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[9px] font-semibold transition ${isActive
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-bold'
+                : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
+                }`}
             >
               <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d={item.icon} />
@@ -173,11 +172,10 @@ export default function Navigation() {
             onClick={() => setShowMobileMore(!showMobileMore)}
             aria-expanded={showMobileMore}
             aria-label="More navigation items"
-            className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[9px] font-semibold transition ${
-              showMobileMore || isOverflowActive
-                ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-bold'
-                : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
-            }`}
+            className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[9px] font-semibold transition ${showMobileMore || isOverflowActive
+              ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-bold'
+              : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
+              }`}
           >
             <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -225,11 +223,10 @@ export default function Navigation() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setShowMobileMore(false)}
-                    className={`flex items-center gap-2.5 p-3 rounded-xl text-xs font-semibold transition ${
-                      isActive
-                        ? 'bg-[var(--accent)] text-white shadow-sm font-bold'
-                        : 'bg-[var(--surface-muted)] text-[var(--foreground)] hover:bg-[var(--border)]'
-                    }`}
+                    className={`flex items-center gap-2.5 p-3 rounded-xl text-xs font-semibold transition ${isActive
+                      ? 'bg-[var(--accent)] text-white shadow-sm font-bold'
+                      : 'bg-[var(--surface-muted)] text-[var(--foreground)] hover:bg-[var(--border)]'
+                      }`}
                   >
                     <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d={item.icon} />
