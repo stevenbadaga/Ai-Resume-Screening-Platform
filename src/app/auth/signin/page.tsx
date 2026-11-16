@@ -369,6 +369,21 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   },
 };
 
+const DEMO_PRO_TIPS = [
+  'RecruitAI parses PDF & DOCX resumes in milliseconds with deep semantic skill extraction.',
+  'Unconscious bias masking strips names, gender, and photos to ensure completely fair hiring.',
+  'Every AI screening decision creates an immutable, cryptographic audit chain record.',
+  'Recruiter scorecards let you calibrate required vs preferred skills dynamically.',
+  'Zero email delays: demo mode lets you explore full workspace permissions instantly.',
+];
+
+const DEMO_STEPS = [
+  'Spinning up secure demo sandbox...',
+  'Bypassing 2FA requirement for instant access...',
+  'Hydrating candidate pipeline & scorecards...',
+  'Ready! Launching dashboard...',
+];
+
 function SignInForm() {
   const { language } = useLanguage();
   const copy = SIGN_IN_COPY[language] || SIGN_IN_COPY.en;
@@ -397,10 +412,32 @@ function SignInForm() {
   const [code, setCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'verifying' | 'resent' | 'delivery-failed'>('idle');
   const [demoLoading, setDemoLoading] = useState<'candidate' | 'recruiter' | 'admin' | null>(null);
+  const [demoProgress, setDemoProgress] = useState(20);
+  const [demoStepText, setDemoStepText] = useState(DEMO_STEPS[0]);
+  const [demoTipIndex, setDemoTipIndex] = useState(0);
+
+  // Pre-warm the demo endpoint silently so subsequent clicks hit warm memory cache
+  useEffect(() => {
+    fetch('/api/auth/demo-login').catch(() => {});
+  }, []);
 
   const handleOneClickDemo = async (role: 'candidate' | 'recruiter' | 'admin') => {
     setDemoLoading(role);
+    setDemoProgress(25);
+    setDemoStepText(DEMO_STEPS[0]);
+    setDemoTipIndex(Math.floor(Math.random() * DEMO_PRO_TIPS.length));
     setError('');
+
+    const t1 = setTimeout(() => {
+      setDemoProgress(60);
+      setDemoStepText(DEMO_STEPS[1]);
+    }, 180);
+
+    const t2 = setTimeout(() => {
+      setDemoProgress(85);
+      setDemoStepText(DEMO_STEPS[2]);
+    }, 380);
+
     try {
       const res = await fetch('/api/auth/demo-login', {
         method: 'POST',
@@ -409,6 +446,8 @@ function SignInForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
+        clearTimeout(t1);
+        clearTimeout(t2);
         setError(data?.error || 'Demo login failed to initialize.');
         setDemoLoading(null);
         return;
@@ -422,18 +461,30 @@ function SignInForm() {
       });
 
       if (result?.error) {
+        clearTimeout(t1);
+        clearTimeout(t2);
         setError(copy.invalidCredentials);
         setDemoLoading(null);
         return;
       }
 
+      clearTimeout(t1);
+      clearTimeout(t2);
+      setDemoProgress(100);
+      setDemoStepText(DEMO_STEPS[3]);
+
       const requestedDestination = searchParams.get('callbackUrl');
       const destination = requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
         ? requestedDestination
         : (data.destination || '/dashboard');
-      router.push(destination);
-      router.refresh();
+
+      // Fast direct browser navigation ensures session cookies are mounted and prevents double-loading
+      setTimeout(() => {
+        window.location.href = destination;
+      }, 150);
     } catch {
+      clearTimeout(t1);
+      clearTimeout(t2);
       setError('Failed to connect to demo account.');
       setDemoLoading(null);
     }
@@ -1311,6 +1362,74 @@ function SignInForm() {
           </div>
         </div>
       </div>
+
+      {/* Fast & Fun Interactive Loading Overlay */}
+      {demoLoading && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Demo login in progress"
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
+        >
+          <div className="max-w-md w-full bg-white dark:bg-[#11141D] rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-white/10 text-center space-y-4 animate-in zoom-in-95 duration-150 relative overflow-hidden">
+            {/* Glow background accent */}
+            <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-rose-500/15 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-rose-500/10 blur-2xl pointer-events-none" />
+
+            {/* Glowing Icon */}
+            <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/30 animate-pulse">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+
+            {/* Title & Role */}
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                TURBO DEMO LAUNCH
+              </div>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                {demoLoading === 'candidate' && 'Entering Candidate Workspace'}
+                {demoLoading === 'recruiter' && 'Entering Recruiter Workspace'}
+                {demoLoading === 'admin' && 'Entering Admin Workspace'}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                {demoLoading === 'candidate' && 'Identity: Casey Sample • Candidate Role'}
+                {demoLoading === 'recruiter' && 'Identity: Rosa Sample • Recruiter Role'}
+                {demoLoading === 'admin' && 'Identity: Amara Sample • Admin Role'}
+              </p>
+            </div>
+
+            {/* Multi-stage Progress Bar */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="font-semibold text-slate-700 dark:text-slate-300 text-[11px] flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  {demoStepText}
+                </span>
+                <span className="font-bold text-rose-600 dark:text-rose-400">{demoProgress}%</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-white/10 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-white/5">
+                <div
+                  className="h-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-400 rounded-full transition-all duration-300 ease-out shadow-sm"
+                  style={{ width: `${demoProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Rotating Pro-Tip Box */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 text-left space-y-1">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                <span>ATS PRO-TIP</span>
+              </span>
+              <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                {DEMO_PRO_TIPS[demoTipIndex]}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Trust & Security Footnote */}
       <footer className="max-w-5xl w-full mx-auto pt-6 text-center text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center justify-center gap-2">
