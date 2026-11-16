@@ -396,6 +396,48 @@ function SignInForm() {
   const [step, setStep] = useState<'credentials' | 'code' | 'totp'>('credentials');
   const [code, setCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'verifying' | 'resent' | 'delivery-failed'>('idle');
+  const [demoLoading, setDemoLoading] = useState<'candidate' | 'recruiter' | 'admin' | null>(null);
+
+  const handleOneClickDemo = async (role: 'candidate' | 'recruiter' | 'admin') => {
+    setDemoLoading(role);
+    setError('');
+    try {
+      const res = await fetch('/api/auth/demo-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        setError(data?.error || 'Demo login failed to initialize.');
+        setDemoLoading(null);
+        return;
+      }
+
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+        mfaTicket: data.mfaTicket,
+      });
+
+      if (result?.error) {
+        setError(copy.invalidCredentials);
+        setDemoLoading(null);
+        return;
+      }
+
+      const requestedDestination = searchParams.get('callbackUrl');
+      const destination = requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
+        ? requestedDestination
+        : (data.destination || '/dashboard');
+      router.push(destination);
+      router.refresh();
+    } catch {
+      setError('Failed to connect to demo account.');
+      setDemoLoading(null);
+    }
+  };
 
   // Signup activation (unverified account): the emailed activation code can
   // be typed straight into the banner — on success the flow continues into
@@ -704,7 +746,7 @@ function SignInForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white transition-all duration-200 shadow-md active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 shadow-rose-900/20"
+        className="w-full py-3.5 px-8 rounded-full font-bold text-xs uppercase tracking-wider text-white transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 shadow-rose-900/20"
       >
         {loading ? (
           <>
@@ -779,7 +821,7 @@ function SignInForm() {
       <button
         type="submit"
         disabled={codeStatus === 'verifying' || code.length !== 6}
-        className="w-full py-3 px-4 rounded-xl font-bold text-xs text-white transition-all duration-200 shadow-md active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 shadow-rose-900/20"
+        className="w-full py-3.5 px-8 rounded-full font-bold text-xs uppercase tracking-wider text-white transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 shadow-rose-900/20"
       >
         {codeStatus === 'verifying' ? (
           <>
@@ -1031,6 +1073,31 @@ function SignInForm() {
                 </p>
               </div>
 
+              {/* 1-Click Responsive Candidate Demo */}
+              {step === 'credentials' && (
+                <div className="p-3 rounded-2xl bg-rose-50/70 dark:bg-rose-950/25 border border-rose-200/70 dark:border-rose-900/40 flex items-center justify-between gap-3 text-xs transition-all">
+                  <div className="min-w-0">
+                    <p className="font-bold text-rose-950 dark:text-rose-100 text-[11px] tracking-tight">1-Click Candidate Demo</p>
+                    <p className="text-[10px] text-rose-700/80 dark:text-rose-300/75 truncate">Instant test login • No 2FA required</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={demoLoading !== null}
+                    onClick={() => handleOneClickDemo('candidate')}
+                    className="shrink-0 px-3.5 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-60"
+                  >
+                    {demoLoading === 'candidate' ? (
+                      <>
+                        <span className="w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                        <span>Entering...</span>
+                      </>
+                    ) : (
+                      <span>Launch Demo →</span>
+                    )}
+                  </button>
+                </div>
+              )}
+
               {portalType === 'applicant' && renderAlerts()}
 
               {step === 'credentials' ? renderCredentialsForm('applicant') : renderMfaForm()}
@@ -1070,6 +1137,48 @@ function SignInForm() {
                   {step === 'credentials' ? copy.staffSub : copy.codeSentTo}
                 </p>
               </div>
+
+              {/* 1-Click Responsive Staff Demo */}
+              {step === 'credentials' && (
+                <div className="p-3 rounded-2xl bg-rose-50/70 dark:bg-rose-950/25 border border-rose-200/70 dark:border-rose-900/40 flex items-center justify-between gap-2 text-xs transition-all">
+                  <div className="min-w-0">
+                    <p className="font-bold text-rose-950 dark:text-rose-100 text-[11px] tracking-tight">1-Click Staff Demo</p>
+                    <p className="text-[10px] text-rose-700/80 dark:text-rose-300/75 truncate">Instant workspace access • Zero setup</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      disabled={demoLoading !== null}
+                      onClick={() => handleOneClickDemo('recruiter')}
+                      className="px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 active:scale-95 transition-all shadow-sm flex items-center gap-1 disabled:opacity-60"
+                    >
+                      {demoLoading === 'recruiter' ? (
+                        <>
+                          <span className="w-2.5 h-2.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                          <span>Wait...</span>
+                        </>
+                      ) : (
+                        <span>Recruiter →</span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={demoLoading !== null}
+                      onClick={() => handleOneClickDemo('admin')}
+                      className="px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider text-slate-800 dark:text-white bg-slate-200/90 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm flex items-center gap-1 disabled:opacity-60"
+                    >
+                      {demoLoading === 'admin' ? (
+                        <>
+                          <span className="w-2.5 h-2.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                          <span>Wait...</span>
+                        </>
+                      ) : (
+                        <span>Admin →</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {portalType === 'staff' && renderAlerts()}
 

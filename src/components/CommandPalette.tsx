@@ -139,11 +139,11 @@ export default function CommandPalette() {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-start justify-center pt-24 p-4 animate-in fade-in duration-200"
       onClick={() => setIsOpen(false)}
     >
-      <div 
+      <div
         className="glass-card rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-[var(--border)] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
@@ -159,7 +159,7 @@ export default function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             className="w-full bg-transparent border-none text-xs font-semibold text-[var(--foreground)] focus:outline-none placeholder-[var(--muted)]"
           />
-          <button 
+          <button
             onClick={() => setIsOpen(false)}
             className="text-[10px] font-mono bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--foreground)] px-2 py-1 rounded-lg border border-[var(--border)] transition-colors"
           >

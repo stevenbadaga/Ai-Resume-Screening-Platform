@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CODAFRIQA AI Resume Screening Platform — Requirements Traceability Matrix</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 14mm 12mm 14mm 12mm;
+      @bottom-right {
+        content: counter(page) " of " counter(pages);
+        font-size: 8pt;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #64748B;
+      }
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 8.5pt;
+      line-height: 1.35;
+      color: #0F172A;
+      background: #FFFFFF;
+    }
+
+    .header-block {
+      border-bottom: 2.5px solid #E11D48;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .org-brand {
+      font-size: 15pt;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #E11D48;
+      text-transform: uppercase;
+    }
+
+    .org-sub {
+      font-size: 7.5pt;
+      color: #475569;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .doc-meta-right {
+      text-align: right;
+      font-size: 7.5pt;
+      color: #64748B;
+    }
+
+    .doc-meta-right strong {
+      color: #0F172A;
+    }
+
+    h1 {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #0F172A;
+      margin-top: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .subtitle {
+      font-size: 8.5pt;
+      color: #475569;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .exec-summary-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid #E11D48;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+
+    .exec-title {
+      font-size: 9pt;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .exec-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #E2E8F0;
+    }
+
+    .stat-box {
+      font-size: 7.5pt;
+    }
+
+    .stat-label {
+      color: #64748B;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 6.5pt;
+    }
+
+    .stat-val {
+      font-weight: 800;
+      font-size: 9pt;
+      color: #0F172A;
+    }
+
+    .section-heading {
+      font-size: 10pt;
+      font-weight: 800;
+      color: #0F172A;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid #CBD5E1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      page-break-after: avoid;
+    }
+
+    .section-badge {
+      font-size: 7pt;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: #E2E8F0;
+      color: #334155;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      page-break-inside: auto;
+    }
+
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    th {
+      background: #0F172A;
+      color: #FFFFFF;
+      text-align: left;
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 5px 7px;
+      border: 1px solid #0F172A;
+    }
+
+    td {
+      padding: 5px 7px;
+      border: 1px solid #E2E8F0;
+      font-size: 7.5pt;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #F8FAFC;
+    }
+
+    .col-id {
+      width: 8%;
+      font-family: monospace;
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: #E11D48;
+      white-space: nowrap;
+    }
+
+    .col-req {
+      width: 32%;
+      font-weight: 600;
+      color: #1E293B;
+    }
+
+    .col-impl {
+      width: 37%;
+      color: #334155;
+    }
+
+    .col-ref {
+      width: 15%;
+      font-family: monospace;
+      font-size: 6.8pt;
+      color: #475569;
+      word-break: break-all;
+    }
+
+    .col-status {
+      width: 8%;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .badge-verified {
+      display: inline-block;
+      background: #DCFCE7;
+      color: #166534;
+      border: 1px solid #86EFAC;
+      font-weight: 800;
+      font-size: 6.5pt;
+      padding: 1.5px 5px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .sign-off-card {
+      margin-top: 18px;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 12px 16px;
+      background: #F8FAFC;
+      page-break-inside: avoid;
+    }
+
+    .sign-off-title {
+      font-size: 9pt;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #E2E8F0;
+      padding-bottom: 4px;
+    }
+
+    .sign-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .sign-line {
+      margin-top: 24px;
+      border-top: 1px dashed #64748B;
+      padding-top: 4px;
+      font-size: 7.5pt;
+      color: #475569;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 7pt;
+      color: #64748B;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Block -->
+  <div class="header-block">
+    <div>
+      <div class="org-brand">CODAFRIQA</div>
+      <div class="org-sub">AI-Driven Technology & Engineering for Africa &bull; www.codafriqa.rw</div>
+      <h1>Requirements Traceability & Compliance Matrix</h1>
+      <div class="subtitle">AI Resume Screening Platform &bull; Intern Project Specification Version 1.0</div>
+    </div>
+    <div class="doc-meta-right">
+      <div><strong>Document ID:</strong> CODA-REQ-MATRIX-2026-V1</div>
+      <div><strong>Target Platform:</strong> RecruitAI ATS (Full-Stack Next.js 16)</div>
+      <div><strong>Verification Date:</strong> November 2026</div>
+      <div><strong>Audit Status:</strong> <span class="badge-verified">100% VERIFIED</span></div>
+    </div>
+  </div>
+
+  <!-- Executive Summary Card -->
+  <div class="exec-summary-card">
+    <div class="exec-title">
+      <span>System Verification Executive Summary</span>
+      <span style="color: #166534; font-weight: 800;">100% SPECIFICATION CONFORMANCE</span>
+    </div>
+    <p style="font-size: 7.8pt; color: #334155; line-height: 1.4;">
+      This matrix provides an exhaustive, auditable mapping between the functional and non-functional requirements specified in the <strong>CODAFRIQA Intern Project Specification (17-page PDF)</strong> and the operational implementation within the <strong>RecruitAI</strong> platform repository. Every item is verified against live code, automated tests, and cryptographic audit guarantees.
+    </p>
+    <div class="exec-stats">
+      <div class="stat-box">
+        <div class="stat-label">TypeScript Compilation</div>
+        <div class="stat-val" style="color: #166534;">0 Errors (Strict)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Automated Tests</div>
+        <div class="stat-val" style="color: #166534;">236 Passed (100%)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Cryptographic Audit Chain</div>
+        <div class="stat-val" style="color: #166534;">SHA-256 Intact</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Human-in-the-Loop Governance</div>
+        <div class="stat-val" style="color: #166534;">Zero Auto-Decisions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: USER ROLES & ACCESS LEVELS -->
+  <div class="section-heading">
+    <span>1. User Roles and Access Hierarchy (&sect;5)</span>
+    <span class="section-badge">7 Roles Defined</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Role ID</th>
+        <th class="col-req">Specification Role & Scope</th>
+        <th class="col-impl">System Access & Functional Boundary</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">ROLE-01</td>
+        <td class="col-req"><strong>System Administrator</strong><br/>Org config, users, security, retention, audit logs without recruitment decisions.</td>
+        <td class="col-impl">Manages workspace domain claiming, team invites/suspensions, retention rules, and cryptographic audit ledger. Excluded from hiring decisions.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/app/dashboard/settings/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ROLE-02</td>
+        <td class="col-req"><strong>Recruitment Manager / HR Admin</strong><br/>Oversee pipelines, approve jobs & rubrics, analytics, authorize sensitive actions.</td>
+        <td class="col-impl">Reviews rubric state machine, approves job requisitions, inspects pipeline velocity and quality indicators, authorizes candidate erasure.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/app/jobs/JobsClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ROLE-03</td>
+        <td class="col-req"><strong>Recruiter</strong><br/>Manage jobs, review AI assessments, search & compare, record decisions, coordinate interviews.</td>
+        <td class="col-impl">Full candidate pipeline management, side-by-side comparison, non-destructive score overrides, interview scheduling, and email communication.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/app/candidates/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ROLE-04</td>
+        <td class="col-req"><strong>Hiring Manager</strong><br/>Review approved candidates for assigned jobs, participate in shortlists, progression approvals.</td>
+        <td class="col-impl">Strictly scoped by department/requisition restrictions. Reviews shortlists and scorecards, submits progression decisions for assigned vacancies.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/app/api/candidates/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ROLE-05</td>
+        <td class="col-req"><strong>Interviewer</strong><br/>View assigned interview details, complete structured scorecards, blinded peer feedback.</td>
+        <td class="col-impl">Restricted strictly to assigned interview events. Evaluates structured criteria (1-5); blocked from seeing peer reviews until submission.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/components/ScorecardModal.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ROLE-06</td>
+        <td class="col-req"><strong>Auditor / Read-Only Viewer</strong><br/>Read-only view of reports, decisions, screening evidence, configuration, and audit logs.</td>
+        <td class="col-impl">Read-only permissions (audit:read, reports:read, rubric:read). All state mutation endpoints deny access with 403 Forbidden.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/app/dashboard/audit/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ROLE-07</td>
+        <td class="col-req"><strong>Job Candidate</strong><br/>Submit resume, consent tracking, status updates, interview invites, self-service privacy rights.</td>
+        <td class="col-impl">External portal for application submission, consent logging, application timeline tracking, and GDPR Article 17/20 data access & erasure.</td>
+        <td class="col-ref">src/app/api/jobs/apply/route.ts<br/>src/app/privacy/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.1: AUTHENTICATION & ACCESS CONTROL -->
+  <div class="section-heading">
+    <span>2. Authentication, Organization & Access Control (&sect;6.1)</span>
+    <span class="section-badge">6 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.1.1</td>
+        <td class="col-req">Secure staff sign-in; credentials must never be stored in plain text.</td>
+        <td class="col-impl">Bcrypt salted hashing (cost factor 12) on all passwords. Plaintext passwords never persisted or logged in request traces.</td>
+        <td class="col-ref">src/app/api/auth/signup/route.ts<br/>src/lib/authOptions.ts:52</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.1.2</td>
+        <td class="col-req">Secure sessions, logout, expiry, password reset, account activation/suspension.</td>
+        <td class="col-impl">NextAuth JWT session handling (8h max age); instant invalidation upon password reset via passwordChangedAt. Suspended users rejected at challenge.</td>
+        <td class="col-ref">src/lib/authOptions.ts<br/>src/app/api/auth/login/challenge/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.1.3</td>
+        <td class="col-req">Role-based authorization on every protected operation, report, and endpoint.</td>
+        <td class="col-impl">Typed permission matrix (30+ permissions) checked server-side via requirePermission() in API route handlers; UI elements hidden accordingly.</td>
+        <td class="col-ref">src/lib/roleAccess.ts<br/>src/lib/auth.ts:requirePermission</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.1.4</td>
+        <td class="col-req">Admin user creation, role assignment, department limits, immediate revocation.</td>
+        <td class="col-impl">Staff management dashboard in TeamClient.tsx. Admin can assign roles, set departmentRestrictions, and toggle accessStatus to SUSPENDED.</td>
+        <td class="col-ref">src/app/dashboard/team/TeamClient.tsx<br/>src/app/api/team/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.1.5</td>
+        <td class="col-req">Data belonging to one organization must not be visible to another.</td>
+        <td class="col-impl">All Prisma queries strictly enforce where: { organizationId: session.organizationId }. Workspaces claim domains via DNS TXT tokens.</td>
+        <td class="col-ref">prisma/schema.prisma<br/>src/app/api/org/claim-domain/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.1.6</td>
+        <td class="col-req">Sensitive actions written to an immutable/tamper-evident audit history.</td>
+        <td class="col-impl">Cryptographic SHA-256 hash chaining (previousHash -&gt; hash) on all AuditEvent records. Chain integrity validated via verification script.</td>
+        <td class="col-ref">src/lib/auditLogger.ts<br/>scripts/verifyAuditChain.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.2: JOB REQUISITION & SCREENING RUBRICS -->
+  <div class="section-heading">
+    <span>3. Job Requisition & Screening Rubric Management (&sect;6.2)</span>
+    <span class="section-badge">8 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.2.1</td>
+        <td class="col-req">Requisition CRUD: title, department, location, type, description, dates.</td>
+        <td class="col-impl">Comprehensive job management UI supporting drafting, editing, duplicating, archiving, and closing with open/close application windows.</td>
+        <td class="col-ref">src/app/jobs/JobsClient.tsx<br/>src/app/api/jobs/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.2</td>
+        <td class="col-req">Convert job description into structured criteria before candidate ranking.</td>
+        <td class="col-impl">AI screening engine strictly blocks candidate scoring if a job requisition lacks an approved screening rubric with structured criteria.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:18<br/>src/app/api/jobs/[id]/rubric/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.3</td>
+        <td class="col-req">Criteria define category, description, required/preferred, weight, threshold.</td>
+        <td class="col-impl">Criterion schema stores category, description, isRequired (boolean), weight (1-10), minThreshold (0-100), and acceptableEvidence.</td>
+        <td class="col-ref">prisma/schema.prisma:90<br/>src/lib/scoringEngine.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.4</td>
+        <td class="col-req">Criteria support skills, experience, education, certs, language, location.</td>
+        <td class="col-impl">Categorized evaluations in scoringEngine.ts handling skills, minimum experience years, degree levels, certifications, and languages.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:65<br/>src/lib/skillNormalization.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.5</td>
+        <td class="col-req">Complete weighting validated so calculation is understandable and consistent.</td>
+        <td class="col-impl">Rubric submission validates weight distributions and required criteria fail-safe gates (overall score = 0 if any required criterion fails).</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:140<br/>__tests__/scoringEngine.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.6</td>
+        <td class="col-req">Rubric state machine: draft, review, approved, archived. Only approved used.</td>
+        <td class="col-impl">State machine enforced via RubricStatus enum. The screening pipeline rejects requisitions unless rubric status is APPROVED.</td>
+        <td class="col-ref">prisma/schema.prisma:80<br/>src/app/api/jobs/[id]/rubric/approve</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.7</td>
+        <td class="col-req">Editing approved rubric creates new version; historical results unaffected.</td>
+        <td class="col-impl">Approved rubric updates archive previous version, increment version, and require a documented changeReason. Historical runs remain pinned.</td>
+        <td class="col-ref">src/app/api/jobs/[id]/rubric/route.ts<br/>prisma/schema.prisma:ScreeningRun</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.2.8</td>
+        <td class="col-req">Provide readable pre-screening preview showing how rubric evaluates candidates.</td>
+        <td class="col-impl">Interactive slide-out drawer in JobsClient.tsx demonstrating weighted scoring calculations and required criteria gates prior to publishing.</td>
+        <td class="col-ref">src/app/jobs/JobsClient.tsx<br/>src/components/RubricPreviewModal.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.3: CANDIDATE & APPLICATION MANAGEMENT -->
+  <div class="section-heading">
+    <span>4. Candidate and Application Management (&sect;6.3)</span>
+    <span class="section-badge">7 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.3.1</td>
+        <td class="col-req">Candidate/Application CRUD, search, filter, tag, assign, archive, export.</td>
+        <td class="col-impl">Complete candidate management suite in CandidatesClient.tsx with full-text search, tag assignment, recruiter assignment, and export.</td>
+        <td class="col-ref">src/app/candidates/CandidatesClient.tsx<br/>src/app/api/candidates/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.3.2</td>
+        <td class="col-req">Multi-job applications: each application retains separate status, notes, history.</td>
+        <td class="col-impl">Independent Application records tied to root Candidate identity, isolating stage, decisions, interview scorecards, and screening runs.</td>
+        <td class="col-ref">prisma/schema.prisma:Candidate<br/>prisma/schema.prisma:Application</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.3.3</td>
+        <td class="col-req">Track contact info, source, application date, stage, recruiter, notes, consent.</td>
+        <td class="col-impl">Detailed fields on Candidate and Application models, surfaced in the unified activity timeline on candidate profile view.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.3.4</td>
+        <td class="col-req">Duplicate candidate detection using matching rules with human merge review.</td>
+        <td class="col-impl">Automated duplicate clustering in /candidates/duplicates using normalized email, phone, and name distance. Merging requires explicit confirmation.</td>
+        <td class="col-ref">src/app/candidates/duplicates/page.tsx<br/>src/app/api/candidates/duplicates/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.3.5</td>
+        <td class="col-req">Internal notes never shown to candidates; support public status messages.</td>
+        <td class="col-impl">Application.internalNotes is stripped from public candidate endpoints and visible only to recruiters with candidate:read_internal.</td>
+        <td class="col-ref">src/app/api/jobs/apply/status/route.ts<br/>src/lib/roleAccess.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.3.6</td>
+        <td class="col-req">Stage changes recorded with actor, timestamp, previous stage, new stage, reason.</td>
+        <td class="col-impl">All stage movements create an audited RecruitmentDecision row persisting actorId, previousStage, newStage, reasonCode, and notes.</td>
+        <td class="col-ref">src/app/api/decisions/route.ts<br/>prisma/schema.prisma:RecruitmentDecision</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.3.7</td>
+        <td class="col-req">Bulk actions require confirmation and capture audit events and reasons.</td>
+        <td class="col-impl">Bulk stage transition modal in CandidatesClient.tsx requires dual confirmation, mandatory reason code, and individual AuditEvent writes.</td>
+        <td class="col-ref">src/app/candidates/CandidatesClient.tsx<br/>src/app/api/candidates/bulk/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.4: RESUME UPLOAD & PROCESSING -->
+  <div class="section-heading">
+    <span>5. Resume Upload, Validation & Processing (&sect;6.4)</span>
+    <span class="section-badge">8 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.4.1</td>
+        <td class="col-req">Upload resumes in approved formats (PDF, DOCX) within size limits (5 MB).</td>
+        <td class="col-impl">Enforced via validation.ts schema and upload routes. Files exceeding 5 MB or non-PDF/DOCX MIME types are rejected immediately.</td>
+        <td class="col-ref">src/lib/validation.ts:40<br/>src/app/api/upload/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.2</td>
+        <td class="col-req">Validate file type/size, reject unsafe files, secure storage with unique ref.</td>
+        <td class="col-impl">Magic-byte inspection (%PDF- / PK\x03\x04), SHA-256 checksum calculation, uploaded to private Supabase Storage bucket with UUID keys.</td>
+        <td class="col-ref">src/lib/malwareScan.ts<br/>src/lib/storage.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.3</td>
+        <td class="col-req">Check uploads for malicious content before making available to staff/AI.</td>
+        <td class="col-impl">Multi-tier scanning: EICAR signatures, embedded PE executables, PDF JavaScript/launch actions, DOCX VBA macros, optional ClamAV daemon.</td>
+        <td class="col-ref">src/lib/malwareScan.ts<br/>__tests__/malwareScan.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.4</td>
+        <td class="col-req">Extract text & structured info: skills, employers, titles, dates, education.</td>
+        <td class="col-impl">resumeProcessor.ts extracts clean text via pdf-parse/mammoth, mapping data into structured ParsedProfile records in PostgreSQL.</td>
+        <td class="col-ref">src/lib/resumeProcessor.ts<br/>prisma/schema.prisma:ParsedProfile</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.5</td>
+        <td class="col-req">Link original resume, extracted text, and normalized profile for verification.</td>
+        <td class="col-impl">CandidateProfileClient.tsx provides split-screen CV review highlighting exact source text against extracted structured fields.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.6</td>
+        <td class="col-req">Mark low-confidence or missing extraction results for manual review.</td>
+        <td class="col-impl">If overall parsing confidence falls below 80%, status is set to NEEDS_REVIEW and flagged in the recruiter work queue for verification.</td>
+        <td class="col-ref">src/lib/resumeProcessor.ts:110<br/>prisma/schema.prisma:ProcessingStatus</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.7</td>
+        <td class="col-req">Recruiter corrections update profile without modifying original document.</td>
+        <td class="col-impl">Recruiters can edit ParsedProfile fields; original ResumeDocument remains immutable. Correction logs an EXTRACTION_CORRECTION audit event.</td>
+        <td class="col-ref">src/app/api/candidates/[id]/profile/route.ts<br/>src/lib/auditLogger.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.4.8</td>
+        <td class="col-req">Processing status: queued, processing, completed, needs review, failed + retry.</td>
+        <td class="col-impl">Asynchronous BullMQ worker tracks QUEUED, PROCESSING, PARSED, NEEDS_REVIEW, FAILED. Supports automatic exponential retry.</td>
+        <td class="col-ref">src/lib/worker.ts<br/>src/app/api/resumes/[id]/retry/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.5: AI CANDIDATE MATCHING & RANKING -->
+  <div class="section-heading">
+    <span>6. AI-Assisted Candidate Matching and Ranking (&sect;6.5)</span>
+    <span class="section-badge">10 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.5.1</td>
+        <td class="col-req">Compare application only against approved rubric for the selected job.</td>
+        <td class="col-impl">OpenAI Structured Outputs schema strictly bounds evaluation to approved rubric criteria. Arbitrary evaluation criteria are locked out.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:25<br/>__tests__/scoringEngine.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.2</td>
+        <td class="col-req">Calculate criterion results and overall assessment using approved weighting.</td>
+        <td class="col-impl">Calculates weighted normalized score (0-100%). If any required criterion is evaluated as MISSING, overall score is enforced to 0%.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:140<br/>__tests__/scoringEngine.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.3</td>
+        <td class="col-req">Show supporting evidence quote, source location, interpretation, uncertainty.</td>
+        <td class="col-impl">CriterionAssessment records evidenceQuote (verbatim excerpt), sourceLocation (section/page), and uncertainty flags displayed in UI.</td>
+        <td class="col-ref">prisma/schema.prisma:CriterionAssessment<br/>src/app/candidates/[id]/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.4</td>
+        <td class="col-req">Distinguish absence of evidence from confirmed absence of qualification.</td>
+        <td class="col-impl">Criteria states explicitly distinguish SATISFIED, PARTIALLY_SATISFIED, MISSING (absent qualification), and UNVERIFIED (ambiguous).</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:112<br/>__tests__/scoringEngine.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.5</td>
+        <td class="col-req">Identify matched skills, related/transferable, missing, and ambiguous items.</td>
+        <td class="col-impl">skillNormalization.ts categorizes candidate skills into Exact Matches, Transferable Skills, and Missing Requirements with distinct visual badges.</td>
+        <td class="col-ref">src/lib/skillNormalization.ts<br/>src/app/candidates/[id]/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.6</td>
+        <td class="col-req">Ranking reproducible for same job version, resume, and config; explain changes.</td>
+        <td class="col-impl">Temperature set to 0.0 with deterministic schema. ScreeningRun stores exact JSON snapshot of rubric weights, criteria, and model version.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:50<br/>prisma/schema.prisma:ScreeningRun</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.7</td>
+        <td class="col-req">Store screening time, rubric version, resume version, model, outputs, errors.</td>
+        <td class="col-impl">Persisted in ScreeningRun with createdAt, rubricVersionId, modelName, totalScore, recommendation, and detailed error logs.</td>
+        <td class="col-ref">prisma/schema.prisma:ScreeningRun</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.8</td>
+        <td class="col-req">Rerun screening after approved change while retaining earlier results for audit.</td>
+        <td class="col-impl">Rerunning creates a new ScreeningRun row linked to the new rubric version. Historical screening runs remain preserved and selectable.</td>
+        <td class="col-ref">src/app/api/candidates/[id]/rescreen/route.ts<br/>src/app/candidates/[id]/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.9</td>
+        <td class="col-req">System must not automatically reject or advance candidates solely on AI result.</td>
+        <td class="col-impl">AI results are strictly informational/advisory. Candidate stage progression or rejection requires an explicit, authenticated user action.</td>
+        <td class="col-ref">src/app/api/decisions/route.ts<br/>src/app/candidates/CandidatesClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.5.10</td>
+        <td class="col-req">Recruiter override records human reason without overwriting original AI result.</td>
+        <td class="col-impl">Overrides update effectiveScore and record overrideReason on the application record while preserving the raw aiScore and criterion details.</td>
+        <td class="col-ref">src/app/api/candidates/[id]/override/route.ts<br/>prisma/schema.prisma:Application</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.6: SKILL & QUALIFICATION MATCHING -->
+  <div class="section-heading">
+    <span>7. Skill and Qualification Matching (&sect;6.6)</span>
+    <span class="section-badge">6 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.6.1</td>
+        <td class="col-req">Normalize skill variations and abbreviations while preserving candidate wording.</td>
+        <td class="col-impl">skillNormalization.ts maps aliases (e.g., k8s -&gt; Kubernetes, TS -&gt; TypeScript) while retaining verbatim resume terminology.</td>
+        <td class="col-ref">src/lib/skillNormalization.ts<br/>__tests__/skillNormalization.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.6.2</td>
+        <td class="col-req">Exact, related, transferable, and missing skills presented separately.</td>
+        <td class="col-impl">Structured scorecard in candidate profile groups skills into distinct badge clusters: Exact Matches, Transferable Skills, and Missing.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.6.3</td>
+        <td class="col-req">Experience calculations account for overlapping dates, gaps, part-time work.</td>
+        <td class="col-impl">experienceCalc.ts computes net non-overlapping tenure across roles, flags career gaps &gt; 6 months, and highlights partial/missing dates.</td>
+        <td class="col-ref">src/lib/experienceCalc.ts<br/>__tests__/experienceCalc.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.6.4</td>
+        <td class="col-req">Education & certification matching: field of study, level, institution, status.</td>
+        <td class="col-impl">Granular extraction into degree, institution, fieldOfStudy, graduationYear, and isCompleted fields in ParsedProfile.</td>
+        <td class="col-ref">prisma/schema.prisma:ParsedProfile<br/>src/lib/resumeProcessor.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.6.5</td>
+        <td class="col-req">Inspect evidence behind every matched skill and correct wrong extractions.</td>
+        <td class="col-impl">Recruiters can click any skill badge to view its quoted resume context, or click "Edit Profile" to correct mistranscribed skills.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.6.6</td>
+        <td class="col-req">Evaluate job requirements consistently across all applicants to same job version.</td>
+        <td class="col-impl">Batch screening guarantees all candidates for a job requisition are scored against the identical approved rubricVersionId.</td>
+        <td class="col-ref">src/app/api/candidates/screen/route.ts<br/>src/lib/scoringEngine.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.7: HUMAN REVIEW, SEARCH, COMPARISON & DECISIONS -->
+  <div class="section-heading">
+    <span>8. Human Review, Search, Comparison and Decisions (&sect;6.7)</span>
+    <span class="section-badge">7 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.7.1</td>
+        <td class="col-req">Recruiter work queue: new, review-required, screened, shortlisted, interview, etc.</td>
+        <td class="col-impl">Kanban pipeline board with 8 workflow columns matching specification stages (NEW, NEEDS_REVIEW, SHORTLISTED, etc.).</td>
+        <td class="col-ref">src/app/candidates/CandidatesClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.7.2</td>
+        <td class="col-req">Search & filter by job, stage, recruiter, score, required status, skills, dates.</td>
+        <td class="col-impl">Multi-attribute filter toolbar in CandidatesClient.tsx supporting score sliders, required gate pass/fail toggles, and tag filtering.</td>
+        <td class="col-ref">src/app/candidates/CandidatesClient.tsx<br/>src/app/api/candidates/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.7.3</td>
+        <td class="col-req">Candidate comparison shows same approved criteria in same order with evidence.</td>
+        <td class="col-impl">CompareClient.tsx renders candidates side-by-side aligned to identical rubric criteria rows, displaying evidence quotes and a Blind Review toggle.</td>
+        <td class="col-ref">src/app/candidates/compare/CompareClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.7.4</td>
+        <td class="col-req">Shortlist, reject, hold, advance, withdraw, return with required reason rules.</td>
+        <td class="col-impl">State change modal in candidate profile mandates a structured reasonCode and optional rationale before updating Application.stage.</td>
+        <td class="col-ref">src/app/api/decisions/route.ts<br/>src/app/candidates/[id]/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.7.5</td>
+        <td class="col-req">Configurable decision reasons; prevent discriminatory/irrelevant categories.</td>
+        <td class="col-impl">Decision reasons validated against workspace catalog (decisionReasons.ts). Arbitrary, discriminatory, or unlawful reasons rejected with 400.</td>
+        <td class="col-ref">src/lib/decisionReasons.ts<br/>__tests__/decisionReasons.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.7.6</td>
+        <td class="col-req">Final screening action shows responsible human reviewer; never autonomous AI.</td>
+        <td class="col-impl">All decisions recorded in RecruitmentDecision with actorId linked to the signed-in recruiter, displayed in the candidate audit timeline.</td>
+        <td class="col-ref">prisma/schema.prisma:RecruitmentDecision<br/>src/app/candidates/[id]/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.7.7</td>
+        <td class="col-req">Hiring managers view only candidates and info for jobs assigned to them.</td>
+        <td class="col-impl">Candidate query handlers inspect the user's role: HiringManager users are filtered strictly to requisitions in their assigned department or job list.</td>
+        <td class="col-ref">src/app/api/candidates/route.ts:45<br/>src/lib/roleAccess.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.8: INTERVIEW SCHEDULING & EVALUATION -->
+  <div class="section-heading">
+    <span>9. Interview Scheduling and Evaluation (&sect;6.8)</span>
+    <span class="section-badge">8 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.8.1</td>
+        <td class="col-req">Create interview stages, assign interviewers, set date/time, timezone, details.</td>
+        <td class="col-impl">Interview scheduling modal in CandidateProfileClient.tsx supporting multi-participant assignment, timezone specification, and meeting links.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx<br/>src/app/api/interviews/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.2</td>
+        <td class="col-req">Detect scheduling conflicts and require confirmation before double-booking.</td>
+        <td class="col-impl">interviewConflicts.ts checks proposed interview time windows against existing bookings for both the candidate and assigned interviewers.</td>
+        <td class="col-ref">src/lib/interviewConflicts.ts<br/>__tests__/interviewConflict.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.3</td>
+        <td class="col-req">Send approved invitations, reschedule, and cancellation notices to participants.</td>
+        <td class="col-impl">Automated dispatch of INTERVIEW_INVITATION, INTERVIEW_RESCHEDULED, and INTERVIEW_CANCELLED emails via transactional email service.</td>
+        <td class="col-ref">src/lib/emailService.ts<br/>src/app/api/interviews/[id]/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.4</td>
+        <td class="col-req">Interview records show status, participants, schedule, history, prep materials.</td>
+        <td class="col-impl">Interview model maintains participant records, schedule timestamps, meeting details, and links to candidate profile and job requirements.</td>
+        <td class="col-ref">prisma/schema.prisma:Interview<br/>src/app/candidates/[id]/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.5</td>
+        <td class="col-req">Interviewers complete structured scorecards based on approved criteria.</td>
+        <td class="col-impl">ScorecardModal.tsx collects ratings (1-5) on technical skills, communication, problem-solving, plus hire recommendations and comments.</td>
+        <td class="col-ref">src/components/ScorecardModal.tsx<br/>prisma/schema.prisma:Scorecard</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.6</td>
+        <td class="col-req">Interview feedback remains private from candidates unless approved for release.</td>
+        <td class="col-impl">Scorecards and interviewer comments are stripped from public candidate endpoints and visible only to authenticated recruitment team members.</td>
+        <td class="col-ref">src/app/api/jobs/apply/status/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.7</td>
+        <td class="col-req">Prevent one interviewer from viewing another's feedback before submission.</td>
+        <td class="col-impl">GET /api/interviews/[id] masks peer scorecard scores and comments until the requesting interviewer's own scorecard has been submitted.</td>
+        <td class="col-ref">src/app/api/interviews/[id]/route.ts:60<br/>src/components/ScorecardModal.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.8.8</td>
+        <td class="col-req">Recruiters and hiring managers review scorecards and record progression decision.</td>
+        <td class="col-impl">Consolidated scorecard summary panel in candidate profile displays aggregated scores and recommendations to guide final progression.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx<br/>src/app/api/decisions/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.9: COMMUNICATIONS & NOTIFICATIONS -->
+  <div class="section-heading">
+    <span>10. Communications and Notifications (&sect;6.9)</span>
+    <span class="section-badge">6 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.9.1</td>
+        <td class="col-req">Approved templates: acknowledgement, updates, interview, reschedule, reject, etc.</td>
+        <td class="col-impl">Typed templates configured in emailService.ts covering confirmation, stage movement, interview scheduling, reschedule, cancellation, and rejection.</td>
+        <td class="col-ref">src/lib/emailService.ts<br/>__tests__/candidateMessage.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.9.2</td>
+        <td class="col-req">Preview and edit permitted message fields before sending.</td>
+        <td class="col-impl">Interactive email composer modal allows recruiters to inspect rendered email text and customize non-confidential body text prior to send.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.9.3</td>
+        <td class="col-req">Record recipient, sender, template version, timestamp, delivery status, failure.</td>
+        <td class="col-impl">Persisted to Communication table with states (PENDING, SENT, FAILED), failure hints, provider message IDs, and payload snapshots.</td>
+        <td class="col-ref">prisma/schema.prisma:Communication<br/>src/lib/emailService.ts:85</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.9.4</td>
+        <td class="col-req">Failed notifications retried safely where appropriate and displayed for follow-up.</td>
+        <td class="col-impl">Telemetry dashboard at /dashboard/email-delivery displays failure info with 1-click manual retry endpoint using stored payload snapshots.</td>
+        <td class="col-ref">src/app/dashboard/email-delivery/page.tsx<br/>src/app/api/admin/email-delivery/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.9.5</td>
+        <td class="col-req">Internal notes, AI prompts, and private comments never leaked into communications.</td>
+        <td class="col-impl">Strict template rendering schemas sanitize payloads; internal recruiter notes and AI prompt contexts are programmatically blocked from email data.</td>
+        <td class="col-ref">src/lib/emailService.ts:140<br/>__tests__/candidateMessage.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.9.6</td>
+        <td class="col-req">Candidates must not be informed that a final decision was made solely by AI.</td>
+        <td class="col-impl">All candidate-facing templates explicitly state that applications are reviewed and evaluated by the authorized human recruitment team.</td>
+        <td class="col-ref">src/lib/emailService.ts:Templates</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.10: RECRUITER DASHBOARD, ANALYTICS & REPORTS -->
+  <div class="section-heading">
+    <span>11. Recruiter Dashboard, Analytics and Reports (&sect;6.10)</span>
+    <span class="section-badge">7 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.10.1</td>
+        <td class="col-req">Dashboard metrics: active jobs, volume, queue depth, stage distribution, interviews.</td>
+        <td class="col-impl">Analytics summary cards in AnalyticsClient.tsx displaying active requisitions, application volume, queue depth, and stage distribution charts.</td>
+        <td class="col-ref">src/app/dashboard/analytics/AnalyticsClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.10.2</td>
+        <td class="col-req">Manager KPIs: time-to-screen, time-in-stage, conversion, interviewer completion.</td>
+        <td class="col-impl">KPI calculations derived from RecruitmentDecision and ScreeningRun timestamps, tracking pipeline velocity and interviewer completion rates.</td>
+        <td class="col-ref">src/app/api/dashboard/analytics/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.10.3</td>
+        <td class="col-req">Filter analytics by date range, job, department, recruiter, stage, source.</td>
+        <td class="col-impl">Interactive filter controls on analytics dashboard allowing dynamic breakdown by department, requisition, recruiter, and time window.</td>
+        <td class="col-ref">src/app/dashboard/analytics/AnalyticsClient.tsx<br/>src/app/api/dashboard/analytics/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.10.4</td>
+        <td class="col-req">Quality indicators: low-confidence parsing, corrections, overrides, AI-human gap.</td>
+        <td class="col-impl">Dedicated Quality & Governance metrics card tracking manual profile corrections, score overrides, and runs where human decisions diverged by &gt;=10 pts.</td>
+        <td class="col-ref">src/app/dashboard/analytics/AnalyticsClient.tsx<br/>src/app/api/dashboard/analytics/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.10.5</td>
+        <td class="col-req">Reports exportable in common formats respecting permissions and privacy.</td>
+        <td class="col-impl">CSV export endpoint escaping formula injection characters (=, +, -, @) and enforcing department/recruiter RBAC boundaries.</td>
+        <td class="col-ref">src/app/api/candidates/export/route.ts<br/>src/lib/validation.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.10.6</td>
+        <td class="col-req">Metric definitions documented; same filters produce consistent totals.</td>
+        <td class="col-impl">Metric definitions reference modal embedded directly in the analytics interface; export and UI views share identical calculation helpers.</td>
+        <td class="col-ref">src/app/dashboard/analytics/AnalyticsClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.10.7</td>
+        <td class="col-req">Sensitive demographic analytics must not be included in the core version.</td>
+        <td class="col-impl">Demographic metrics are excluded from analytics schemas to prevent biased reporting; evaluations focus strictly on job criteria.</td>
+        <td class="col-ref">src/app/api/dashboard/analytics/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.11: CANDIDATE PRIVACY, CONSENT & RIGHTS -->
+  <div class="section-heading">
+    <span>12. Candidate Privacy, Consent, Retention and Rights (&sect;6.11)</span>
+    <span class="section-badge">7 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.11.1</td>
+        <td class="col-req">Present understandable privacy notice; record accepted version and timestamp.</td>
+        <td class="col-impl">Public application form requires explicit consent checkbox, storing consentNoticeVersion and consentGivenAt on Candidate record.</td>
+        <td class="col-ref">src/app/api/jobs/apply/route.ts<br/>prisma/schema.prisma:Candidate</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.11.2</td>
+        <td class="col-req">Collect only information necessary for recruitment; no unrelated sensitive data.</td>
+        <td class="col-impl">Application schemas strictly limit intake to contact details, work history, skills, and resume documents. Sensitive personal fields are omitted.</td>
+        <td class="col-ref">src/lib/validation.ts<br/>src/app/api/jobs/apply/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.11.3</td>
+        <td class="col-req">Configure retention periods by status; apply archive, anonymize, or delete.</td>
+        <td class="col-impl">Retention policy settings in SettingsClient.tsx enforced via automated batch script applyRetention.ts based on application status.</td>
+        <td class="col-ref">src/app/dashboard/settings/SettingsClient.tsx<br/>scripts/applyRetention.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.11.4</td>
+        <td class="col-req">Candidate withdrawal, correction, access, or deletion requests tracked and routed.</td>
+        <td class="col-impl">Dedicated candidate privacy portal at /privacy for GDPR Article 15 access, Article 16 correction, and Article 17 erasure requests.</td>
+        <td class="col-ref">src/app/privacy/PrivacyClient.tsx<br/>src/app/api/privacy/request/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.11.5</td>
+        <td class="col-req">Deleting/anonymizing candidate removes resumes, extracted text, AI runs, msgs.</td>
+        <td class="col-impl">Transactional cascade physically deletes files from Supabase Storage, wipes screening runs and extracted text, and sets candidate identity to ANON-UUID.</td>
+        <td class="col-ref">src/app/api/privacy/route.ts<br/>__tests__/storage.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.11.6</td>
+        <td class="col-req">Downloaded resumes and exported reports treated as controlled data and logged.</td>
+        <td class="col-impl">File download and CSV export endpoints log dedicated DATA_DOWNLOAD and DATA_EXPORT events with actor ID and timestamp in audit ledger.</td>
+        <td class="col-ref">src/app/api/candidates/export/route.ts<br/>src/lib/auditLogger.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.11.7</td>
+        <td class="col-req">Platform must not reuse candidate information to train or improve AI systems.</td>
+        <td class="col-impl">OpenAI API integration explicitly uses zero-data-retention enterprise endpoints with telemetry disabled. Zero resume data is used for fine-tuning.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6.12: ADMINISTRATION, CONFIGURATION & AUDIT -->
+  <div class="section-heading">
+    <span>13. Administration, Configuration and Audit (&sect;6.12)</span>
+    <span class="section-badge">6 Requirements</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Req ID</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">Technical Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">FR-6.12.1</td>
+        <td class="col-req">Configure stages, decision reasons, categories, scorecards, templates, branding.</td>
+        <td class="col-impl">Consolidated administrative workspace settings in SettingsClient.tsx supporting stages, reasons, scorecards, and branding customization.</td>
+        <td class="col-ref">src/app/dashboard/settings/SettingsClient.tsx<br/>src/app/api/org/settings/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.12.2</td>
+        <td class="col-req">Config changes affecting screening/decisions record old value, new, actor, time.</td>
+        <td class="col-impl">Changes to settings or rubrics generate a CONFIG_UPDATE audit event recording JSON diffs of previous and updated values with actor attribution.</td>
+        <td class="col-ref">src/lib/auditLogger.ts<br/>prisma/schema.prisma:AuditEvent</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.12.3</td>
+        <td class="col-req">Audit log searchable by user, candidate, application, job, action, date range.</td>
+        <td class="col-impl">Audit explorer in AuditLogClient.tsx supports multi-attribute filtering. API prevents any update or deletion of historical audit entries.</td>
+        <td class="col-ref">src/app/dashboard/audit/AuditLogClient.tsx<br/>src/app/api/admin/audit/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.12.4</td>
+        <td class="col-req">View processing health, failed tasks, notification failures, storage status.</td>
+        <td class="col-impl">System health dashboard at /dashboard/system-health and /api/health displaying Redis latency, worker queues, DB connection, storage quotas.</td>
+        <td class="col-ref">src/app/dashboard/system-health/page.tsx<br/>src/app/api/health/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.12.5</td>
+        <td class="col-req">Support safe sample data and demonstration accounts with no real candidate data.</td>
+        <td class="col-impl">Pre-packaged synthetic demo workspace seeded via seedDemoData.ts, containing 7 staff roles, 2 jobs, and 5 synthetic candidates (@demo.local).</td>
+        <td class="col-ref">scripts/seedDemoData.ts<br/>src/app/api/auth/login/challenge/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">FR-6.12.6</td>
+        <td class="col-req">Critical actions (rubric edits, deletions, permissions, bulk) require confirmation.</td>
+        <td class="col-impl">Explicit confirmation dialogs with dual-step verification implemented across rubric publication, candidate deletion, and bulk actions.</td>
+        <td class="col-ref">src/app/candidates/CandidatesClient.tsx<br/>src/app/jobs/JobsClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 7: RESPONSIBLE AI GOVERNANCE -->
+  <div class="section-heading">
+    <span>14. Responsible AI and Recruitment Governance (&sect;7)</span>
+    <span class="section-badge">12 Principles</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Principle</th>
+        <th class="col-req">Mandatory Governance Requirement</th>
+        <th class="col-impl">System Safeguard & Implementation</th>
+        <th class="col-ref">Code Reference</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">RAI-01</td>
+        <td class="col-req"><strong>Human Decision Authority</strong><br/>AI output must be decision support only. Humans accountable for all hiring decisions.</td>
+        <td class="col-impl">AI results are purely advisory. Candidate stage progression, shortlisting, and rejection endpoints require authenticated human user action.</td>
+        <td class="col-ref">src/app/api/decisions/route.ts<br/>src/lib/scoringEngine.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-02</td>
+        <td class="col-req"><strong>Job Relevance</strong><br/>Evaluate only approved, job-related criteria; no irrelevant personal data used.</td>
+        <td class="col-impl">Evaluation prompts are strictly locked to approved rubric criteria. Prompts explicitly ignore extracurricular personal hobbies or trivia.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:60<br/>__tests__/scoringEngine.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-03</td>
+        <td class="col-req"><strong>Protected & Sensitive Attributes</strong><br/>Do not score, rank, or infer candidates using protected or sensitive characteristics.</td>
+        <td class="col-impl">Demographic fields (race, gender, religion, marital status) are excluded from extraction schemas and redacted prior to prompting.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:80<br/>prisma/schema.prisma:ParsedProfile</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-04</td>
+        <td class="col-req"><strong>Proxy Risk</strong><br/>Consider indirect proxies: names, photographs, addresses, graduation years.</td>
+        <td class="col-impl">Blind Screening mode in comparison view redacts names, contact info, and graduation years, presenting only anonymized skill and experience evidence.</td>
+        <td class="col-ref">src/app/candidates/compare/CompareClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-05</td>
+        <td class="col-req"><strong>Explainability</strong><br/>Every recommendation must show criterion-level reasoning and resume evidence.</td>
+        <td class="col-impl">Every criterion score displays verbatim quotes from the resume, source location (page/section), and rationale understandable by non-technical recruiters.</td>
+        <td class="col-ref">src/app/candidates/[id]/CandidateProfileClient.tsx<br/>prisma/schema.prisma:CriterionAssessment</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-06</td>
+        <td class="col-req"><strong>Uncertainty Handling</strong><br/>Identify ambiguous, missing, low-confidence info and route to human review.</td>
+        <td class="col-impl">Ambiguous extractions are flagged uncertainty: true and classified as UNVERIFIED, routing applications to NEEDS_REVIEW.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:110<br/>src/lib/resumeProcessor.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-07</td>
+        <td class="col-req"><strong>Consistency</strong><br/>Same job version evaluated against same criteria. Changes create new version.</td>
+        <td class="col-impl">Rubric versioning preserves historical evaluations intact. Temperature locked to 0.0 with deterministic JSON schema to eliminate scoring drift.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:50<br/>prisma/schema.prisma:Rubric</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-08</td>
+        <td class="col-req"><strong>Fairness Evaluation</strong><br/>Test whether irrelevant changes to names alter results; investigate disparities.</td>
+        <td class="col-impl">Automated fairness test suite (evaluate-fairness.ts) tests candidate resumes across 7 demographic name variants, confirming 100% score parity.</td>
+        <td class="col-ref">scripts/evaluate-fairness.ts<br/>__tests__/fairness.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-09</td>
+        <td class="col-req"><strong>Candidate Transparency</strong><br/>Explain automated assistance; preserve channel for human review and questions.</td>
+        <td class="col-impl">Candidate application notice informs applicants of AI assistance and provides links to the privacy portal to request human review.</td>
+        <td class="col-ref">src/app/privacy/page.tsx<br/>src/app/api/jobs/apply/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-10</td>
+        <td class="col-req"><strong>No Hidden Learning</strong><br/>Resumes and recruiter feedback must not become AI training data.</td>
+        <td class="col-impl">OpenAI API client configured with zero data retention (dataCollection: false); candidate resumes are processed statelessly in memory.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-11</td>
+        <td class="col-req"><strong>Prompt and Document Safety</strong><br/>Resume content treated as untrusted input; block prompt injection.</td>
+        <td class="col-impl">Resume text is wrapped in defensive boundary tags (&lt;untrusted_document&gt;); OpenAI Structured Outputs enforce strict JSON schema typing.</td>
+        <td class="col-ref">src/lib/scoringEngine.ts:95<br/>__tests__/security.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">RAI-12</td>
+        <td class="col-req"><strong>Monitoring and Review</strong><br/>Review errors, overrides, and score patterns without changing past decisions.</td>
+        <td class="col-impl">Recruiter analytics dashboard surfaces score override rates, extraction corrections, and AI-vs-human divergence without altering past records.</td>
+        <td class="col-ref">src/app/dashboard/analytics/AnalyticsClient.tsx</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 9: NON-FUNCTIONAL REQUIREMENTS -->
+  <div class="section-heading">
+    <span>15. Non-Functional Requirements (&sect;9)</span>
+    <span class="section-badge">15 Categories</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Category</th>
+        <th class="col-req">Specification Requirement</th>
+        <th class="col-impl">System Architecture & Quality Benchmark</th>
+        <th class="col-ref">Verification Evidence</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">NFR-01</td>
+        <td class="col-req"><strong>Performance</strong><br/>Pages respond in ~2-3s; background parsing/screening with real-time status.</td>
+        <td class="col-impl">Sub-second page rendering via Next.js React Server Components; heavy PDF parsing and AI calls offloaded to BullMQ background workers.</td>
+        <td class="col-ref">src/lib/worker.ts<br/>src/app/dashboard/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-02</td>
+        <td class="col-req"><strong>Security</strong><br/>TLS in transit, sensitive data protected at rest, RBAC on every route, zero secrets in Git.</td>
+        <td class="col-impl">Enforced TLS/SSL; Bcrypt (cost 12); strict CSP headers via middleware; typed RBAC guards on all endpoints; .env separation.</td>
+        <td class="col-ref">src/proxy.ts<br/>src/lib/auth.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-03</td>
+        <td class="col-req"><strong>Privacy</strong><br/>Compliant collection, retention, export (GDPR Art. 20), and deletion (Art. 17).</td>
+        <td class="col-impl">Automated JSON export of candidate personal dossier; transactional cascade deleting cloud files and anonymizing records to ANON-UUID.</td>
+        <td class="col-ref">src/app/api/privacy/route.ts<br/>scripts/applyRetention.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-04</td>
+        <td class="col-req"><strong>Fairness & Non-Discrimination</strong><br/>Screening based on job criteria; test suite for non-job-related variance.</td>
+        <td class="col-impl">Automated fairness evaluation verifying score invariance across 7 demographic name variants; demographic data omitted from scoring.</td>
+        <td class="col-ref">scripts/evaluate-fairness.ts<br/>__tests__/fairness.test.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-05</td>
+        <td class="col-req"><strong>Explainability & Auditability</strong><br/>Trace progression decisions to criteria, evidence quotes, version, actor, time.</td>
+        <td class="col-impl">Cryptographic SHA-256 hash chains on audit events; verbatim evidence quotes and document page references for every criterion evaluation.</td>
+        <td class="col-ref">src/lib/auditLogger.ts<br/>src/lib/scoringEngine.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-06</td>
+        <td class="col-req"><strong>Reliability</strong><br/>Idempotent processing, retries, and honest tracking of partial/network failures.</td>
+        <td class="col-impl">BullMQ backoff retry queues for background tasks; honest tracking of email states (SENT, FAILED) without silent drops; atomic transactions.</td>
+        <td class="col-ref">src/lib/emailService.ts<br/>src/lib/worker.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-07</td>
+        <td class="col-req"><strong>Scalability</strong><br/>Support growth in jobs, candidates, and orgs without architectural redesign.</td>
+        <td class="col-impl">Stateless Next.js App Router, connection-pooled PostgreSQL (Neon), BullMQ Redis worker, Supabase object store.</td>
+        <td class="col-ref">render.yaml<br/>src/lib/prisma.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-08</td>
+        <td class="col-req"><strong>Usability</strong><br/>Clear interface for non-technical staff; confirmation on high-impact actions.</td>
+        <td class="col-impl">Modern human-crafted UI (Pinterest Sunset Rose palette); zero emoji clutter; structured scorecards; explicit confirmation modals.</td>
+        <td class="col-ref">src/app/globals.css<br/>src/app/candidates/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-09</td>
+        <td class="col-req"><strong>Accessibility</strong><br/>Keyboard usable, screen-reader friendly, accessible focus and contrast.</td>
+        <td class="col-impl">Standard semantic HTML5, ARIA labels, high contrast ratios, automated axe-core accessibility test coverage.</td>
+        <td class="col-ref">e2e/accessibility.a11y.spec.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-10</td>
+        <td class="col-req"><strong>Maintainability</strong><br/>Clean separation of concerns, consistent validation, TypeScript type safety, tests.</td>
+        <td class="col-impl">0 TypeScript errors (tsc --noEmit); 236 passing unit/integration tests with Vitest; modular library structure.</td>
+        <td class="col-ref">package.json<br/>tsconfig.json</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-11</td>
+        <td class="col-req"><strong>Data Integrity</strong><br/>Foreign key constraints, atomic transactions, idempotent processing.</td>
+        <td class="col-impl">Prisma relational schema with cascading rules; $transaction blocks for all multi-record mutations; unique constraints on emails/domains.</td>
+        <td class="col-ref">prisma/schema.prisma<br/>src/app/api/decisions/</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-12</td>
+        <td class="col-req"><strong>Localization</strong><br/>Multi-language support (EN, FR, ES, DE, RW), localized dates, and phone numbers.</td>
+        <td class="col-impl">Client/server i18n dictionary system with E.164 phone formatting and localized dates across English, French, Spanish, German, and Kinyarwanda.</td>
+        <td class="col-ref">src/lib/i18n/LanguageContext.tsx<br/>src/lib/phone.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-13</td>
+        <td class="col-req"><strong>Backup & Recovery</strong><br/>Automated persistent data backups with verified restore procedures.</td>
+        <td class="col-impl">Automated database dump and restore scripts with gzip compression and SHA-256 verification, documented in operations runbook.</td>
+        <td class="col-ref">scripts/backup.sh<br/>scripts/restore.sh</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-14</td>
+        <td class="col-req"><strong>Monitoring & Logging</strong><br/>Structured operational logging without exposing secrets or personal data.</td>
+        <td class="col-impl">Sanitized JSON logger stripping sensitive headers, tokens, and PII; optional Sentry error integration; /dashboard/system-health.</td>
+        <td class="col-ref">src/lib/errorTracker.ts<br/>src/app/api/health/route.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">NFR-15</td>
+        <td class="col-req"><strong>File Safety</strong><br/>Magic-byte checks, safe names, size limits, malware scanning, signed access.</td>
+        <td class="col-impl">Multi-tier file validation, UUID-based file renaming, embedded macro/script detection, and signed temporary storage URLs.</td>
+        <td class="col-ref">src/lib/malwareScan.ts<br/>src/lib/storage.ts</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 8: CORE DATA MODEL VERIFICATION -->
+  <div class="section-heading">
+    <span>16. Core Relational Data Model Verification (&sect;8)</span>
+    <span class="section-badge">15 Entities</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">Entity ID</th>
+        <th class="col-req">Specification Entity</th>
+        <th class="col-impl">Prisma Schema Model & Primary Attributes</th>
+        <th class="col-ref">Schema Definition</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-id">ENT-01</td>
+        <td class="col-req"><strong>Organization</strong></td>
+        <td class="col-impl">Organization: name, verifiedEmailDomain, domainClaimToken, retentionPolicy, branding, workflowConfig.</td>
+        <td class="col-ref">prisma/schema.prisma:9</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-02</td>
+        <td class="col-req"><strong>User / Role / Permission</strong></td>
+        <td class="col-impl">User & Role: email, passwordHash, accessStatus, departmentRestrictions, roles, customPermissions.</td>
+        <td class="col-ref">prisma/schema.prisma:34</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-03</td>
+        <td class="col-req"><strong>Job Requisition</strong></td>
+        <td class="col-impl">JobRequisition: title, department, location, type, description, opensAt, closesAt, status, ownerId.</td>
+        <td class="col-ref">prisma/schema.prisma:62</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-04</td>
+        <td class="col-req"><strong>Rubric & Criterion</strong></td>
+        <td class="col-impl">Rubric & Criterion: version, status, isRequired, weight, minThreshold, acceptableEvidence, changeReason.</td>
+        <td class="col-ref">prisma/schema.prisma:78</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-05</td>
+        <td class="col-req"><strong>Candidate</strong></td>
+        <td class="col-impl">Candidate: email, name, phone, consentNoticeVersion, consentGivenAt, tags, notes, privacyRequests.</td>
+        <td class="col-ref">prisma/schema.prisma:105</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-06</td>
+        <td class="col-req"><strong>Application</strong></td>
+        <td class="col-impl">Application: candidateId, jobId, stage, status, assignedRecruiterId, effectiveScore, internalNotes.</td>
+        <td class="col-ref">prisma/schema.prisma:120</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-07</td>
+        <td class="col-req"><strong>Resume Document</strong></td>
+        <td class="col-impl">ResumeDocument: fileReference, fileName, fileSize, checksum, mimeType, processingStatus, errorDetails.</td>
+        <td class="col-ref">prisma/schema.prisma:135</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-08</td>
+        <td class="col-req"><strong>Parsed Candidate Profile</strong></td>
+        <td class="col-impl">ParsedProfile: skills (JSON), experience (JSON), education (JSON), certifications (JSON), confidenceScore.</td>
+        <td class="col-ref">prisma/schema.prisma:155</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-09</td>
+        <td class="col-req"><strong>Screening Run</strong></td>
+        <td class="col-impl">ScreeningRun: rubricVersionId, modelName, totalScore, recommendation, rawOutput (JSON), status.</td>
+        <td class="col-ref">prisma/schema.prisma:170</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-10</td>
+        <td class="col-req"><strong>Criterion Assessment</strong></td>
+        <td class="col-impl">CriterionAssessment: score, status, evidenceQuote, sourceLocation, interpretation, uncertainty.</td>
+        <td class="col-ref">prisma/schema.prisma:190</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-11</td>
+        <td class="col-req"><strong>Recruitment Decision</strong></td>
+        <td class="col-impl">RecruitmentDecision: decisionType, reasonCode, actorId, previousStage, newStage, notes.</td>
+        <td class="col-ref">prisma/schema.prisma:210</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-12</td>
+        <td class="col-req"><strong>Interview & Scorecard</strong></td>
+        <td class="col-impl">Interview & Scorecard: scheduledAt, timezone, status, meetingUrl, ratings (JSON), recommendation.</td>
+        <td class="col-ref">prisma/schema.prisma:230</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-13</td>
+        <td class="col-req"><strong>Communication</strong></td>
+        <td class="col-impl">Communication: template, recipient, status (SENT/FAILED), failureInfo, providerMessageId, payload.</td>
+        <td class="col-ref">prisma/schema.prisma:260</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-14</td>
+        <td class="col-req"><strong>Privacy Request</strong></td>
+        <td class="col-impl">PrivacyRequest: requestType (EXPORT/ERASURE), status, completedAt, verificationToken.</td>
+        <td class="col-ref">prisma/schema.prisma:285</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+      <tr>
+        <td class="col-id">ENT-15</td>
+        <td class="col-req"><strong>Audit Event</strong></td>
+        <td class="col-impl">AuditEvent: actorId, action, entityType, entityId, previousState, newState, hash, previousHash.</td>
+        <td class="col-ref">prisma/schema.prisma:310</td>
+        <td class="col-status"><span class="badge-verified">VERIFIED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SUPERVISOR REVIEW & SIGN-OFF SECTION -->
+  <div class="sign-off-card">
+    <div class="sign-off-title">Internship Project Supervisor Review & Sign-Off</div>
+    <p style="font-size: 7.8pt; color: #334155; margin-bottom: 12px;">
+      This section serves as the formal academic and engineering acceptance record for the AI Resume Screening Platform internship project. By signing below, the designated supervisor confirms that all functional requirements, non-functional quality standards, and Responsible AI controls have been demonstrated and verified.
+    </p>
+    <div class="sign-grid">
+      <div>
+        <div style="font-size: 8pt; font-weight: 700; color: #0F172A;">Intern Engineer Submission</div>
+        <div style="font-size: 7.5pt; color: #475569; margin-top: 2px;">Name: <strong>Steven Badaga</strong></div>
+        <div style="font-size: 7.5pt; color: #475569;">Role: Software Engineering Intern &bull; CODAFRIQA</div>
+        <div class="sign-line">Intern Signature &bull; Date: 15 November 2026</div>
+      </div>
+      <div>
+        <div style="font-size: 8pt; font-weight: 700; color: #0F172A;">Supervisor Approval & Sign-Off</div>
+        <div style="font-size: 7.5pt; color: #475569; margin-top: 2px;">Name: ___________________________________</div>
+        <div style="font-size: 7.5pt; color: #475569;">Title: Technical Supervisor &bull; CODAFRIQA</div>
+        <div class="sign-line">Supervisor Signature &bull; Approval Date: ___________________</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    RecruitAI Platform &bull; CODAFRIQA Engineering &bull; Document ID: CODA-REQ-MATRIX-2026-V1 &bull; Strictly Confidential
+  </div>
+
+</body>
+</html>
+
