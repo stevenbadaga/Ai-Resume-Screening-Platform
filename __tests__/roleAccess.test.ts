@@ -133,5 +133,33 @@ describe('typed permission matrix (ROLE_PERMISSIONS)', () => {
   it('lists roles for a permission in sorted order', () => {
     expect(rolesWithPermission(Permission.OfferJob)).toEqual(['Admin', 'Recruiter']);
     expect(rolesWithPermission(Permission.ManageTeam)).toEqual(['Admin']);
+    expect(rolesWithPermission(Permission.MergeDuplicates)).toEqual(['Admin', 'Recruiter']);
+    expect(rolesWithPermission(Permission.ViewEmailDelivery)).toEqual(['Admin']);
+    expect(rolesWithPermission(Permission.ViewAuditLog)).toEqual(['Admin', 'Auditor', 'ComplianceAuditor']);
+    expect(rolesWithPermission(Permission.ManagePrivacyRequests)).toEqual(['Admin', 'Auditor', 'ComplianceAuditor']);
+  });
+
+  it('guarantees HiringManager cannot extend offers or manage team', () => {
+    expect(roleHasPermission('HiringManager', Permission.OfferJob)).toBe(false);
+    expect(roleHasPermission('HiringManager', Permission.ManageTeam)).toBe(false);
+    expect(roleHasPermission('HiringManager', Permission.MergeDuplicates)).toBe(false);
+    expect(roleHasPermission('HiringManager', Permission.ViewAuditLog)).toBe(false);
+    expect(roleHasPermission('HiringManager', Permission.ViewEmailDelivery)).toBe(false);
+  });
+
+  it('guarantees Interviewer has zero decision or management powers', () => {
+    expect(roleHasPermission('Interviewer', Permission.MakeHiringDecisions)).toBe(false);
+    expect(roleHasPermission('Interviewer', Permission.OverrideScores)).toBe(false);
+    expect(roleHasPermission('Interviewer', Permission.OfferJob)).toBe(false);
+    expect(roleHasPermission('Interviewer', Permission.ManageJobs)).toBe(false);
+    expect(roleHasPermission('Interviewer', Permission.ManageRubrics)).toBe(false);
+    expect(roleHasPermission('Interviewer', Permission.ManageTeam)).toBe(false);
+    expect(roleHasPermission('Interviewer', Permission.ViewAuditLog)).toBe(false);
+  });
+
+  it('guarantees Candidate has zero staff permissions', () => {
+    for (const permission of Object.values(Permission)) {
+      expect(roleHasPermission('Candidate', permission)).toBe(false);
+    }
   });
 });

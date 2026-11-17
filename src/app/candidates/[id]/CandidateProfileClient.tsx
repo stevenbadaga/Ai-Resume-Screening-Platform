@@ -141,6 +141,7 @@ export default function CandidateProfileClient({
   const canScheduleInterviews = allows(Permission.ScheduleInterviews, roleCapabilities.canScheduleInterviews(userRole));
   const canGenerateInterviewQuestions = allows(Permission.GenerateInterviewQuestions, roleCapabilities.canGenerateInterviewQuestions(userRole));
   const canSubmitScorecards = allows(Permission.SubmitScorecards, roleCapabilities.canSubmitScorecards(userRole));
+  const canExtendOffer = allows(Permission.OfferJob, roleHasPermission(userRole, Permission.OfferJob));
   const canRunScreening = allows(Permission.RunScreening, roleHasPermission(userRole, Permission.RunScreening));
   const canContactCandidates = allows(Permission.ContactCandidates, roleHasPermission(userRole, Permission.ContactCandidates));
 
@@ -689,13 +690,15 @@ export default function CandidateProfileClient({
                   >
                     <span>{t('decision_action_reject')}</span>
                   </button>
-                  <button
-                    onClick={() => setShowOfferModal(true)}
-                    className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
-                    title="Extend formal job offer"
-                  >
-                    <span>{t('btn_extend_offer')}</span>
-                  </button>
+                  {canExtendOffer && (
+                    <button
+                      onClick={() => setShowOfferModal(true)}
+                      className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
+                      title="Extend formal job offer"
+                    >
+                      <span>{t('btn_extend_offer')}</span>
+                    </button>
+                  )}
                 </>
               ) : (
                 <>

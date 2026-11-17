@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/auditLogger';
-import { requirePermission } from '@/lib/auth';
+import { requirePermission, canAccessDepartment } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { overrideBodySchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { calculateTotalScore } from '@/lib/scoringEngine';
@@ -35,6 +35,17 @@ export async function POST(req: NextRequest) {
 
       if (application.job.organizationId !== auth.user.organizationId) {
         return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+      }
+
+      if (!canAccessDepartment(auth.user, application.job.department)) {
+        return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+      }
+
+      if (auth.user.role === 'HiringManager' && application.job.ownerId !== auth.user.id) {
+        return NextResponse.json(
+          { error: 'Access restricted: Hiring managers may only override scores for their assigned vacancies' },
+          { status: 403 }
+        );
       }
 
       const latestRun = application.screeningRuns[0];
@@ -74,6 +85,17 @@ export async function POST(req: NextRequest) {
 
     if (assessment.screeningRun.application.job.organizationId !== auth.user.organizationId) {
       return NextResponse.json({ error: 'Assessment not found' }, { status: 404 });
+    }
+
+    if (!canAccessDepartment(auth.user, assessment.screeningRun.application.job.department)) {
+      return NextResponse.json({ error: 'Assessment not found' }, { status: 404 });
+    }
+
+    if (auth.user.role === 'HiringManager' && assessment.screeningRun.application.job.ownerId !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'Access restricted: Hiring managers may only override scores for their assigned vacancies' },
+        { status: 403 }
+      );
     }
 
     const correctionString = `${newResult}|${rationale}`;

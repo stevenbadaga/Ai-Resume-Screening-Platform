@@ -46,6 +46,14 @@ export async function GET(
         candidateName = `${candidate.firstName} ${candidate.lastName}`.trim();
         affectedRecordId = candidate.id;
         candidateEmail = candidate.email;
+
+        const orgApp = await prisma.application.findFirst({
+          where: { candidateId: candidate.id, job: { organizationId: auth.user.organizationId } },
+          select: { job: { select: { organizationId: true } } },
+        });
+        if (orgApp) {
+          orgId = orgApp.job.organizationId;
+        }
       }
     } else if (resume?.application?.candidate) {
       candidateName = `${resume.application.candidate.firstName} ${resume.application.candidate.lastName}`.trim();
@@ -55,12 +63,11 @@ export async function GET(
       return NextResponse.json({ error: 'Resume document not found' }, { status: 404 });
     }
 
-    const isStaff =
-      (auth.user.role === 'Admin' ||
-        (orgId ? auth.user.organizationId === orgId : true)) &&
-      auth.user.role !== 'Candidate';
     const isCandidate =
       Boolean(candidateEmail && auth.user.email.toLowerCase() === candidateEmail.toLowerCase());
+    const isStaff =
+      auth.user.role !== 'Candidate' &&
+      (auth.user.role === 'Admin' || (orgId !== undefined && auth.user.organizationId === orgId));
 
     if (!isStaff && !isCandidate && auth.user.role !== 'Admin') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });

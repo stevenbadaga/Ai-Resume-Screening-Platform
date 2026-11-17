@@ -38,8 +38,10 @@ export async function GET(req: NextRequest) {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
 
-    // Candidates have no access to recruitment analytics.
-    if (auth.user.role === 'Candidate') {
+    // Spec §6.10: Analytics reserved for hiring leadership. Candidates, interviewers,
+    // and compliance auditors have no access to recruitment analytics.
+    const canViewAnalytics = ['Admin', 'Recruiter', 'HiringManager'].includes(auth.user.role);
+    if (!canViewAnalytics) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

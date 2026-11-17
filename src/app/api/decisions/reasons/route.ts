@@ -17,6 +17,10 @@ export async function GET() {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
 
+    if (auth.user.role === 'Candidate') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const org = await prisma.organization.findUnique({
       where: { id: auth.user.organizationId },
       select: { workflowConfig: true },

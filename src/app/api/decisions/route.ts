@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logAuditEvent } from '@/lib/auditLogger';
 import { sendRecordedEmail } from '@/lib/emailService';
 import prisma from '@/lib/prisma';
-import { requirePermission } from '@/lib/auth';
+import { requirePermission, canAccessDepartment } from '@/lib/auth';
 import { Permission } from '@/lib/roleAccess';
 import { decisionSchema, validateBody, safeErrorResponse } from '@/lib/validation';
 import { stageForDecision, statusForStage } from '@/lib/applicationStages';
@@ -29,6 +29,18 @@ export async function POST(req: NextRequest) {
 
     if (!existingApplication || existingApplication.job.organizationId !== auth.user.organizationId) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    if (!canAccessDepartment(auth.user, existingApplication.job.department)) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    // Spec §6.7: Hiring managers must only view and decide on candidates associated with jobs assigned to them.
+    if (auth.user.role === 'HiringManager' && existingApplication.job.ownerId !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'Access restricted: Hiring managers may only manage candidates for their assigned vacancies' },
+        { status: 403 }
+      );
     }
 
     // §6.7: decision reasons come from the org's configured catalog, and

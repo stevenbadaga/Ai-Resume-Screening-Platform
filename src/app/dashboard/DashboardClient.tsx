@@ -60,6 +60,7 @@ export default function DashboardClient({
   // Ops telemetry (spec §6.9) is Admin-only — mirrors the ViewEmailDelivery
   // permission in the RBAC matrix (src/lib/roleAccess.ts).
   const isAdmin = userRole === 'Admin';
+  const canViewAudit = ['Admin', 'ComplianceAuditor', 'Auditor'].includes(userRole);
 
   // Re-fetches the server-rendered telemetry via the Next.js router so the
   // numbers on screen are real data, not a simulated refresh.
@@ -365,9 +366,11 @@ export default function DashboardClient({
         <div className="lg:col-span-7 panel p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="panel-section-title">{t('recent_activity')}</h2>
-            <Link href="/audit" className="link text-[11px]">
-              {t('nav_audit')} &rarr;
-            </Link>
+            {canViewAudit && (
+              <Link href="/audit" className="link text-[11px]">
+                {t('nav_audit')} &rarr;
+              </Link>
+            )}
           </div>
 
           <div className="overflow-x-auto -mx-1 px-1">
