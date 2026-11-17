@@ -268,7 +268,7 @@ export default function CandidatesClient({
 
       {/* Quick Filter Preset Chips */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        <span className="text-[11px] font-mono text-[var(--muted)] mr-1 shrink-0 font-bold">Quick Filters:</span>
+        <span className="text-[11px] font-mono text-[var(--muted)] mr-1 shrink-0 font-bold">{t('quick_filters')}</span>
         <button
           type="button"
           onClick={() => setQuickFilter('ALL')}
@@ -277,7 +277,7 @@ export default function CandidatesClient({
             : 'bg-[var(--surface-muted)] text-[var(--foreground)] hover:bg-[var(--border)]'
             }`}
         >
-          All Candidates ({applications.length})
+          {t('total_candidates')} ({applications.length})
         </button>
         <button
           type="button"
@@ -287,7 +287,7 @@ export default function CandidatesClient({
             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
             }`}
         >
-          <span>Needs Review</span>
+          <span>{t('filter_needs_review')}</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">{reviewCount}</span>
         </button>
         <button
@@ -298,7 +298,7 @@ export default function CandidatesClient({
             : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
             }`}
         >
-          <span>Top Matches (≥80%)</span>
+          <span>{t('filter_top_matches')}</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
             {applications.filter((a) => (Number(a.screeningRuns?.[0]?.effectiveResult ?? a.screeningRuns?.[0]?.totalResult) || 0) >= 80).length}
           </span>
@@ -311,7 +311,7 @@ export default function CandidatesClient({
             : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
             }`}
         >
-          <span>Required Failed (0%)</span>
+          <span>{t('filter_req_failed')}</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
             {applications.filter((a) => a.screeningRuns?.length && (Number(a.screeningRuns?.[0]?.effectiveResult ?? a.screeningRuns?.[0]?.totalResult) || 0) === 0).length}
           </span>
@@ -324,7 +324,7 @@ export default function CandidatesClient({
             : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20'
             }`}
         >
-          <span>Interviewing</span>
+          <span>{t('filter_interviewing')}</span>
           <span className="font-mono text-[10px] px-1 rounded bg-black/10 dark:bg-white/10">
             {applications.filter((a) => (a.stage || a.status || '').toUpperCase().includes('INTERVIEW')).length}
           </span>
@@ -439,7 +439,7 @@ export default function CandidatesClient({
                 <Link
                   href={`/candidates/compare?ids=${Array.from(selectedIds).join(',')}`}
                   className="chip chip-info !cursor-pointer hover:brightness-95 transition flex items-center gap-1 font-bold"
-                  title="Compare selected candidates side-by-side against the approved rubric"
+                  title={t('compare_selected_title')}
                 >
                   <span>{t('bulk_compare') || `Compare Selected (${selectedIds.size})`}</span>
                 </Link>

@@ -8,12 +8,14 @@ import UserNav from '@/components/UserNav';
 import NotificationBell from '@/components/NotificationBell';
 import { ThemeToggle } from '@/components/ThemeProvider';
 import LanguageSelector from '@/components/LanguageSelector';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 const SupportWidget = dynamic(() => import('@/components/SupportWidget'));
 const CommandPalette = dynamic(() => import('@/components/CommandPalette'));
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const isStandalonePage = pathname === '/' || pathname.startsWith('/auth/');
 
   if (isStandalonePage) {
@@ -65,7 +67,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <span className="hidden sm:inline font-medium text-[11px]">Search platform…</span>
+              <span className="hidden sm:inline font-medium text-[11px]">{t('spotlight_search_label')}</span>
               <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-mono font-semibold rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)]">
                 ⌘K
               </kbd>

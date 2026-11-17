@@ -267,20 +267,20 @@ export default function ProfileClient({ account, candidate }: Props) {
 
       {!isCandidate && (
         <section className="panel p-5 sm:p-6 space-y-3">
-          <h2 className="text-sm font-bold text-[var(--foreground)]">Workspace & Role Information</h2>
+          <h2 className="text-sm font-bold text-[var(--foreground)]">{t('profile_workspace_role_info')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]">
-              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-medium">Assigned Role</p>
+              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-medium">{t('profile_assigned_role_label')}</p>
               <p className="font-semibold text-sm mt-0.5">{account.role}</p>
               <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] mt-1">
-                Permissions are managed by your workspace Administrator.
+                {t('session_enforced')}
               </p>
             </div>
             <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]">
-              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-medium">Organization</p>
+              <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] font-medium">{t('profile_organization_label')}</p>
               <p className="font-semibold text-sm mt-0.5">{account.organizationName || 'Default Workspace'}</p>
               <p className="text-[11px] text-[color-mix(in_srgb,var(--foreground)_55%,transparent)] mt-1">
-                Multi-tenant tenant partition active.
+                {t('active_session')}
               </p>
             </div>
           </div>

@@ -180,7 +180,7 @@ export default function Navigation() {
             <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-            <span className="max-w-full truncate">More</span>
+            <span className="max-w-full truncate">{t('nav_more')}</span>
           </button>
         )}
       </nav>
@@ -200,7 +200,7 @@ export default function Navigation() {
           >
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-xs uppercase tracking-wider text-[var(--foreground)]">More Workspace Views</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-[var(--foreground)]">{t('nav_more_views')}</span>
                 <span className="chip chip-accent !text-[9px]">{userRole}</span>
               </div>
               <button

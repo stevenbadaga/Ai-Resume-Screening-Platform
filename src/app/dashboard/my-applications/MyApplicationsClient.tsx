@@ -164,7 +164,7 @@ export default function MyApplicationsClient({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by job title or department..."
+              placeholder={t('my_apps_search_placeholder')}
               className="field !pl-8 !py-1.5 text-xs w-full"
               aria-label="Search applications"
             />
@@ -227,9 +227,9 @@ export default function MyApplicationsClient({
         </div>
       ) : filteredApplications.length === 0 ? (
         <div className="panel p-8 text-center space-y-2">
-          <p className="text-xs text-[var(--muted)]">No applications match your current filters.</p>
+          <p className="text-xs text-[var(--muted)]">{t('my_apps_no_matches')}</p>
           <button onClick={() => { setSearch(''); setFilterStage('ALL'); }} className="btn btn-secondary btn-sm">
-            Reset Filters
+            {t('filter_clear_all')}
           </button>
         </div>
       ) : (
@@ -424,7 +424,7 @@ export default function MyApplicationsClient({
                   id="withdraw-reason"
                   value={withdrawReason}
                   onChange={(e) => setWithdrawReason(e.target.value)}
-                  placeholder="e.g., Accepted another offer, relocation, no longer available..."
+                  placeholder={t('my_apps_withdraw_placeholder')}
                   rows={3}
                   className="field w-full text-xs"
                 />

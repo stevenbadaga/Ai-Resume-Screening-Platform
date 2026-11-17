@@ -1,7 +1,6 @@
 export type SupportedLanguage = 'en' | 'fr' | 'es' | 'de' | 'rw';
 
 export interface TranslationDictionary {
-  // Navigation
   nav_dashboard: string;
   nav_candidates: string;
   nav_compare: string;
@@ -26,8 +25,6 @@ export interface TranslationDictionary {
   profile_experience: string;
   profile_save: string;
   profile_saved: string;
-
-  // Header & Global
   search_placeholder: string;
   notifications: string;
   copilot_title: string;
@@ -36,8 +33,6 @@ export interface TranslationDictionary {
   sign_out: string;
   active_session: string;
   spotlight_search: string;
-
-  // AI Copilot UI
   copilot_welcome: string;
   copilot_input_placeholder: string;
   copilot_ask_btn: string;
@@ -48,8 +43,6 @@ export interface TranslationDictionary {
   qp_create_rubric: string;
   qp_questions: string;
   qp_apply_track: string;
-
-  // Dashboard KPI & Funnel
   total_candidates: string;
   avg_match_rate: string;
   open_requisitions: string;
@@ -63,8 +56,6 @@ export interface TranslationDictionary {
   stage_interviewing: string;
   stage_offered: string;
   realtime_sync: string;
-
-  // Candidates Pipeline
   pipeline_title: string;
   pipeline_subtitle: string;
   view_kanban: string;
@@ -79,8 +70,6 @@ export interface TranslationDictionary {
   stage_col: string;
   score_col: string;
   actions_col: string;
-
-  // Candidate Profile / Evaluation
   eval_title: string;
   ocr_stream: string;
   parsed_resume_doc: string;
@@ -103,8 +92,6 @@ export interface TranslationDictionary {
   profile_quick_actions: string;
   profile_ai_match_rationale: string;
   profile_recruitment_decisions: string;
-
-  // Jobs Directory & Requisitions
   jobs_title: string;
   jobs_subtitle: string;
   btn_create_job: string;
@@ -125,8 +112,6 @@ export interface TranslationDictionary {
   create_job_submit_btn: string;
   create_job_weight_label: string;
   create_job_category_label: string;
-
-  // Decisions
   decision_modal_title: string;
   decision_modal_subtitle: string;
   decision_action_label: string;
@@ -140,8 +125,6 @@ export interface TranslationDictionary {
   decision_action_withdraw: string;
   decision_action_review: string;
   decision_history_title: string;
-
-  // Scorecards
   scorecard_modal_title: string;
   scorecard_tech_rating: string;
   scorecard_comm_rating: string;
@@ -154,8 +137,6 @@ export interface TranslationDictionary {
   scorecard_rec_hire: string;
   scorecard_rec_lean_hire: string;
   scorecard_rec_no_hire: string;
-
-  // Candidate profile detail (modals, fallbacks, toasts)
   cprofile_status_label: string;
   cprofile_no_resume_text: string;
   cprofile_summary_fallback: string;
@@ -211,15 +192,11 @@ export interface TranslationDictionary {
   toast_evidence_located: string;
   toast_blind_enabled: string;
   toast_pii_revealed: string;
-
-  // Compare & Benchmark
   compare_title: string;
   compare_subtitle: string;
   compare_badge: string;
   compare_full_eval: string;
   compare_criteria_breakdown: string;
-
-  // Duplicates
   duplicates_title: string;
   duplicates_subtitle: string;
   duplicates_merge_btn: string;
@@ -234,8 +211,6 @@ export interface TranslationDictionary {
   dup_profiles_count: string;
   dup_merging: string;
   dup_applications_count: string;
-
-  // My Applications
   my_apps_title: string;
   my_apps_subtitle: string;
   my_apps_empty: string;
@@ -243,8 +218,9 @@ export interface TranslationDictionary {
   my_apps_submissions: string;
   my_apps_applied_on: string;
   my_apps_general_app: string;
-
-  // Team & RBAC
+  personalized_welcome: string;
+  personalized_shortlisted: string;
+  personalized_interviewing: string;
   team_title: string;
   team_subtitle: string;
   tab_internal_staff: string;
@@ -252,8 +228,6 @@ export interface TranslationDictionary {
   btn_invite_member: string;
   btn_edit_role: string;
   promote_btn: string;
-
-  // Audit
   audit_title: string;
   audit_subtitle: string;
   sha256_verified: string;
@@ -262,8 +236,6 @@ export interface TranslationDictionary {
   actor_col: string;
   affected_col: string;
   integrity_col: string;
-
-  // Privacy & GDPR
   privacy_title: string;
   privacy_subtitle: string;
   btn_export_data: string;
@@ -273,8 +245,6 @@ export interface TranslationDictionary {
   privacy_erasure_title: string;
   privacy_erasure_desc: string;
   privacy_erasure_warning: string;
-
-  // Command Palette & Notifications & Support
   cmd_palette_placeholder: string;
   cmd_palette_no_results: string;
   cmd_cat_navigation: string;
@@ -289,16 +259,12 @@ export interface TranslationDictionary {
   support_widget_title: string;
   support_widget_placeholder: string;
   support_widget_send: string;
-
-  // Common UI
   cancel: string;
   save: string;
   confirm: string;
   loading: string;
   success: string;
   error: string;
-
-  // Apply form & requisition lifecycle
   first_name: string;
   last_name: string;
   email_addr: string;
@@ -321,8 +287,6 @@ export interface TranslationDictionary {
   apply_file_hint: string;
   apply_error_no_cv: string;
   apply_error_no_consent: string;
-
-  // Erasure confirm & auth/session
   erasure_warning: string;
   sign_in: string;
   session_enforced: string;
@@ -332,14 +296,10 @@ export interface TranslationDictionary {
   role_interviewer_desc: string;
   role_auditor_desc: string;
   role_candidate_desc: string;
-
-  // Nav extras
   nav_settings: string;
   nav_system_health: string;
   active_role: string;
   brand_tagline: string;
-
-  // Dashboard extras
   workspace_overview: string;
   btn_review_applications: string;
   kpi_across_jobs: string;
@@ -379,8 +339,6 @@ export interface TranslationDictionary {
   telemetry_email_banner: string;
   telemetry_email_banner_one: string;
   telemetry_email_review: string;
-
-  // Candidates pipeline extras
   metric_visible_apps: string;
   metric_needs_review: string;
   metric_avg_match: string;
@@ -431,8 +389,6 @@ export interface TranslationDictionary {
   aria_select_all: string;
   aria_pipeline_pagination: string;
   applicants_count: string;
-
-  // Jobs extras
   status_closed: string;
   jobs_search_placeholder: string;
   aria_search_requisitions: string;
@@ -517,8 +473,6 @@ export interface TranslationDictionary {
   toast_close_failed: string;
   toast_network_close: string;
   toast_incomplete_response: string;
-
-  // My applications extras
   my_apps_score_hint: string;
   my_apps_empty_tip: string;
   my_apps_profile_link: string;
@@ -526,16 +480,6 @@ export interface TranslationDictionary {
   match_band_strong: string;
   match_band_good: string;
   match_band_building: string;
-  personalized_welcome: string;
-  personalized_shortlisted: string;
-  personalized_interviewing: string;
-  apply_personalized_title: string;
-  apply_personalized_desc: string;
-  apply_personalized_email_note: string;
-  apply_personalized_saved_cv: string;
-  apply_personalized_using_saved_cv: string;
-
-  // Profile extras
   profile_workspace_candidate: string;
   profile_workspace_account: string;
   profile_display_name: string;
@@ -563,8 +507,6 @@ export interface TranslationDictionary {
   profile_personalized_greeting: string;
   profile_completion_status: string;
   profile_completion_hint: string;
-
-  // Audit extras
   audit_search_actor: string;
   audit_search_actor_aria: string;
   audit_search_action: string;
@@ -582,8 +524,6 @@ export interface TranslationDictionary {
   btn_search: string;
   audit_sealed: string;
   audit_logs_count: string;
-
-  // Team extras
   team_accounts_badge: string;
   team_domain_title: string;
   team_domain_desc: string;
@@ -644,8 +584,6 @@ export interface TranslationDictionary {
   team_verify_network: string;
   team_domain_already: string;
   team_user_fallback: string;
-
-  // Settings extras
   settings_title: string;
   settings_subtitle: string;
   settings_tab_workflow: string;
@@ -681,8 +619,6 @@ export interface TranslationDictionary {
   settings_failed_retention: string;
   settings_remove_reason: string;
   settings_remove_category: string;
-
-  // Analytics extras
   analytics_metrics_badge: string;
   analytics_subtitle: string;
   analytics_filter_from: string;
@@ -716,8 +652,6 @@ export interface TranslationDictionary {
   analytics_col_median: string;
   analytics_definitions: string;
   analytics_error: string;
-
-  // Email delivery extras
   email_title: string;
   email_subtitle: string;
   email_back: string;
@@ -740,8 +674,6 @@ export interface TranslationDictionary {
   email_retry_network: string;
   email_ops_badge: string;
   email_all_templates: string;
-
-  // Privacy extras
   privacy_requests_title: string;
   privacy_requests_desc: string;
   privacy_request_correction: string;
@@ -765,8 +697,6 @@ export interface TranslationDictionary {
   privacy_erasure_success: string;
   privacy_export_failed: string;
   privacy_erasure_failed: string;
-
-  // Compare extras
   compare_matrix_title: string;
   compare_matrix_subtitle: string;
   compare_col_candidate: string;
@@ -781,10 +711,9 @@ export interface TranslationDictionary {
   compare_restricted_desc: string;
   compare_restricted_cta: string;
   compare_return_dashboard: string;
-
-  // Errors & misc
   error_generic_title: string;
-  btn_try_again: string; apply_legacy_title: string;
+  btn_try_again: string;
+  apply_legacy_title: string;
   apply_legacy_desc: string;
   apply_legacy_select: string;
   apply_legacy_first_name: string;
@@ -797,7 +726,11 @@ export interface TranslationDictionary {
   apply_legacy_status_uploading: string;
   apply_legacy_status_success: string;
   apply_legacy_upload_failed: string;
-
+  apply_personalized_title: string;
+  apply_personalized_desc: string;
+  apply_personalized_email_note: string;
+  apply_personalized_saved_cv: string;
+  apply_personalized_using_saved_cv: string;
   interview_badge: string;
   interview_title: string;
   interview_subtitle: string;
@@ -816,8 +749,6 @@ export interface TranslationDictionary {
   interview_submitting: string;
   interview_back: string;
   interview_error: string;
-
-  // Copilot conversation UX
   copilot_thinking: string;
   copilot_error_network: string;
   copilot_error_service: string;
@@ -830,8 +761,6 @@ export interface TranslationDictionary {
   copilot_chip_apply: string;
   copilot_chip_track: string;
   copilot_chip_permissions: string;
-
-  // AI score feedback loop
   feedback_thanks: string;
   feedback_question: string;
   feedback_placeholder: string;
@@ -839,8 +768,6 @@ export interface TranslationDictionary {
   feedback_no: string;
   toast_telemetry_refreshed: string;
   toast_telemetry_title: string;
-
-  // Screening re-run + run history (§6.5)
   btn_rerun_screening: string;
   btn_screening_queued: string;
   toast_screening_queued: string;
@@ -849,8 +776,6 @@ export interface TranslationDictionary {
   screening_history_empty: string;
   screening_history_latest: string;
   screening_history_col_rubric: string;
-
-  // Candidate messaging: preview & edit before send (§6.9)
   btn_message_candidate: string;
   message_modal_title: string;
   message_modal_hint: string;
@@ -870,8 +795,6 @@ export interface TranslationDictionary {
   message_send_btn: string;
   toast_message_sent: string;
   toast_message_failed: string;
-
-  // Account suspension / reactivation (§6.1)
   team_badge_suspended: string;
   team_suspend: string;
   team_reactivate: string;
@@ -879,11 +802,102 @@ export interface TranslationDictionary {
   team_reactivate_confirm: string;
   toast_status_updated: string;
   toast_status_failed: string;
-
-  // Rubric criterion editor: category, threshold, evidence (§6.2)
   criterion_category: string;
   criterion_threshold: string;
   criterion_evidence: string;
+  landing_badge: string;
+  landing_hero_title_1: string;
+  landing_hero_title_highlight: string;
+  landing_hero_desc: string;
+  landing_start_free: string;
+  landing_sign_in: string;
+  landing_feat1_title: string;
+  landing_feat1_desc: string;
+  landing_feat2_title: string;
+  landing_feat2_desc: string;
+  landing_feat3_title: string;
+  landing_feat3_desc: string;
+  landing_cta_candidate_title: string;
+  landing_cta_candidate_desc: string;
+  landing_cta_candidate_btn: string;
+  landing_footer_rights: string;
+  landing_footer_privacy: string;
+  landing_footer_signin: string;
+  auth_portal_access: string;
+  auth_demo_candidate_title: string;
+  auth_demo_candidate_desc: string;
+  auth_demo_candidate_entering: string;
+  auth_demo_candidate_btn: string;
+  auth_staff_login: string;
+  auth_demo_staff_title: string;
+  auth_demo_staff_desc: string;
+  auth_demo_staff_waiting: string;
+  auth_demo_staff_btn: string;
+  forgot_title: string;
+  forgot_subtitle: string;
+  forgot_success_sent: string;
+  forgot_delivery_warning: string;
+  forgot_delivery_help: string;
+  forgot_back_to_signin: string;
+  forgot_send_btn: string;
+  forgot_sending_btn: string;
+  forgot_remember_password: string;
+  reset_missing_token: string;
+  reset_success_redirecting: string;
+  reset_new_password_label: string;
+  reset_confirm_password_label: string;
+  reset_show_password: string;
+  reset_hide_password: string;
+  reset_submit_btn: string;
+  reset_submitting_btn: string;
+  reset_mismatch_error: string;
+  reset_length_error: string;
+  spotlight_search_label: string;
+  nav_more: string;
+  nav_more_views: string;
+  theme_light: string;
+  theme_dark: string;
+  theme_auto: string;
+  theme_light_title: string;
+  theme_dark_title: string;
+  theme_auto_title: string;
+  quick_filters: string;
+  filter_needs_review: string;
+  filter_top_matches: string;
+  filter_req_failed: string;
+  filter_interviewing: string;
+  compare_selected_title: string;
+  btn_return_review: string;
+  btn_mark_hired: string;
+  btn_record_decline: string;
+  cprofile_compose_tooltip: string;
+  cprofile_questions_tooltip: string;
+  cprofile_scorecard_tooltip: string;
+  cprofile_schedule_tooltip: string;
+  cprofile_override_tooltip: string;
+  compare_pdf_tooltip: string;
+  compare_stage_label: string;
+  compare_skills_label: string;
+  compare_threshold_label: string;
+  compare_evidence_rules_label: string;
+  compare_low_confidence_flag: string;
+  compare_analysis_label: string;
+  compare_recruiter_note_label: string;
+  role_admin_option: string;
+  role_recruiter_option: string;
+  role_hiring_manager_option: string;
+  role_interviewer_option: string;
+  role_auditor_option: string;
+  team_resend_invite_tooltip: string;
+  team_remove_member_tooltip: string;
+  team_additional_permissions: string;
+  profile_workspace_role_info: string;
+  profile_assigned_role_label: string;
+  profile_organization_label: string;
+  system_health_title: string;
+  my_apps_search_placeholder: string;
+  my_apps_no_matches: string;
+  my_apps_withdraw_placeholder: string;
 }
 
 export const translations: Record<SupportedLanguage, TranslationDictionary> = {
@@ -912,7 +926,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_experience: 'Experience summary',
     profile_save: 'Save profile',
     profile_saved: 'Profile saved',
-
     search_placeholder: 'Search candidates, jobs, audit logs...',
     notifications: 'Notifications',
     copilot_title: 'RecruitAI Copilot',
@@ -921,8 +934,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     sign_out: 'Sign Out',
     active_session: 'Active Authenticated Session',
     spotlight_search: 'Spotlight Search',
-
-    copilot_welcome: '**Welcome to RecruitAI Copilot!**\n\nI am your multilingual talent intelligence assistant. Ask me anything about candidate screening, rubric construction, role permissions, or privacy compliance.',
+    copilot_welcome: '**Welcome to RecruitAI Copilot!**\\n\\nI am your multilingual talent intelligence assistant. Ask me anything about candidate screening, rubric construction, role permissions, or privacy compliance.',
     copilot_input_placeholder: 'Ask anything about candidates, rubrics, roles...',
     copilot_ask_btn: 'Ask',
     copilot_clear_btn: 'Clear',
@@ -932,7 +944,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     qp_create_rubric: 'Create Rubric',
     qp_questions: 'Interview Questions',
     qp_apply_track: 'Apply & track',
-
     total_candidates: 'Total Applicants',
     avg_match_rate: 'Average Match Rate',
     open_requisitions: 'Open Requisitions',
@@ -946,7 +957,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_interviewing: 'Interviewing',
     stage_offered: 'Offered',
     realtime_sync: 'Sync Telemetry',
-
     pipeline_title: 'Candidate Evaluation Pipeline',
     pipeline_subtitle: 'Multi-stage applicant tracking with objective evaluation rubrics and verified evidence.',
     view_kanban: 'Kanban Board',
@@ -961,7 +971,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_col: 'Pipeline Stage',
     score_col: 'Match Score',
     actions_col: 'Actions',
-
     eval_title: 'Candidate Evaluation',
     ocr_stream: 'OCR Text Stream',
     parsed_resume_doc: 'Parsed Resume Document',
@@ -984,7 +993,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_quick_actions: 'Recruiter Actions',
     profile_ai_match_rationale: 'Explainable AI Match Breakdown',
     profile_recruitment_decisions: 'Recruitment Decisions History',
-
     jobs_title: 'Job Requisitions & Scoring Rubrics',
     jobs_subtitle: 'Define open roles, target departments, and assign weighted criteria to build explainable AI screening rubrics.',
     btn_create_job: '+ Create Requisition',
@@ -1005,7 +1013,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     create_job_submit_btn: 'Publish Requisition & Rubric',
     create_job_weight_label: 'Weight',
     create_job_category_label: 'Category',
-
     decision_modal_title: 'Record Human Recruitment Decision',
     decision_modal_subtitle: 'Audit-logged governance transition for this candidate application.',
     decision_action_label: 'Decision Action',
@@ -1019,7 +1026,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     decision_action_withdraw: 'Candidate Withdrawn',
     decision_action_review: 'Flag for Needs Review',
     decision_history_title: 'Recruiter Decision Ledger',
-
     scorecard_modal_title: 'Submit Interview Scorecard',
     scorecard_tech_rating: 'Technical Competence (1-5)',
     scorecard_comm_rating: 'Communication & Teamwork (1-5)',
@@ -1032,7 +1038,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     scorecard_rec_hire: 'Hire',
     scorecard_rec_lean_hire: 'Lean Hire',
     scorecard_rec_no_hire: 'Do Not Hire',
-
     cprofile_status_label: 'Status',
     cprofile_no_resume_text: 'No plain text resume parsed for this application.',
     cprofile_summary_fallback: 'AI-assisted evaluation mapped against approved vacancy screening criteria.',
@@ -1088,13 +1093,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_evidence_located: 'Located evidence: "{evidence}"',
     toast_blind_enabled: 'Blind Screening enabled: PII hidden',
     toast_pii_revealed: 'PII revealed',
-
     compare_title: 'Side-by-Side Candidate Benchmark',
     compare_subtitle: 'Compare top candidate scores, technical criteria breakdowns, and rubric evidence in a unified matrix.',
     compare_badge: 'EVALUATION MATRIX',
     compare_full_eval: 'Full Evaluation',
     compare_criteria_breakdown: 'Criteria Breakdown',
-
     duplicates_title: 'Candidate Deduplication & Merge',
     duplicates_subtitle: 'Detect identical applicant submissions across email addresses and candidate names.',
     duplicates_merge_btn: 'Merge Records',
@@ -1109,7 +1112,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dup_profiles_count: '{count} matching candidate profiles',
     dup_merging: 'Merging…',
     dup_applications_count: '{count} applications submitted',
-
     my_apps_title: 'Candidate Application Portal',
     my_apps_subtitle: 'Track real-time candidate screening status, stages, and next steps for your submitted applications.',
     my_apps_empty: 'You have not submitted any job applications yet.',
@@ -1120,7 +1122,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     personalized_welcome: 'Welcome back, {name}!',
     personalized_shortlisted: 'Shortlisted',
     personalized_interviewing: 'Interviewing',
-
     team_title: 'User & Access Governance',
     team_subtitle: 'Strictly segregated directory distinguishing internal workspace staff from external job seekers.',
     tab_internal_staff: 'Internal Staff Directory',
@@ -1128,7 +1129,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_invite_member: 'Invite Staff Member',
     btn_edit_role: 'Edit Role',
     promote_btn: 'Promote',
-
     audit_title: 'Tamper-Evident Security & Audit Ledger',
     audit_subtitle: 'Cryptographically referenced immutable timeline of all AI screenings, score overrides, and data access.',
     sha256_verified: 'SHA-256 Verified',
@@ -1137,7 +1137,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     actor_col: 'Actor',
     affected_col: 'Affected Record',
     integrity_col: 'Integrity Status',
-
     privacy_title: 'GDPR Data Privacy & User Rights',
     privacy_subtitle: 'Self-service data export and Right to be Forgotten account erasure controls.',
     btn_export_data: 'Export My Profile Data (JSON)',
@@ -1147,7 +1146,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_title: 'Right to be Forgotten (Art. 17)',
     privacy_erasure_desc: 'Permanently erase your candidate profile, uploaded documents, OCR text indices, and submitted scorecards across all databases.',
     privacy_erasure_warning: 'Are you sure? This action is permanent and irreversible.',
-
     cmd_palette_placeholder: 'Search commands, candidates, jobs, audit logs...',
     cmd_palette_no_results: 'No matching results found.',
     cmd_cat_navigation: 'Navigation',
@@ -1162,14 +1160,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     support_widget_title: 'RecruitAI Support Assistant',
     support_widget_placeholder: 'Ask any question about using the platform...',
     support_widget_send: 'Send',
-
     cancel: 'Cancel',
     save: 'Save Changes',
     confirm: 'Confirm Action',
     loading: 'Loading system telemetry...',
     success: 'Operation completed successfully',
     error: 'An error occurred',
-
     first_name: 'First Name',
     last_name: 'Last Name',
     email_addr: 'Email Address',
@@ -1192,7 +1188,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_file_hint: 'PDF, DOCX, TXT or MD · max 5 MB',
     apply_error_no_cv: 'Please attach your CV / Resume document.',
     apply_error_no_consent: 'Please provide GDPR consent for automated AI screening.',
-
     erasure_warning: 'Are you sure? This action is permanent and irreversible. All your applications, resume files, and account access will be destroyed.',
     sign_in: 'Sign In',
     session_enforced: 'Role permissions strictly enforced.',
@@ -1202,12 +1197,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_interviewer_desc: 'Technical Interviewer: Candidate evaluation, question viewer & scorecard submission.',
     role_auditor_desc: 'Compliance Auditor: Read-only access to immutable audit trails & compliance metrics.',
     role_candidate_desc: 'Job Applicant: Application tracking, job directory & GDPR self-service privacy.',
-
     nav_settings: 'Workspace Settings',
     nav_system_health: 'Workspace Settings Health',
     active_role: 'Active Role:',
     brand_tagline: 'Enterprise ATS',
-
     workspace_overview: 'Workspace Overview',
     btn_review_applications: 'Review applications',
     kpi_across_jobs: 'Across active jobs',
@@ -1247,7 +1240,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     telemetry_email_banner: '{count} email deliveries failed in the last 7 days — some recipients were never notified. Review delivery errors',
     telemetry_email_banner_one: '1 email delivery failed in the last 7 days — the recipient was never notified. Review delivery errors',
     telemetry_email_review: 'Review delivery errors',
-
     metric_visible_apps: 'Visible applications',
     metric_needs_review: 'Needs review',
     metric_avg_match: 'Average match',
@@ -1298,7 +1290,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aria_select_all: 'Select all visible applications',
     aria_pipeline_pagination: 'Pipeline pagination',
     applicants_count: '{count} applicants',
-
     status_closed: 'Closed',
     jobs_search_placeholder: 'Search title, description, department…',
     aria_search_requisitions: 'Search requisitions',
@@ -1383,15 +1374,13 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_close_failed: 'Failed to close requisition',
     toast_network_close: 'Network error while closing requisition',
     toast_incomplete_response: 'The server returned an incomplete requisition response',
-
-    my_apps_score_hint: 'Match % is your latest AI screening score against each role\'s rubric — it guides shortlisting, it is not a final decision.',
+    my_apps_score_hint: 'Match % is your latest AI screening score against each role\\\'s rubric — it guides shortlisting, it is not a final decision.',
     my_apps_empty_tip: 'Tip: save your CV on your profile and every open role becomes a one-click apply.',
     my_apps_profile_link: 'profile',
     aria_app_score: 'Latest AI screening score for this application',
     match_band_strong: 'Strong match',
     match_band_good: 'Good match',
     match_band_building: 'Building',
-
     profile_workspace_candidate: 'Candidate workspace',
     profile_workspace_account: 'Workspace account',
     profile_display_name: 'Display name',
@@ -1419,7 +1408,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_personalized_greeting: 'Keep building your profile, {firstName}! Your saved details make applying faster.',
     profile_completion_status: '{completed}/{total} complete — add a CV and skills to unlock one-click applications',
     profile_completion_hint: 'Complete your profile to unlock a smoother application experience across all open positions.',
-
     audit_search_actor: 'Search by actor email…',
     audit_search_actor_aria: 'Search audit log by actor email',
     audit_search_action: 'Action e.g. DECISION',
@@ -1437,7 +1425,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_search: 'Search',
     audit_sealed: '✓ SEALED',
     audit_logs_count: '{count} LOGS',
-
     team_accounts_badge: '{count} TOTAL ACCOUNTS',
     team_domain_title: 'Workspace identity',
     team_domain_desc: 'Staff with an email at your verified domain automatically join this workspace when they sign up.',
@@ -1498,7 +1485,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     team_verify_network: 'Network error while verifying.',
     team_domain_already: 'This domain is already verified.',
     team_user_fallback: 'User',
-
     settings_title: 'Workspace Settings',
     settings_subtitle: 'Configure the recruitment workflow, retention policy, and branding (spec §6.11/§6.12). Every change is recorded in the audit trail.',
     settings_tab_workflow: 'Workflow & Reasons',
@@ -1534,7 +1520,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     settings_failed_retention: 'Failed to save retention policy.',
     settings_remove_reason: 'Remove reason {code}',
     settings_remove_category: 'Remove category {category}',
-
     analytics_metrics_badge: '§6.10 METRICS',
     analytics_subtitle: 'Time-to-screen, stage conversion, interviewer completion, and workload for permitted jobs.',
     analytics_filter_from: 'From',
@@ -1568,7 +1553,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     analytics_col_median: 'Median',
     analytics_definitions: 'Metric Definitions',
     analytics_error: 'Failed to load analytics',
-
     email_title: 'Email Delivery Health',
     email_subtitle: 'Failed transactional deliveries in the last 7 days (spec §6.9). Click a row to see the provider error that caused the failure.',
     email_back: '← Back to dashboard',
@@ -1591,7 +1575,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     email_retry_network: 'Network error — the retry was not attempted.',
     email_ops_badge: 'OPS TELEMETRY',
     email_all_templates: 'All templates',
-
     privacy_requests_title: 'Data requests (correction, access, withdrawal)',
     privacy_requests_desc: 'Submit a formal data request. It is recorded, tracked, and routed to our privacy team for review — you will be contacted with the outcome.',
     privacy_request_correction: 'Correct my data',
@@ -1615,7 +1598,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_success: 'Your account and personal data have been completely erased',
     privacy_export_failed: 'Failed to export data',
     privacy_erasure_failed: 'Failed to submit erasure request',
-
     compare_matrix_title: 'Side-by-Side Candidate Benchmark Matrix',
     compare_matrix_subtitle: 'Direct comparison of weighted match scores, recruitment stages, and candidate qualifications.',
     compare_col_candidate: 'Candidate',
@@ -1630,7 +1612,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     compare_restricted_desc: 'Side-by-side benchmark comparison is reserved for Recruiters, Hiring Managers, and Interviewers.',
     compare_restricted_cta: 'Return to Dashboard',
     compare_return_dashboard: 'Return to Dashboard',
-
     error_generic_title: 'Something went wrong!',
     btn_try_again: 'Try again',
     apply_legacy_title: 'Submit Application',
@@ -1669,7 +1650,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     interview_submitting: 'Dispatching Calendar Invites...',
     interview_back: 'Back to candidate',
     interview_error: 'Could not schedule the interview. Please try again.',
-
     copilot_thinking: 'Thinking…',
     copilot_error_network: 'Network error. Please verify your connection and try again.',
     copilot_error_service: 'The support service is unreachable right now. Please try again in a moment.',
@@ -1682,9 +1662,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     copilot_chip_apply: 'How do I apply?',
     copilot_chip_track: 'Track my applications',
     copilot_chip_permissions: 'Role permissions',
-
     feedback_thanks: 'Thank you for your feedback! This helps train the AI.',
-    feedback_question: 'Was the AI\'s score accurate?',
+    feedback_question: 'Was the AI\\\'s score accurate?',
     feedback_placeholder: 'Optional comment...',
     feedback_yes: 'Yes, Accurate',
     feedback_no: 'No, Override Decision',
@@ -1726,7 +1705,100 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_status_failed: 'Could not update the account status.',
     criterion_category: 'Category',
     criterion_threshold: 'Minimum threshold (e.g. 5 years)',
-    criterion_evidence: 'Acceptable evidence (what counts as proof)'
+    criterion_evidence: 'Acceptable evidence (what counts as proof)',
+    landing_badge: 'Explainable AI recruitment',
+    landing_hero_title_1: 'Screen candidates with',
+    landing_hero_title_highlight: 'transparent AI',
+    landing_hero_desc: 'Evidence-based resume screening powered by structured rubrics — not black-box scores. See why a candidate matches, what is missing, and where the evidence comes from.',
+    landing_start_free: 'Start hiring free',
+    landing_sign_in: 'Sign in to your account',
+    landing_feat1_title: 'Explainable scores',
+    landing_feat1_desc: 'Every screening result shows which criteria matched, which are missing, and the evidence behind each decision.',
+    landing_feat2_title: 'Privacy-forward by default',
+    landing_feat2_desc: 'PII is redacted before AI processing. Candidates control their data, and access is scoped by role and organization.',
+    landing_feat3_title: 'Fairness-tested screening',
+    landing_feat3_desc: 'CVs are evaluated against the job rubric only. Proxy signals such as name, school, and location are removed before scoring.',
+    landing_cta_candidate_title: 'Looking for your next role?',
+    landing_cta_candidate_desc: 'Browse open positions, upload your CV, and see how your profile compares to each job\'s requirements — before you apply.',
+    landing_cta_candidate_btn: 'Browse jobs as a candidate',
+    landing_footer_rights: 'Enterprise AI resume screening.',
+    landing_footer_privacy: 'Privacy',
+    landing_footer_signin: 'Sign in',
+    auth_portal_access: 'PORTAL ACCESS',
+    auth_demo_candidate_title: '1-Click Candidate Demo',
+    auth_demo_candidate_desc: 'Instant test login • No 2FA required',
+    auth_demo_candidate_entering: 'Entering...',
+    auth_demo_candidate_btn: 'Launch Demo →',
+    auth_staff_login: 'STAFF LOGIN',
+    auth_demo_staff_title: '1-Click Staff Demo',
+    auth_demo_staff_desc: 'Instant workspace access • Zero setup',
+    auth_demo_staff_waiting: 'Wait...',
+    auth_demo_staff_btn: 'Recruiter →',
+    forgot_title: 'Reset your password',
+    forgot_subtitle: 'Enter your account email and we\'ll send you a reset link.',
+    forgot_success_sent: 'If an account exists for that email, a reset link is on its way.',
+    forgot_delivery_warning: 'If an account exists for that email, a reset link was requested — but our email delivery is failing right now, so it may never arrive.',
+    forgot_delivery_help: 'Please try again shortly; if it keeps failing, contact support so delivery can be restored.',
+    forgot_back_to_signin: 'Back to sign in',
+    forgot_send_btn: 'Send reset link',
+    forgot_sending_btn: 'Sending reset link...',
+    forgot_remember_password: 'Remember your password? Sign in',
+    reset_missing_token: 'Missing reset token — use the link from your email',
+    reset_success_redirecting: 'Password updated — redirecting you to sign in…',
+    reset_new_password_label: 'New password',
+    reset_confirm_password_label: 'Confirm new password',
+    reset_show_password: 'Show',
+    reset_hide_password: 'Hide',
+    reset_submit_btn: 'Update password',
+    reset_submitting_btn: 'Updating password…',
+    reset_mismatch_error: 'Passwords do not match',
+    reset_length_error: 'Password must be at least 8 characters',
+    spotlight_search_label: 'Search platform…',
+    nav_more: 'More',
+    nav_more_views: 'More Workspace Views',
+    theme_light: 'Light',
+    theme_dark: 'Dark',
+    theme_auto: 'Auto',
+    theme_light_title: 'Light Mode',
+    theme_dark_title: 'Dark Mode (Aurora Cyber)',
+    theme_auto_title: 'System Auto Mode',
+    quick_filters: 'Quick Filters:',
+    filter_needs_review: 'Needs Review',
+    filter_top_matches: 'Top Matches (≥80%)',
+    filter_req_failed: 'Required Failed (0%)',
+    filter_interviewing: 'Interviewing',
+    compare_selected_title: 'Compare selected candidates side-by-side against the approved rubric',
+    btn_return_review: 'Return to Review',
+    btn_mark_hired: 'Mark as Hired',
+    btn_record_decline: 'Record Decline',
+    cprofile_compose_tooltip: 'Compose and preview candidate communication',
+    cprofile_questions_tooltip: 'Generate customized behavioral and technical interview questions based on CV gaps',
+    cprofile_scorecard_tooltip: 'Submit structured scorecard evaluation',
+    cprofile_schedule_tooltip: 'Schedule structured interview session with conflict check',
+    cprofile_override_tooltip: 'Override score with mandatory human rationale',
+    compare_pdf_tooltip: 'Print or export benchmark as PDF',
+    compare_stage_label: 'Stage:',
+    compare_skills_label: 'Skills Identified:',
+    compare_threshold_label: 'Threshold:',
+    compare_evidence_rules_label: 'Evidence rules:',
+    compare_low_confidence_flag: 'Low Evidence Confidence (Human Review Flagged)',
+    compare_analysis_label: 'Analysis:',
+    compare_recruiter_note_label: 'Recruiter Note:',
+    role_admin_option: 'Admin',
+    role_recruiter_option: 'Recruiter',
+    role_hiring_manager_option: 'Hiring Manager',
+    role_interviewer_option: 'Interviewer',
+    role_auditor_option: 'Compliance Auditor',
+    team_resend_invite_tooltip: 'Generate a fresh temporary password and resend invitation email',
+    team_remove_member_tooltip: 'Remove member from workspace',
+    team_additional_permissions: 'Additional permissions',
+    profile_workspace_role_info: 'Workspace & Role Information',
+    profile_assigned_role_label: 'Assigned Role',
+    profile_organization_label: 'Organization',
+    system_health_title: 'System Health',
+    my_apps_search_placeholder: 'Search by job title or department...',
+    my_apps_no_matches: 'No applications match your current filters.',
+    my_apps_withdraw_placeholder: 'e.g., Accepted another offer, relocation, no longer available...',
   },
   fr: {
     nav_dashboard: 'Tableau de bord',
@@ -1750,10 +1822,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_remove_cv: 'Supprimer',
     profile_one_click_hint: 'Votre CV enregistré est réutilisé pour les candidatures en un clic. Chaque candidature reçoit toujours sa propre évaluation.',
     profile_skills: 'Compétences',
-    profile_experience: "Résumé de l'expérience",
+    profile_experience: 'Résumé de l\'expérience',
     profile_save: 'Enregistrer le profil',
     profile_saved: 'Profil enregistré',
-
     search_placeholder: 'Rechercher candidats, postes, audits...',
     notifications: 'Notifications',
     copilot_title: 'Copilote RecruitAI',
@@ -1762,8 +1833,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     sign_out: 'Se déconnecter',
     active_session: 'Session Authentifiée Active',
     spotlight_search: 'Recherche Rapide',
-
-    copilot_welcome: '**Bienvenue sur le Copilote RecruitAI !**\n\nJe suis votre assistant multilingue en recrutement et évaluation. Posez-moi vos questions sur le filtrage des CV, la création de grilles d’évaluation, les permissions ou la conformité RGPD.',
+    copilot_welcome: '**Bienvenue sur le Copilote RecruitAI !**\\n\\nJe suis votre assistant multilingue en recrutement et évaluation. Posez-moi vos questions sur le filtrage des CV, la création de grilles d’évaluation, les permissions ou la conformité RGPD.',
     copilot_input_placeholder: 'Posez une question sur les candidats, grilles, rôles...',
     copilot_ask_btn: 'Envoyer',
     copilot_clear_btn: 'Effacer',
@@ -1773,7 +1843,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     qp_create_rubric: 'Créer une Grille',
     qp_questions: 'Questions d’Entretien',
     qp_apply_track: 'Postuler & suivre',
-
     total_candidates: 'Total des Candidats',
     avg_match_rate: 'Taux de Correspondance Moyen',
     open_requisitions: 'Postes Ouverts',
@@ -1787,7 +1856,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_interviewing: 'En Entretien',
     stage_offered: 'Offre Émise',
     realtime_sync: 'Synchroniser',
-
     pipeline_title: 'Pipeline d’Évaluation des Candidats',
     pipeline_subtitle: 'Suivi des candidatures multi-étapes avec grilles d’évaluation objectives et preuves vérifiables.',
     view_kanban: 'Tableau Kanban',
@@ -1802,7 +1870,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_col: 'Étape du Pipeline',
     score_col: 'Score d’Adéquation',
     actions_col: 'Actions',
-
     eval_title: 'Évaluation du Candidat',
     ocr_stream: 'Flux Texte OCR',
     parsed_resume_doc: 'Document CV Analysé',
@@ -1825,7 +1892,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_quick_actions: 'Actions Recruteur',
     profile_ai_match_rationale: 'Détail de la Correspondance IA',
     profile_recruitment_decisions: 'Historique des Décisions de Recrutement',
-
     jobs_title: 'Offres d’Emploi & Grilles de Compétences',
     jobs_subtitle: 'Définissez les postes ouverts, les départements cibles et assignez des critères pondérés pour l’évaluation automatique.',
     btn_create_job: '+ Créer un Poste',
@@ -1846,7 +1912,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     create_job_submit_btn: 'Publier l’Offre & la Grille',
     create_job_weight_label: 'Poids',
     create_job_category_label: 'Catégorie',
-
     decision_modal_title: 'Enregistrer une Décision de Recrutement',
     decision_modal_subtitle: 'Transition de statut tracée dans le journal d’audit pour cette candidature.',
     decision_action_label: 'Action Décisionnelle',
@@ -1860,7 +1925,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     decision_action_withdraw: 'Candidature Retirée',
     decision_action_review: 'Marquer pour Révision',
     decision_history_title: 'Registre des Décisions Humaines',
-
     scorecard_modal_title: 'Soumettre la Fiche d’Entretien',
     scorecard_tech_rating: 'Compétence Technique (1-5)',
     scorecard_comm_rating: 'Communication & Travail d’Équipe (1-5)',
@@ -1873,7 +1937,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     scorecard_rec_hire: 'Favorable',
     scorecard_rec_lean_hire: 'Réservé',
     scorecard_rec_no_hire: 'Défavorable',
-
     cprofile_status_label: 'Statut',
     cprofile_no_resume_text: 'Aucun CV au format texte n’a été analysé pour cette candidature.',
     cprofile_summary_fallback: 'Évaluation assistée par IA comparée aux critères de criblage validés du poste.',
@@ -1929,13 +1992,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_evidence_located: 'Preuve localisée : « {evidence} »',
     toast_blind_enabled: 'Criblage aveugle activé : données personnelles masquées',
     toast_pii_revealed: 'Données personnelles affichées',
-
     compare_title: 'Comparatif Direct des Candidats',
     compare_subtitle: 'Comparez les scores, la répartition des compétences et les preuves des candidats dans une matrice unifiée.',
     compare_badge: 'MATRICE D’ÉVALUATION',
     compare_full_eval: 'Évaluation Complète',
     compare_criteria_breakdown: 'Détail des Critères',
-
     duplicates_title: 'Dédoublonnage & Fusion des Candidats',
     duplicates_subtitle: 'Détectez les candidatures multiples issues de la même personne par e-mail ou nom.',
     duplicates_merge_btn: 'Fusionner les Dossiers',
@@ -1950,7 +2011,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dup_profiles_count: '{count} profils candidats correspondants',
     dup_merging: 'Fusion…',
     dup_applications_count: '{count} candidatures envoyées',
-
     my_apps_title: 'Portail des Candidatures',
     my_apps_subtitle: 'Suivez en temps réel le statut, les étapes et les prochaines actions pour vos candidatures.',
     my_apps_empty: 'Vous n’avez soumis aucune candidature pour le moment.',
@@ -1961,7 +2021,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     personalized_welcome: 'Bon retour, {name} !',
     personalized_shortlisted: 'Sélectionné',
     personalized_interviewing: 'En entretien',
-
     team_title: 'Gestion des Rôles & Utilisateurs',
     team_subtitle: 'Annuaire strictement séparé distinguant les collaborateurs internes des candidats externes.',
     tab_internal_staff: 'Collaborateurs Internes',
@@ -1969,7 +2028,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_invite_member: 'Inviter un Collaborateur',
     btn_edit_role: 'Modifier le Rôle',
     promote_btn: 'Promouvoir',
-
     audit_title: 'Journal d’Audit & Sécurité Infalsifiable',
     audit_subtitle: 'Chronologie immuable vérifiée cryptographiquement pour chaque évaluation IA, ajustement et accès aux données.',
     sha256_verified: 'Vérifié SHA-256',
@@ -1978,7 +2036,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     actor_col: 'Auteur',
     affected_col: 'Enregistrement Concerné',
     integrity_col: 'État d’Intégrité',
-
     privacy_title: 'Confidentialité des Données & Droits RGPD',
     privacy_subtitle: 'Exportation de données et exercice du Droit à l’Oubli (suppression de compte).',
     btn_export_data: 'Exporter mes Données (JSON)',
@@ -1988,7 +2045,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_title: 'Droit à l’Oubli (Art. 17)',
     privacy_erasure_desc: 'Supprimez définitivement votre profil, documents stockés, index OCR et fiches d’évaluation de la plateforme.',
     privacy_erasure_warning: 'Êtes-vous sûr ? Cette action est irréversible et définitive.',
-
     cmd_palette_placeholder: 'Rechercher actions, candidats, offres, audits...',
     cmd_palette_no_results: 'Aucun résultat trouvé.',
     cmd_cat_navigation: 'Navigation',
@@ -2003,14 +2059,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     support_widget_title: 'Assistant Support RecruitAI',
     support_widget_placeholder: 'Posez votre question sur la plateforme...',
     support_widget_send: 'Envoyer',
-
     cancel: 'Annuler',
     save: 'Enregistrer',
     confirm: 'Confirmer',
     loading: 'Chargement des données système...',
     success: 'Opération réussie',
     error: 'Une erreur est survenue',
-
     first_name: 'Prénom',
     last_name: 'Nom',
     email_addr: 'Adresse e-mail',
@@ -2033,7 +2087,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_file_hint: 'PDF, DOCX, TXT ou MD · max 5 Mo',
     apply_error_no_cv: 'Veuillez joindre votre document CV.',
     apply_error_no_consent: 'Veuillez accorder le consentement RGPD pour le filtrage IA automatisé.',
-
     erasure_warning: 'Êtes-vous sûr(e) ? Cette action est permanente et irréversible. Toutes vos candidatures, CV et accès au compte seront détruits.',
     sign_in: 'Se connecter',
     session_enforced: 'Permissions de rôle strictement appliquées.',
@@ -2043,12 +2096,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_interviewer_desc: 'Évaluateur technique : évaluation des candidats, questions et fiches d’entretien.',
     role_auditor_desc: 'Auditeur de conformité : accès en lecture seule aux journaux d’audit immuables.',
     role_candidate_desc: 'Postulant : suivi des candidatures, offres et libre-service RGPD.',
-
     nav_settings: 'Paramètres de l’espace',
     nav_system_health: 'Paramètres de l’espace Health',
     active_role: 'Rôle actif :',
     brand_tagline: 'ATS Entreprise',
-
     workspace_overview: 'Vue d’ensemble',
     btn_review_applications: 'Examiner les candidatures',
     kpi_across_jobs: 'Sur les postes actifs',
@@ -2088,7 +2139,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     telemetry_email_banner: '{count} envois d’e-mails ont échoué ces 7 derniers jours — certains destinataires n’ont jamais été notifiés. Examiner les erreurs d’envoi',
     telemetry_email_banner_one: '1 envoi d’e-mail a échoué ces 7 derniers jours — le destinataire n’a jamais été notifié. Examiner les erreurs d’envoi',
     telemetry_email_review: 'Examiner les erreurs d’envoi',
-
     metric_visible_apps: 'Candidatures visibles',
     metric_needs_review: 'À réviser',
     metric_avg_match: 'Correspondance moy.',
@@ -2139,7 +2189,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aria_select_all: 'Sélectionner toutes les candidatures visibles',
     aria_pipeline_pagination: 'Pagination du pipeline',
     applicants_count: '{count} candidats',
-
     status_closed: 'Clôturé',
     jobs_search_placeholder: 'Rechercher titre, description, département…',
     aria_search_requisitions: 'Rechercher des offres',
@@ -2224,7 +2273,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_close_failed: 'Échec de la clôture de l’offre',
     toast_network_close: 'Erreur réseau lors de la clôture de l’offre',
     toast_incomplete_response: 'Le serveur a renvoyé une réponse d’offre incomplète',
-
     my_apps_score_hint: 'Le % de correspondance est votre dernier score de criblage IA face à la grille de chaque poste — il guide la présélection, ce n’est pas une décision finale.',
     my_apps_empty_tip: 'Astuce : enregistrez votre CV sur votre profil et chaque poste ouvert devient une candidature en un clic.',
     my_apps_profile_link: 'profil',
@@ -2232,7 +2280,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     match_band_strong: 'Forte correspondance',
     match_band_good: 'Bonne correspondance',
     match_band_building: 'En construction',
-
     profile_workspace_candidate: 'Espace candidat',
     profile_workspace_account: 'Compte de l’espace',
     profile_display_name: 'Nom affiché',
@@ -2256,11 +2303,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_save_failed: 'Échec de l’enregistrement du CV',
     profile_cv_remove_failed: 'Échec de la suppression du CV',
     profile_cv_saved_on: 'enregistré le {date}',
+    aria_upload_cv: 'Importer le CV',
     profile_personalized_greeting: 'Continue de développer ton profil, {firstName} ! Tes informations enregistrées rendent la candidature plus rapide.',
     profile_completion_status: '{completed}/{total} complet — ajoute un CV et des compétences pour débloquer les candidatures en un clic',
     profile_completion_hint: 'Complète ton profil pour une expérience de candidature plus fluide sur toutes les offres ouvertes.',
-    aria_upload_cv: 'Importer le CV',
-
     audit_search_actor: 'Rechercher par e-mail de l’acteur…',
     audit_search_actor_aria: 'Rechercher le journal par e-mail de l’acteur',
     audit_search_action: 'Action ex. DECISION',
@@ -2278,7 +2324,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_search: 'Rechercher',
     audit_sealed: '✓ SCELLÉ',
     audit_logs_count: '{count} ENTRÉES',
-
     team_accounts_badge: '{count} COMPTES AU TOTAL',
     team_domain_title: 'Identité de l’espace',
     team_domain_desc: 'Le personnel disposant d’un e-mail sur votre domaine vérifié rejoint automatiquement cet espace à l’inscription.',
@@ -2339,7 +2384,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     team_verify_network: 'Erreur réseau lors de la vérification.',
     team_domain_already: 'Ce domaine est déjà vérifié.',
     team_user_fallback: 'Utilisateur',
-
     settings_title: 'Paramètres de l’espace',
     settings_subtitle: 'Configurez le workflow de recrutement, la politique de rétention et l’image de marque (spec §6.11/§6.12). Chaque modification est consignée au journal d’audit.',
     settings_tab_workflow: 'Workflow & motifs',
@@ -2375,7 +2419,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     settings_failed_retention: 'Échec de l’enregistrement de la politique de rétention.',
     settings_remove_reason: 'Retirer le motif {code}',
     settings_remove_category: 'Retirer la catégorie {category}',
-
     analytics_metrics_badge: 'MÉTRIQUES §6.10',
     analytics_subtitle: 'Délai de criblage, conversion par étape, complétude des évaluateurs et charge pour les postes autorisés.',
     analytics_filter_from: 'Du',
@@ -2409,7 +2452,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     analytics_col_median: 'Médiane',
     analytics_definitions: 'Définitions des métriques',
     analytics_error: 'Échec du chargement des analyses',
-
     email_title: 'Santé des envois d’e-mails',
     email_subtitle: 'Envois transactionnels échoués ces 7 derniers jours (spec §6.9). Cliquez sur une ligne pour voir l’erreur du fournisseur.',
     email_back: '← Retour au tableau de bord',
@@ -2432,7 +2474,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     email_retry_network: 'Erreur réseau — la nouvelle tentative n’a pas été tentée.',
     email_ops_badge: 'TÉLÉMÉTRIE OPS',
     email_all_templates: 'Tous les modèles',
-
     privacy_requests_title: 'Demandes de données (rectification, accès, retrait)',
     privacy_requests_desc: 'Soumettez une demande formelle. Elle est enregistrée, suivie et transmise à notre équipe confidentialité pour examen — vous serez contacté(e) avec le résultat.',
     privacy_request_correction: 'Corriger mes données',
@@ -2456,7 +2497,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_success: 'Votre compte et vos données personnelles ont été intégralement effacés',
     privacy_export_failed: 'Échec de l’export des données',
     privacy_erasure_failed: 'Échec de la soumission de la demande d’effacement',
-
     compare_matrix_title: 'Matrice comparative des candidats',
     compare_matrix_subtitle: 'Comparaison directe des scores pondérés, étapes de recrutement et qualifications.',
     compare_col_candidate: 'Candidat',
@@ -2471,7 +2511,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     compare_restricted_desc: 'La comparaison côte à côte est réservée aux Recruteurs, Managers recruteurs et Évaluateurs.',
     compare_restricted_cta: 'Retour au tableau de bord',
     compare_return_dashboard: 'Retour au tableau de bord',
-
     error_generic_title: 'Une erreur est survenue !',
     btn_try_again: 'Réessayer',
     apply_legacy_title: 'Envoyer la candidature',
@@ -2510,7 +2549,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     interview_submitting: 'Envoi des invitations calendrier...',
     interview_back: 'Retour au candidat',
     interview_error: 'Impossible de planifier l’entretien. Veuillez réessayer.',
-
     copilot_thinking: 'Réflexion…',
     copilot_error_network: 'Erreur réseau. Vérifiez votre connexion et réessayez.',
     copilot_error_service: 'Le service d’assistance est injoignable pour le moment. Veuillez réessayer dans un instant.',
@@ -2523,7 +2561,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     copilot_chip_apply: 'Comment postuler ?',
     copilot_chip_track: 'Suivre mes candidatures',
     copilot_chip_permissions: 'Permissions des rôles',
-
     feedback_thanks: 'Merci pour votre retour ! Cela aide à entraîner l’IA.',
     feedback_question: 'Le score de l’IA était-il exact ?',
     feedback_placeholder: 'Commentaire facultatif...',
@@ -2567,7 +2604,100 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_status_failed: 'Impossible de mettre à jour le statut du compte.',
     criterion_category: 'Catégorie',
     criterion_threshold: 'Seuil minimum (ex. 5 ans)',
-    criterion_evidence: 'Preuve acceptable (ce qui compte comme preuve)'
+    criterion_evidence: 'Preuve acceptable (ce qui compte comme preuve)',
+    landing_badge: 'Recrutement par IA explicable',
+    landing_hero_title_1: 'Évaluez les candidats avec',
+    landing_hero_title_highlight: 'une IA transparente',
+    landing_hero_desc: 'Filtrage de CV fondé sur des preuves et des grilles structurées — pas des scores boîte noire. Comprenez pourquoi un candidat correspond, ce qui manque et d\'où viennent les preuves.',
+    landing_start_free: 'Commencer à recruter gratuitement',
+    landing_sign_in: 'Se connecter à votre compte',
+    landing_feat1_title: 'Scores explicables',
+    landing_feat1_desc: 'Chaque résultat montre les critères validés, manquants et les preuves justifiant chaque décision.',
+    landing_feat2_title: 'Confidentialité garantie par défaut',
+    landing_feat2_desc: 'Les données personnelles sont masquées avant le traitement par IA. Les candidats contrôlent leurs données.',
+    landing_feat3_title: 'Évaluation équitable et testée',
+    landing_feat3_desc: 'Les CV sont évalués uniquement sur la grille de poste. Nom, école et localisation sont exclus de la notation.',
+    landing_cta_candidate_title: 'À la recherche d\'une nouvelle opportunité ?',
+    landing_cta_candidate_desc: 'Parcourez les offres, importez votre CV et comparez votre profil aux exigences avant de postuler.',
+    landing_cta_candidate_btn: 'Parcourir les emplois en tant que candidat',
+    landing_footer_rights: 'Plateforme d\'entreprise de filtrage de CV par IA.',
+    landing_footer_privacy: 'Confidentialité',
+    landing_footer_signin: 'Connexion',
+    auth_portal_access: 'ACCÈS PORTAIL',
+    auth_demo_candidate_title: 'Démo Candidat 1-Clic',
+    auth_demo_candidate_desc: 'Connexion de test instantanée • Pas de 2FA requis',
+    auth_demo_candidate_entering: 'Connexion en cours...',
+    auth_demo_candidate_btn: 'Lancer la démo →',
+    auth_staff_login: 'ACCÈS ÉQUIPE',
+    auth_demo_staff_title: 'Démo Équipe 1-Clic',
+    auth_demo_staff_desc: 'Accès instantané à l\'espace • Sans configuration',
+    auth_demo_staff_waiting: 'Veuillez patienter...',
+    auth_demo_staff_btn: 'Recruteur →',
+    forgot_title: 'Réinitialiser votre mot de passe',
+    forgot_subtitle: 'Entrez l\'e-mail de votre compte pour recevoir un lien de réinitialisation.',
+    forgot_success_sent: 'Si un compte existe pour cet e-mail, un lien de réinitialisation est en route.',
+    forgot_delivery_warning: 'Si un compte existe, un lien a été demandé — mais notre système d\'envoi d\'e-mails rencontre un problème.',
+    forgot_delivery_help: 'Veuillez réessayer sous peu ; si le problème persiste, contactez le support.',
+    forgot_back_to_signin: 'Retour à la connexion',
+    forgot_send_btn: 'Envoyer le lien de réinitialisation',
+    forgot_sending_btn: 'Envoi du lien en cours...',
+    forgot_remember_password: 'Vous vous souvenez de votre mot de passe ? Se connecter',
+    reset_missing_token: 'Jeton de réinitialisation manquant — utilisez le lien reçu par e-mail',
+    reset_success_redirecting: 'Mot de passe mis à jour — redirection vers la connexion…',
+    reset_new_password_label: 'Nouveau mot de passe',
+    reset_confirm_password_label: 'Confirmer le nouveau mot de passe',
+    reset_show_password: 'Afficher',
+    reset_hide_password: 'Masquer',
+    reset_submit_btn: 'Mettre à jour le mot de passe',
+    reset_submitting_btn: 'Mise à jour en cours…',
+    reset_mismatch_error: 'Les mots de passe ne correspondent pas',
+    reset_length_error: 'Le mot de passe doit comporter au moins 8 caractères',
+    spotlight_search_label: 'Rechercher sur la plateforme…',
+    nav_more: 'Plus',
+    nav_more_views: 'Autres vues de l\'espace',
+    theme_light: 'Clair',
+    theme_dark: 'Sombre',
+    theme_auto: 'Auto',
+    theme_light_title: 'Mode clair',
+    theme_dark_title: 'Mode sombre (Aurora Cyber)',
+    theme_auto_title: 'Mode système automatique',
+    quick_filters: 'Filtres rapides :',
+    filter_needs_review: 'À réviser',
+    filter_top_matches: 'Meilleures correspondances (≥80%)',
+    filter_req_failed: 'Critères obligatoires échoués (0%)',
+    filter_interviewing: 'En entretien',
+    compare_selected_title: 'Comparer les candidats sélectionnés côte à côte selon la grille approuvée',
+    btn_return_review: 'Renvoyer en révision',
+    btn_mark_hired: 'Marquer comme recruté',
+    btn_record_decline: 'Enregistrer le désistement',
+    cprofile_compose_tooltip: 'Rédiger et prévisualiser le message au candidat',
+    cprofile_questions_tooltip: 'Générer des questions personnalisées basées sur les lacunes du CV',
+    cprofile_scorecard_tooltip: 'Soumettre une grille d\'évaluation structurée',
+    cprofile_schedule_tooltip: 'Planifier un entretien avec vérification des conflits',
+    cprofile_override_tooltip: 'Modifier la note avec justification humaine obligatoire',
+    compare_pdf_tooltip: 'Imprimer ou exporter l\'évaluation comparative en PDF',
+    compare_stage_label: 'Étape :',
+    compare_skills_label: 'Compétences identifiées :',
+    compare_threshold_label: 'Seuil :',
+    compare_evidence_rules_label: 'Règles de preuve :',
+    compare_low_confidence_flag: 'Faible confiance dans les preuves (Vérification humaine requise)',
+    compare_analysis_label: 'Analyse :',
+    compare_recruiter_note_label: 'Note du recruteur :',
+    role_admin_option: 'Administrateur',
+    role_recruiter_option: 'Recruteur',
+    role_hiring_manager_option: 'Responsable du recrutement',
+    role_interviewer_option: 'Évaluateur / Intervieweur',
+    role_auditor_option: 'Auditeur de conformité',
+    team_resend_invite_tooltip: 'Générer un nouveau mot de passe temporaire et renvoyer l\'e-mail d\'invitation',
+    team_remove_member_tooltip: 'Retirer le membre de l\'espace de travail',
+    team_additional_permissions: 'Permissions additionnelles',
+    profile_workspace_role_info: 'Informations sur l\'espace et le rôle',
+    profile_assigned_role_label: 'Rôle attribué',
+    profile_organization_label: 'Organisation',
+    system_health_title: 'Santé du système',
+    my_apps_search_placeholder: 'Rechercher par titre de poste ou département...',
+    my_apps_no_matches: 'Aucune candidature ne correspond à vos filtres actuels.',
+    my_apps_withdraw_placeholder: 'ex. : Autre offre acceptée, déménagement, indisponible...',
   },
   es: {
     nav_dashboard: 'Panel de Control',
@@ -2594,7 +2724,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_experience: 'Resumen de experiencia',
     profile_save: 'Guardar perfil',
     profile_saved: 'Perfil guardado',
-
     search_placeholder: 'Buscar candidatos, puestos, auditorías...',
     notifications: 'Notificaciones',
     copilot_title: 'Copiloto RecruitAI',
@@ -2603,8 +2732,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     sign_out: 'Cerrar Sesión',
     active_session: 'Sesión Autenticada Activa',
     spotlight_search: 'Búsqueda Rápida',
-
-    copilot_welcome: '**¡Bienvenido a RecruitAI Copilot!**\n\nSoy tu asistente multilingüe de selección de talento. Pregúntame sobre el cribado de CVs, creación de rúbricas, permisos o cumplimiento RGPD.',
+    copilot_welcome: '**¡Bienvenido a RecruitAI Copilot!**\\n\\nSoy tu asistente multilingüe de selección de talento. Pregúntame sobre el cribado de CVs, creación de rúbricas, permisos o cumplimiento RGPD.',
     copilot_input_placeholder: 'Pregunta sobre candidatos, rúbricas, roles...',
     copilot_ask_btn: 'Consultar',
     copilot_clear_btn: 'Borrar',
@@ -2614,7 +2742,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     qp_create_rubric: 'Crear Rúbrica',
     qp_questions: 'Preguntas de Entrevista',
     qp_apply_track: 'Postularme y seguir',
-
     total_candidates: 'Total de Candidatos',
     avg_match_rate: 'Tasa Media de Ajuste',
     open_requisitions: 'Puestos Vacantes',
@@ -2628,7 +2755,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_interviewing: 'En Entrevistas',
     stage_offered: 'Oferta Emitida',
     realtime_sync: 'Sincronizar',
-
     pipeline_title: 'Pipeline de Evaluación de Candidatos',
     pipeline_subtitle: 'Seguimiento por fases con rúbricas objetivas y evidencias comprobables en el CV.',
     view_kanban: 'Vista Kanban',
@@ -2643,7 +2769,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_col: 'Fase del Pipeline',
     score_col: 'Puntuación de Ajuste',
     actions_col: 'Acciones',
-
     eval_title: 'Evaluación del Candidato',
     ocr_stream: 'Flujo de Texto OCR',
     parsed_resume_doc: 'CV Estructurado',
@@ -2666,7 +2791,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_quick_actions: 'Acciones de Selección',
     profile_ai_match_rationale: 'Desglose del Ajuste por IA',
     profile_recruitment_decisions: 'Historial de Decisiones de Selección',
-
     jobs_title: 'Puestos de Trabajo y Rúbricas de Evaluación',
     jobs_subtitle: 'Crea puestos, departamentos y asigna criterios ponderados para evaluación explicable con IA.',
     btn_create_job: '+ Crear Puesto',
@@ -2687,7 +2811,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     create_job_submit_btn: 'Publicar Oferta y Rúbrica',
     create_job_weight_label: 'Peso',
     create_job_category_label: 'Categoría',
-
     decision_modal_title: 'Registrar Decisión de Selección',
     decision_modal_subtitle: 'Cambio de estado auditado para esta solicitud.',
     decision_action_label: 'Acción de Decisión',
@@ -2701,7 +2824,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     decision_action_withdraw: 'Candidatura Retirada',
     decision_action_review: 'Marcar para Revisión',
     decision_history_title: 'Registro de Decisiones Humanas',
-
     scorecard_modal_title: 'Enviar Evaluación de Entrevista',
     scorecard_tech_rating: 'Competencia Técnica (1-5)',
     scorecard_comm_rating: 'Comunicación y Trabajo en Equipo (1-5)',
@@ -2714,7 +2836,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     scorecard_rec_hire: 'Recomendado',
     scorecard_rec_lean_hire: 'Con Reservas',
     scorecard_rec_no_hire: 'No Recomendado',
-
     cprofile_status_label: 'Estado',
     cprofile_no_resume_text: 'No se ha analizado ningún CV en texto plano para esta solicitud.',
     cprofile_summary_fallback: 'Evaluación asistida por IA comparada con los criterios de cribado aprobados de la vacante.',
@@ -2770,13 +2891,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_evidence_located: 'Evidencia localizada: «{evidence}»',
     toast_blind_enabled: 'Criba a ciegas activada: datos personales ocultos',
     toast_pii_revealed: 'Datos personales visibles',
-
     compare_title: 'Comparativa de Candidatos',
     compare_subtitle: 'Compara puntuaciones, desglose de competencias y evidencias en una matriz unificada.',
     compare_badge: 'MATRIZ DE EVALUACIÓN',
     compare_full_eval: 'Evaluación Completa',
     compare_criteria_breakdown: 'Desglose de Criterios',
-
     duplicates_title: 'Deduplicación de Candidatos',
     duplicates_subtitle: 'Detecta solicitudes duplicadas del mismo candidato por correo o nombre.',
     duplicates_merge_btn: 'Fusionar Registros',
@@ -2791,7 +2910,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dup_profiles_count: '{count} perfiles de candidatos coincidentes',
     dup_merging: 'Fusionando…',
     dup_applications_count: '{count} solicitudes enviadas',
-
     my_apps_title: 'Portal de Solicitudes del Candidato',
     my_apps_subtitle: 'Sigue en tiempo real el estado y los siguientes pasos de tus postulaciones.',
     my_apps_empty: 'Aún no has enviado ninguna solicitud de empleo.',
@@ -2802,7 +2920,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     personalized_welcome: 'Bienvenido de nuevo, {name} !',
     personalized_shortlisted: 'Seleccionado',
     personalized_interviewing: 'En entrevista',
-
     team_title: 'Gestión de Usuarios y Accesos',
     team_subtitle: 'Directorio estructurado que separa el personal interno de los candidatos externos.',
     tab_internal_staff: 'Personal Interno',
@@ -2810,7 +2927,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_invite_member: 'Invitar Colaborador',
     btn_edit_role: 'Editar Rol',
     promote_btn: 'Promover',
-
     audit_title: 'Registro de Auditoría y Seguridad Inmutable',
     audit_subtitle: 'Línea de tiempo inmutable verificada con SHA-256 de todas las evaluaciones IA y accesos.',
     sha256_verified: 'Verificado con SHA-256',
@@ -2819,7 +2935,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     actor_col: 'Usuario',
     affected_col: 'Registro Afectado',
     integrity_col: 'Estado de Integridad',
-
     privacy_title: 'Privacidad de Datos y Derechos RGPD',
     privacy_subtitle: 'Controles de exportación de datos y derecho al olvido (eliminación de cuenta).',
     btn_export_data: 'Exportar mis Datos (JSON)',
@@ -2829,7 +2944,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_title: 'Derecho al Olvido (Art. 17)',
     privacy_erasure_desc: 'Elimina permanentemente tu cuenta, CVs, datos procesados y evaluaciones de la base de datos.',
     privacy_erasure_warning: '¿Estás seguro? Esta acción es permanente e irreversible.',
-
     cmd_palette_placeholder: 'Buscar comandos, candidatos, empleos, auditorías...',
     cmd_palette_no_results: 'No se encontraron resultados.',
     cmd_cat_navigation: 'Navegación',
@@ -2844,14 +2958,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     support_widget_title: 'Asistente de Soporte RecruitAI',
     support_widget_placeholder: 'Haz cualquier pregunta sobre la plataforma...',
     support_widget_send: 'Enviar',
-
     cancel: 'Cancelar',
     save: 'Guardar Cambios',
     confirm: 'Confirmar',
     loading: 'Cargando datos del sistema...',
     success: 'Operación realizada con éxito',
     error: 'Ocurrió un error',
-
     first_name: 'Nombre',
     last_name: 'Apellido',
     email_addr: 'Correo electrónico',
@@ -2874,7 +2986,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_file_hint: 'PDF, DOCX, TXT o MD · máx. 5 MB',
     apply_error_no_cv: 'Adjunta tu documento de CV.',
     apply_error_no_consent: 'Otorga el consentimiento RGPD para el filtrado con IA automatizado.',
-
     erasure_warning: '¿Estás seguro? Esta acción es permanente e irreversible. Todas tus solicitudes, CV y el acceso a la cuenta serán destruidos.',
     sign_in: 'Iniciar sesión',
     session_enforced: 'Permisos de rol estrictamente aplicados.',
@@ -2884,12 +2995,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_interviewer_desc: 'Entrevistador técnico: evaluación de candidatos, preguntas y tarjetas de evaluación.',
     role_auditor_desc: 'Auditor de cumplimiento: acceso de solo lectura a registros de auditoría inmutables.',
     role_candidate_desc: 'Postulante: seguimiento de solicitudes, directorio de empleos y autoservicio RGPD.',
-
     nav_settings: 'Configuración del espacio',
     nav_system_health: 'Configuración del espacio Health',
     active_role: 'Rol activo:',
     brand_tagline: 'ATS Empresarial',
-
     workspace_overview: 'Resumen del espacio',
     btn_review_applications: 'Revisar candidaturas',
     kpi_across_jobs: 'En empleos activos',
@@ -2929,7 +3038,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     telemetry_email_banner: '{count} envíos de correo fallaron en los últimos 7 días; algunos destinatarios nunca fueron notificados. Revisar errores de entrega',
     telemetry_email_banner_one: '1 envío de correo falló en los últimos 7 días; el destinatario nunca fue notificado. Revisar errores de entrega',
     telemetry_email_review: 'Revisar errores de entrega',
-
     metric_visible_apps: 'Solicitudes visibles',
     metric_needs_review: 'Necesita revisión',
     metric_avg_match: 'Coincidencia media',
@@ -2980,7 +3088,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aria_select_all: 'Seleccionar todas las solicitudes visibles',
     aria_pipeline_pagination: 'Paginación del pipeline',
     applicants_count: '{count} postulantes',
-
     status_closed: 'Cerrada',
     jobs_search_placeholder: 'Buscar título, descripción, departamento…',
     aria_search_requisitions: 'Buscar vacantes',
@@ -3065,7 +3172,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_close_failed: 'Error al cerrar la vacante',
     toast_network_close: 'Error de red al cerrar la vacante',
     toast_incomplete_response: 'El servidor devolvió una respuesta de vacante incompleta',
-
     my_apps_score_hint: 'El % de coincidencia es tu última puntuación de filtrado IA frente a la rúbrica de cada puesto: guía la preselección, no es una decisión final.',
     my_apps_empty_tip: 'Consejo: guarda tu CV en tu perfil y cada puesto abierto será una postulación de un clic.',
     my_apps_profile_link: 'perfil',
@@ -3073,7 +3179,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     match_band_strong: 'Coincidencia fuerte',
     match_band_good: 'Buena coincidencia',
     match_band_building: 'En desarrollo',
-
     profile_workspace_candidate: 'Espacio del candidato',
     profile_workspace_account: 'Cuenta del espacio',
     profile_display_name: 'Nombre visible',
@@ -3101,7 +3206,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_personalized_greeting: 'Sigue desarrollando tu perfil, {firstName} ! Tus datos guardados hacen la postulación más rápida.',
     profile_completion_status: '{completed}/{total} completado — añade un CV y habilidades para desbloquear postulaciones en un clic',
     profile_completion_hint: 'Completa tu perfil para una experiencia de postulación más fluida en todas las vacantes abiertas.',
-
     audit_search_actor: 'Buscar por correo del actor…',
     audit_search_actor_aria: 'Buscar en el registro por correo del actor',
     audit_search_action: 'Acción p. ej. DECISION',
@@ -3119,7 +3223,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_search: 'Buscar',
     audit_sealed: '✓ SELLADO',
     audit_logs_count: '{count} REGISTROS',
-
     team_accounts_badge: '{count} CUENTAS EN TOTAL',
     team_domain_title: 'Identidad del espacio',
     team_domain_desc: 'El personal con un correo de tu dominio verificado se une automáticamente a este espacio al registrarse.',
@@ -3180,7 +3283,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     team_verify_network: 'Error de red durante la verificación.',
     team_domain_already: 'Este dominio ya está verificado.',
     team_user_fallback: 'Usuario',
-
     settings_title: 'Configuración del espacio',
     settings_subtitle: 'Configura el flujo de reclutamiento, la política de retención y la marca (espec §6.11/§6.12). Cada cambio se registra en la pista de auditoría.',
     settings_tab_workflow: 'Flujo y motivos',
@@ -3216,7 +3318,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     settings_failed_retention: 'Error al guardar la política de retención.',
     settings_remove_reason: 'Quitar motivo {code}',
     settings_remove_category: 'Quitar categoría {category}',
-
     analytics_metrics_badge: 'MÉTRICAS §6.10',
     analytics_subtitle: 'Tiempo hasta el filtrado, conversión por etapa, finalización de entrevistadores y carga para los empleos permitidos.',
     analytics_filter_from: 'Desde',
@@ -3250,7 +3351,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     analytics_col_median: 'Mediana',
     analytics_definitions: 'Definiciones de métricas',
     analytics_error: 'Error al cargar los análisis',
-
     email_title: 'Salud de envíos de correo',
     email_subtitle: 'Envíos transaccionales fallidos en los últimos 7 días (espec §6.9). Haz clic en una fila para ver el error del proveedor.',
     email_back: '← Volver al panel',
@@ -3273,7 +3373,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     email_retry_network: 'Error de red: no se intentó el reintento.',
     email_ops_badge: 'TELEMETRÍA OPS',
     email_all_templates: 'Todas las plantillas',
-
     privacy_requests_title: 'Solicitudes de datos (rectificación, acceso, retiro)',
     privacy_requests_desc: 'Envía una solicitud formal. Se registra, se da seguimiento y se deriva a nuestro equipo de privacidad para revisión: te contactaremos con el resultado.',
     privacy_request_correction: 'Corregir mis datos',
@@ -3297,7 +3396,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_success: 'Tu cuenta y datos personales han sido borrados por completo',
     privacy_export_failed: 'Error al exportar los datos',
     privacy_erasure_failed: 'Error al enviar la solicitud de borrado',
-
     compare_matrix_title: 'Matriz comparativa de candidatos',
     compare_matrix_subtitle: 'Comparación directa de puntuaciones ponderadas, etapas de reclutamiento y calificaciones.',
     compare_col_candidate: 'Candidato',
@@ -3312,7 +3410,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     compare_restricted_desc: 'La comparación lado a lado está reservada a Reclutadores, Gerentes de Contratación y Entrevistadores.',
     compare_restricted_cta: 'Volver al Panel de Control',
     compare_return_dashboard: 'Volver al panel',
-
     error_generic_title: '¡Algo salió mal!',
     btn_try_again: 'Intentar de nuevo',
     apply_legacy_title: 'Enviar solicitud',
@@ -3351,7 +3448,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     interview_submitting: 'Enviando invitaciones de calendario...',
     interview_back: 'Volver al candidato',
     interview_error: 'No se pudo programar la entrevista. Inténtalo de nuevo.',
-
     copilot_thinking: 'Pensando…',
     copilot_error_network: 'Error de red. Verifica tu conexión e inténtalo de nuevo.',
     copilot_error_service: 'El servicio de soporte no está disponible ahora. Inténtalo en un momento.',
@@ -3364,7 +3460,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     copilot_chip_apply: '¿Cómo me postulo?',
     copilot_chip_track: 'Seguir mis solicitudes',
     copilot_chip_permissions: 'Permisos por rol',
-
     feedback_thanks: '¡Gracias por tus comentarios! Esto ayuda a entrenar la IA.',
     feedback_question: '¿La puntuación de la IA fue precisa?',
     feedback_placeholder: 'Comentario opcional...',
@@ -3408,7 +3503,100 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_status_failed: 'No se pudo actualizar el estado de la cuenta.',
     criterion_category: 'Categoría',
     criterion_threshold: 'Umbral mínimo (p. ej. 5 años)',
-    criterion_evidence: 'Evidencia aceptable (qué cuenta como prueba)'
+    criterion_evidence: 'Evidencia aceptable (qué cuenta como prueba)',
+    landing_badge: 'Reclutamiento con IA explicable',
+    landing_hero_title_1: 'Evalúe candidatos con',
+    landing_hero_title_highlight: 'IA transparente',
+    landing_hero_desc: 'Filtrado de currículums basado en evidencias y rúbricas estructuradas, sin puntuaciones de caja negra. Vea por qué coincide un candidato, qué le falta y de dónde provienen las pruebas.',
+    landing_start_free: 'Comenzar a contratar gratis',
+    landing_sign_in: 'Iniciar sesión en su cuenta',
+    landing_feat1_title: 'Puntuaciones explicables',
+    landing_feat1_desc: 'Cada resultado muestra qué criterios coinciden, cuáles faltan y la evidencia detrás de cada decisión.',
+    landing_feat2_title: 'Privacidad garantizada por defecto',
+    landing_feat2_desc: 'Los datos personales se anonimizan antes del procesamiento por IA. Los candidatos controlan sus datos.',
+    landing_feat3_title: 'Evaluación con equidad probada',
+    landing_feat3_desc: 'Los CV se evalúan únicamente según la rúbrica del puesto. Nombre, escuela y ubicación se excluyen.',
+    landing_cta_candidate_title: '¿Busca su próximo puesto?',
+    landing_cta_candidate_desc: 'Explore ofertas, suba su CV y compruebe cómo se compara su perfil con los requisitos antes de postularse.',
+    landing_cta_candidate_btn: 'Explorar empleos como candidato',
+    landing_footer_rights: 'Plataforma empresarial de filtrado de CV con IA.',
+    landing_footer_privacy: 'Privacidad',
+    landing_footer_signin: 'Iniciar sesión',
+    auth_portal_access: 'ACCESO AL PORTAL',
+    auth_demo_candidate_title: 'Demostración de Candidato en 1 Clic',
+    auth_demo_candidate_desc: 'Acceso de prueba instantáneo • Sin 2FA requerido',
+    auth_demo_candidate_entering: 'Entrando...',
+    auth_demo_candidate_btn: 'Iniciar demo →',
+    auth_staff_login: 'ACCESO DEL PERSONAL',
+    auth_demo_staff_title: 'Demostración de Personal en 1 Clic',
+    auth_demo_staff_desc: 'Acceso inmediato al espacio • Sin configuración',
+    auth_demo_staff_waiting: 'Espere...',
+    auth_demo_staff_btn: 'Reclutador →',
+    forgot_title: 'Restablecer su contraseña',
+    forgot_subtitle: 'Ingrese el correo de su cuenta y le enviaremos un enlace de restablecimiento.',
+    forgot_success_sent: 'Si existe una cuenta para ese correo, el enlace de restablecimiento está en camino.',
+    forgot_delivery_warning: 'Si existe una cuenta, se solicitó un enlace, pero el envío de correos presenta fallos en este momento.',
+    forgot_delivery_help: 'Por favor intente de nuevo pronto; si continúa fallando, contacte a soporte.',
+    forgot_back_to_signin: 'Volver a iniciar sesión',
+    forgot_send_btn: 'Enviar enlace de restablecimiento',
+    forgot_sending_btn: 'Enviando enlace...',
+    forgot_remember_password: '¿Recuerda su contraseña? Iniciar sesión',
+    reset_missing_token: 'Falta el token de restablecimiento — use el enlace de su correo',
+    reset_success_redirecting: 'Contraseña actualizada — redirigiéndole para iniciar sesión…',
+    reset_new_password_label: 'Nueva contraseña',
+    reset_confirm_password_label: 'Confirmar nueva contraseña',
+    reset_show_password: 'Mostrar',
+    reset_hide_password: 'Ocultar',
+    reset_submit_btn: 'Actualizar contraseña',
+    reset_submitting_btn: 'Actualizando contraseña…',
+    reset_mismatch_error: 'Las contraseñas no coinciden',
+    reset_length_error: 'La contraseña debe tener al menos 8 caracteres',
+    spotlight_search_label: 'Buscar en la plataforma…',
+    nav_more: 'Más',
+    nav_more_views: 'Más vistas del espacio',
+    theme_light: 'Claro',
+    theme_dark: 'Oscuro',
+    theme_auto: 'Auto',
+    theme_light_title: 'Modo claro',
+    theme_dark_title: 'Modo oscuro (Aurora Cyber)',
+    theme_auto_title: 'Modo automático del sistema',
+    quick_filters: 'Filtros rápidos:',
+    filter_needs_review: 'Requiere revisión',
+    filter_top_matches: 'Mejores coincidencias (≥80%)',
+    filter_req_failed: 'Obligatorios no cumplidos (0%)',
+    filter_interviewing: 'En entrevista',
+    compare_selected_title: 'Comparar candidatos seleccionados lado a lado según la rúbrica aprobada',
+    btn_return_review: 'Regresar a revisión',
+    btn_mark_hired: 'Marcar como contratado',
+    btn_record_decline: 'Registrar rechazo/desistimiento',
+    cprofile_compose_tooltip: 'Redactar y previsualizar comunicación con el candidato',
+    cprofile_questions_tooltip: 'Generar preguntas técnicas y conductuales basadas en brechas del CV',
+    cprofile_scorecard_tooltip: 'Enviar tarjeta de puntuación estructurada',
+    cprofile_schedule_tooltip: 'Programar sesión de entrevista con verificación de conflictos',
+    cprofile_override_tooltip: 'Modificar puntuación con justificación humana obligatoria',
+    compare_pdf_tooltip: 'Imprimir o exportar comparativa como PDF',
+    compare_stage_label: 'Etapa:',
+    compare_skills_label: 'Habilidades identificadas:',
+    compare_threshold_label: 'Umbral:',
+    compare_evidence_rules_label: 'Reglas de evidencia:',
+    compare_low_confidence_flag: 'Baja confianza en la evidencia (Revisión humana requerida)',
+    compare_analysis_label: 'Análisis:',
+    compare_recruiter_note_label: 'Nota del reclutador:',
+    role_admin_option: 'Administrador',
+    role_recruiter_option: 'Reclutador',
+    role_hiring_manager_option: 'Gerente de contratación',
+    role_interviewer_option: 'Entrevistador',
+    role_auditor_option: 'Auditor de cumplimiento',
+    team_resend_invite_tooltip: 'Generar una nueva contraseña temporal y reenviar invitación',
+    team_remove_member_tooltip: 'Eliminar miembro del espacio de trabajo',
+    team_additional_permissions: 'Permisos adicionales',
+    profile_workspace_role_info: 'Información del espacio y rol',
+    profile_assigned_role_label: 'Rol asignado',
+    profile_organization_label: 'Organización',
+    system_health_title: 'Estado del sistema',
+    my_apps_search_placeholder: 'Buscar por título de puesto o departamento...',
+    my_apps_no_matches: 'Ninguna solicitud coincide con sus filtros actuales.',
+    my_apps_withdraw_placeholder: 'ej.: Aceptó otra oferta, reubicación, ya no disponible...',
   },
   de: {
     nav_dashboard: 'Dashboard',
@@ -3435,7 +3623,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_experience: 'Erfahrungszusammenfassung',
     profile_save: 'Profil speichern',
     profile_saved: 'Profil gespeichert',
-
     search_placeholder: 'Bewerber, Stellen, Audits durchsuchen...',
     notifications: 'Benachrichtigungen',
     copilot_title: 'RecruitAI Copilot',
@@ -3444,8 +3631,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     sign_out: 'Abmelden',
     active_session: 'Aktive Authentifizierte Sitzung',
     spotlight_search: 'Schnellsuche',
-
-    copilot_welcome: '**Willkommen bei RecruitAI Copilot!**\n\nIch bin Ihr mehrsprachiger KI-Assistent für Talentprüfung. Fragen Sie mich nach Lebenslauf-Screening, Bewertungsrubriken, Rollenberechtigungen oder DSGVO-Konformität.',
+    copilot_welcome: '**Willkommen bei RecruitAI Copilot!**\\n\\nIch bin Ihr mehrsprachiger KI-Assistent für Talentprüfung. Fragen Sie mich nach Lebenslauf-Screening, Bewertungsrubriken, Rollenberechtigungen oder DSGVO-Konformität.',
     copilot_input_placeholder: 'Frage zu Bewerbern, Rubriken, Rollen stellen...',
     copilot_ask_btn: 'Fragen',
     copilot_clear_btn: 'Löschen',
@@ -3455,7 +3641,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     qp_create_rubric: 'Rubrik erstellen',
     qp_questions: 'Interviewfragen',
     qp_apply_track: 'Bewerben & verfolgen',
-
     total_candidates: 'Bewerber Gesamt',
     avg_match_rate: 'Durchschnittliche Eignung',
     open_requisitions: 'Offene Stellen',
@@ -3469,7 +3654,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_interviewing: 'Im Interview',
     stage_offered: 'Angebot Unterbreitet',
     realtime_sync: 'Synchronisieren',
-
     pipeline_title: 'Bewerber-Bewertungs-Pipeline',
     pipeline_subtitle: 'Mehrstufiges Bewerbermanagement mit objektiven Rubriken und belegbaren Nachweisen.',
     view_kanban: 'Kanban-Board',
@@ -3484,7 +3668,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_col: 'Pipeline-Phase',
     score_col: 'Eignungsscore',
     actions_col: 'Aktionen',
-
     eval_title: 'Bewerberbewertung',
     ocr_stream: 'OCR-Textstrom',
     parsed_resume_doc: 'Analysierter Lebenslauf',
@@ -3507,7 +3690,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_quick_actions: 'Recruiter-Aktionen',
     profile_ai_match_rationale: 'KI-Bewertungsdetails',
     profile_recruitment_decisions: 'Entscheidungsprotokoll',
-
     jobs_title: 'Stellenangebote & Bewertungsrubriken',
     jobs_subtitle: 'Definieren Sie offene Stellen und gewichtete Kriterien für die transparente KI-Vorauswahl.',
     btn_create_job: '+ Stelle erstellen',
@@ -3528,7 +3710,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     create_job_submit_btn: 'Stelle & Rubrik veröffentlichen',
     create_job_weight_label: 'Gewichtung',
     create_job_category_label: 'Kategorie',
-
     decision_modal_title: 'Einstellungsentscheidung festhalten',
     decision_modal_subtitle: 'Audit-protokollierte Statusänderung für diese Bewerbung.',
     decision_action_label: 'Entscheidungsaktion',
@@ -3542,7 +3723,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     decision_action_withdraw: 'Bewerbung zurückgezogen',
     decision_action_review: 'Zur Überprüfung markieren',
     decision_history_title: 'Entscheidungsübersicht',
-
     scorecard_modal_title: 'Interview-Bewertungsbogen einreichen',
     scorecard_tech_rating: 'Fachliche Kompetenz (1-5)',
     scorecard_comm_rating: 'Kommunikation & Teamfähigkeit (1-5)',
@@ -3555,7 +3735,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     scorecard_rec_hire: 'Einstellen',
     scorecard_rec_lean_hire: 'Eher einstellen',
     scorecard_rec_no_hire: 'Nicht einstellen',
-
     cprofile_status_label: 'Status',
     cprofile_no_resume_text: 'Für diese Bewerbung wurde kein Lebenslauf als Klartext analysiert.',
     cprofile_summary_fallback: 'KI-gestützte Bewertung anhand der freigegebenen Screening-Kriterien der Stelle.',
@@ -3611,13 +3790,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_evidence_located: 'Beleg gefunden: „{evidence}“',
     toast_blind_enabled: 'Blind Screening aktiviert: personenbezogene Daten verborgen',
     toast_pii_revealed: 'Personenbezogene Daten sichtbar',
-
     compare_title: 'Direkter Bewerbervergleich',
     compare_subtitle: 'Vergleichen Sie Scores, Qualifikationen und Belege in einer einheitlichen Matrix.',
     compare_badge: 'BEWERTUNGSMATRIX',
     compare_full_eval: 'Vollständige Auswertung',
     compare_criteria_breakdown: 'Kriterienübersicht',
-
     duplicates_title: 'Duplikatprüfung & Zusammenführung',
     duplicates_subtitle: 'Erkennen Sie doppelte Bewerbungen derselben Person anhand von E-Mail oder Name.',
     duplicates_merge_btn: 'Datensätze zusammenführen',
@@ -3632,7 +3809,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dup_profiles_count: '{count} übereinstimmende Kandidatenprofile',
     dup_merging: 'Wird zusammengeführt…',
     dup_applications_count: '{count} Bewerbungen eingereicht',
-
     my_apps_title: 'Bewerberportal',
     my_apps_subtitle: 'Verfolgen Sie in Echtzeit den Status und die nächsten Schritte Ihrer Bewerbungen.',
     my_apps_empty: 'Sie haben noch keine Bewerbungen eingereicht.',
@@ -3643,7 +3819,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     personalized_welcome: 'Willkommen zurück, {name} !',
     personalized_shortlisted: 'Kurzliste',
     personalized_interviewing: 'Im Vorstellungsgespräch',
-
     team_title: 'Benutzer- & Rollenverwaltung',
     team_subtitle: 'Strikt getrenntes Verzeichnis zwischen internen Mitarbeitern und registrierten Bewerbern.',
     tab_internal_staff: 'Interne Mitarbeiter',
@@ -3651,7 +3826,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_invite_member: 'Mitarbeiter einladen',
     btn_edit_role: 'Rolle bearbeiten',
     promote_btn: 'Befördern',
-
     audit_title: 'Manipulationssicheres Audit-Protokoll',
     audit_subtitle: 'Kryptografisch verifizierte, unveränderliche Zeitleiste aller KI-Vorauswahlen und Datenzugriffe.',
     sha256_verified: 'SHA-256 Verifiziert',
@@ -3660,7 +3834,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     actor_col: 'Akteur',
     affected_col: 'Betroffener Datensatz',
     integrity_col: 'Integritätsstatus',
-
     privacy_title: 'Datenschutz & DSGVO-Rechte',
     privacy_subtitle: 'Selbstbedienungs-Datenexport und Recht auf Löschung (Kontoentfernung).',
     btn_export_data: 'Meine Daten exportieren (JSON)',
@@ -3670,7 +3843,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_title: 'Recht auf Vergessenwerden (Art. 17)',
     privacy_erasure_desc: 'Löschen Sie Ihr Profil, Dokumente, OCR-Indizes und Bewertungsbögen dauerhaft aus dem System.',
     privacy_erasure_warning: 'Sind Sie sicher? Diese Aktion ist unwiderruflich.',
-
     cmd_palette_placeholder: 'Befehle, Bewerber, Stellen, Audits suchen...',
     cmd_palette_no_results: 'Keine Treffer gefunden.',
     cmd_cat_navigation: 'Navigation',
@@ -3685,14 +3857,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     support_widget_title: 'RecruitAI Support-Assistent',
     support_widget_placeholder: 'Stellen Sie Ihre Frage zur Plattform...',
     support_widget_send: 'Senden',
-
     cancel: 'Abbrechen',
     save: 'Speichern',
     confirm: 'Bestätigen',
     loading: 'Systemtelemetrie wird geladen...',
     success: 'Vorgang erfolgreich abgeschlossen',
     error: 'Ein Fehler ist aufgetreten',
-
     first_name: 'Vorname',
     last_name: 'Nachname',
     email_addr: 'E-Mail-Adresse',
@@ -3715,7 +3885,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     apply_file_hint: 'PDF, DOCX, TXT oder MD · max. 5 MB',
     apply_error_no_cv: 'Bitte hängen Sie Ihr Lebenslauf-Dokument an.',
     apply_error_no_consent: 'Bitte erteilen Sie die DSGVO-Einwilligung für das automatisierte KI-Screening.',
-
     erasure_warning: 'Sind Sie sicher? Diese Aktion ist dauerhaft und unumkehrbar. Alle Ihre Bewerbungen, Lebenslauf-Dateien und der Kontozugang werden gelöscht.',
     sign_in: 'Anmelden',
     session_enforced: 'Rollenberechtigungen werden strikt durchgesetzt.',
@@ -3725,12 +3894,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     role_interviewer_desc: 'Technischer Interviewer: Kandidatenbewertung, Fragen und Bewertungsbögen.',
     role_auditor_desc: 'Compliance-Auditor: Lesezugriff auf unveränderliche Audit-Trails.',
     role_candidate_desc: 'Bewerber: Bewerbungsverfolgung, Stellenverzeichnis und DSGVO-Selbstservice.',
-
     nav_settings: 'Arbeitsbereich-Einstellungen',
     nav_system_health: 'Arbeitsbereich-Einstellungen Health',
     active_role: 'Aktive Rolle:',
     brand_tagline: 'Enterprise-ATS',
-
     workspace_overview: 'Arbeitsbereich-Übersicht',
     btn_review_applications: 'Bewerbungen prüfen',
     kpi_across_jobs: 'Über aktive Stellen',
@@ -3741,6 +3908,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     stage_needs_review: 'Überprüfung nötig',
     stage_rejected: 'Abgelehnt / Außerhalb',
     stage_new: 'Neu',
+    stage_on_hold: 'Warteschleife',
     stage_interview_scheduled: 'Interview geplant',
     stage_hired: 'Eingestellt',
     stage_withdrawn: 'Zurückgezogen',
@@ -3748,7 +3916,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     processing_in_progress: 'In Bearbeitung',
     processing_completed: 'Abgeschlossen',
     processing_failed: 'Fehlgeschlagen',
-    stage_on_hold: 'Warteschleife',
     audit_just_now: 'Gerade eben',
     audit_verified: '✓ VERIFIZIERT',
     telemetry_quality_title: 'Qualitäts- & Zuverlässigkeits-Telemetrie (§6.10)',
@@ -3770,7 +3937,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     telemetry_email_banner: '{count} E-Mail-Zustellungen sind in den letzten 7 Tagen fehlgeschlagen — einige Empfänger wurden nie benachrichtigt. Zustellfehler prüfen',
     telemetry_email_banner_one: '1 E-Mail-Zustellung ist in den letzten 7 Tagen fehlgeschlagen — der Empfänger wurde nie benachrichtigt. Zustellfehler prüfen',
     telemetry_email_review: 'Zustellfehler prüfen',
-
     metric_visible_apps: 'Sichtbare Bewerbungen',
     metric_needs_review: 'Prüfung nötig',
     metric_avg_match: 'Ø Übereinstimmung',
@@ -3821,7 +3987,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aria_select_all: 'Alle sichtbaren Bewerbungen auswählen',
     aria_pipeline_pagination: 'Pipeline-Paginierung',
     applicants_count: '{count} Bewerber',
-
     status_closed: 'Geschlossen',
     jobs_search_placeholder: 'Titel, Beschreibung, Abteilung suchen…',
     aria_search_requisitions: 'Ausschreibungen suchen',
@@ -3906,7 +4071,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_close_failed: 'Ausschreibung konnte nicht geschlossen werden',
     toast_network_close: 'Netzwerkfehler beim Schließen der Ausschreibung',
     toast_incomplete_response: 'Der Server hat eine unvollständige Antwort zurückgegeben',
-
     my_apps_score_hint: 'Der Übereinstimmungs-% ist Ihr neuester KI-Screening-Score gegenüber der Rubrik jeder Stelle — er lenkt die Shortlist, ist aber keine finale Entscheidung.',
     my_apps_empty_tip: 'Tipp: Speichern Sie Ihren Lebenslauf in Ihrem Profil, und jede offene Stelle wird zur 1-Klick-Bewerbung.',
     my_apps_profile_link: 'Profil',
@@ -3914,7 +4078,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     match_band_strong: 'Starke Übereinstimmung',
     match_band_good: 'Gute Übereinstimmung',
     match_band_building: 'Im Aufbau',
-
     profile_workspace_candidate: 'Kandidaten-Bereich',
     profile_workspace_account: 'Arbeitsbereich-Konto',
     profile_display_name: 'Anzeigename',
@@ -3926,9 +4089,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_department_access: 'Abteilungszugriff:',
     profile_applications_count: '{count} Bewerbungen',
     profile_cv_saved_ok: 'Lebenslauf gespeichert — 1-Klick-Bewerbung ist freigeschaltet.',
-    profile_personalized_greeting: 'Baue dein Profil weiter aus, {firstName} ! Gespeicherte Daten beschleunigen Bewerbungen.',
-    profile_completion_status: '{completed}/{total} abgeschlossen — CV und Skills hinzufügen für 1-Klick-Bewerbungen',
-    profile_completion_hint: 'Profil vervollständigen für eine reibungslosere Bewerbungserfahrung bei allen offenen Stellen.',
     profile_cv_removed_ok: 'Gespeicherter Lebenslauf entfernt.',
     profile_add: 'Hinzufügen',
     profile_skill_placeholder: 'Skill eingeben und Enter drücken — z. B. React, SQL, Figma',
@@ -3942,7 +4102,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_remove_failed: 'Lebenslauf konnte nicht entfernt werden',
     profile_cv_saved_on: 'gespeichert am {date}',
     aria_upload_cv: 'Lebenslauf hochladen',
-
+    profile_personalized_greeting: 'Baue dein Profil weiter aus, {firstName} ! Gespeicherte Daten beschleunigen Bewerbungen.',
+    profile_completion_status: '{completed}/{total} abgeschlossen — CV und Skills hinzufügen für 1-Klick-Bewerbungen',
+    profile_completion_hint: 'Profil vervollständigen für eine reibungslosere Bewerbungserfahrung bei allen offenen Stellen.',
     audit_search_actor: 'Nach Actor-E-Mail suchen…',
     audit_search_actor_aria: 'Audit-Log nach Actor-E-Mail durchsuchen',
     audit_search_action: 'Aktion z. B. DECISION',
@@ -3960,7 +4122,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_search: 'Suchen',
     audit_sealed: '✓ VERSIEGELT',
     audit_logs_count: '{count} EINTRÄGE',
-
     team_accounts_badge: '{count} KONTEN GESAMT',
     team_domain_title: 'Arbeitsbereich-Identität',
     team_domain_desc: 'Mitarbeiter mit einer E-Mail Ihrer verifizierten Domain treten bei der Registrierung automatisch diesem Arbeitsbereich bei.',
@@ -4021,7 +4182,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     team_verify_network: 'Netzwerkfehler während der Verifizierung.',
     team_domain_already: 'Diese Domain ist bereits verifiziert.',
     team_user_fallback: 'Benutzer',
-
     settings_title: 'Arbeitsbereich-Einstellungen',
     settings_subtitle: 'Konfigurieren Sie Recruiting-Workflow, Aufbewahrungsrichtlinie und Branding (Spez §6.11/§6.12). Jede Änderung wird im Audit-Trail aufgezeichnet.',
     settings_tab_workflow: 'Workflow & Gründe',
@@ -4057,7 +4217,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     settings_failed_retention: 'Aufbewahrungsrichtlinie konnte nicht gespeichert werden.',
     settings_remove_reason: 'Grund {code} entfernen',
     settings_remove_category: 'Kategorie {category} entfernen',
-
     analytics_metrics_badge: '§6.10 KENNZAHLEN',
     analytics_subtitle: 'Zeit bis zum Screening, Phasenkonversion, Interviewer-Completeness und Workload für erlaubte Stellen.',
     analytics_filter_from: 'Von',
@@ -4091,7 +4250,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     analytics_col_median: 'Median',
     analytics_definitions: 'Kennzahlendefinitionen',
     analytics_error: 'Analysen konnten nicht geladen werden',
-
     email_title: 'E-Mail-Zustellungsstatus',
     email_subtitle: 'Fehlgeschlagene transaktionale Zustellungen der letzten 7 Tage (Spez §6.9). Klicken Sie auf eine Zeile, um den Anbieterfehler zu sehen.',
     email_back: '← Zurück zum Dashboard',
@@ -4114,7 +4272,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     email_retry_network: 'Netzwerkfehler — die Wiederholung wurde nicht versucht.',
     email_ops_badge: 'OPS-TELEMETRIE',
     email_all_templates: 'Alle Vorlagen',
-
     privacy_requests_title: 'Datenanfragen (Berichtigung, Auskunft, Widerruf)',
     privacy_requests_desc: 'Reichen Sie eine formelle Datenanfrage ein. Sie wird erfasst, nachverfolgt und zur Prüfung an unser Datenschutzteam weitergeleitet — Sie werden über das Ergebnis informiert.',
     privacy_request_correction: 'Meine Daten korrigieren',
@@ -4138,7 +4295,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     privacy_erasure_success: 'Ihr Konto und Ihre persönlichen Daten wurden vollständig gelöscht',
     privacy_export_failed: 'Datenexport fehlgeschlagen',
     privacy_erasure_failed: 'Löschanfrage konnte nicht gesendet werden',
-
     compare_matrix_title: 'Kandidaten-Vergleichsmatrix',
     compare_matrix_subtitle: 'Direkter Vergleich gewichteter Match-Scores, Recruiting-Phasen und Qualifikationen.',
     compare_col_candidate: 'Kandidat',
@@ -4153,7 +4309,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     compare_restricted_desc: 'Der Seiten-an-Seite-Vergleich ist Recruitern, Hiring Managern und Interviewern vorbehalten.',
     compare_restricted_cta: 'Zurück zum Dashboard',
     compare_return_dashboard: 'Zurück zum Dashboard',
-
     error_generic_title: 'Etwas ist schiefgelaufen!',
     btn_try_again: 'Erneut versuchen',
     apply_legacy_title: 'Bewerbung absenden',
@@ -4192,7 +4347,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     interview_submitting: 'Kalendereinladungen werden gesendet...',
     interview_back: 'Zurück zum Kandidaten',
     interview_error: 'Das Interview konnte nicht geplant werden. Bitte versuchen Sie es erneut.',
-
     copilot_thinking: 'Denkt nach…',
     copilot_error_network: 'Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
     copilot_error_service: 'Der Support-Dienst ist gerade nicht erreichbar. Bitte versuchen Sie es gleich noch einmal.',
@@ -4205,7 +4359,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     copilot_chip_apply: 'Wie bewerbe ich mich?',
     copilot_chip_track: 'Bewerbungen verfolgen',
     copilot_chip_permissions: 'Rollenberechtigungen',
-
     feedback_thanks: 'Danke für Ihr Feedback! Das hilft bei der Verbesserung der KI.',
     feedback_question: 'War der KI-Score genau?',
     feedback_placeholder: 'Optionaler Kommentar...',
@@ -4249,73 +4402,162 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_status_failed: 'Kontostatus konnte nicht aktualisiert werden.',
     criterion_category: 'Kategorie',
     criterion_threshold: 'Mindestschwellenwert (z. B. 5 Jahre)',
-    criterion_evidence: 'Akzeptierter Nachweis (was als Beleg zählt)'
+    criterion_evidence: 'Akzeptierter Nachweis (was als Beleg zählt)',
+    landing_badge: 'Erklärbare KI-Personalbeschaffung',
+    landing_hero_title_1: 'Kandidaten prüfen mit',
+    landing_hero_title_highlight: 'transparenter KI',
+    landing_hero_desc: 'Evidenzbasierte Lebenslaufprüfung mit strukturierten Bewertungsrastern – keine Blackbox-Scores. Verstehen Sie, warum ein Kandidat passt, was fehlt und woher die Nachweise stammen.',
+    landing_start_free: 'Kostenlos einstellen',
+    landing_sign_in: 'Bei Ihrem Konto anmelden',
+    landing_feat1_title: 'Erklärbare Bewertungen',
+    landing_feat1_desc: 'Jedes Auswahlergebnis zeigt erfüllte und fehlende Kriterien sowie die Nachweise hinter jeder Entscheidung.',
+    landing_feat2_title: 'Datenschutzorientiert nach Standard',
+    landing_feat2_desc: 'Persönliche Daten werden vor der KI-Verarbeitung unkenntlich gemacht. Kandidaten behalten die Datenkontrolle.',
+    landing_feat3_title: 'Fairness-geprüfte Auswahl',
+    landing_feat3_desc: 'Lebensläufe werden nur anhand des Stellenprofils bewertet. Signale wie Name, Schule oder Ort werden entfernt.',
+    landing_cta_candidate_title: 'Auf der Suche nach einer neuen Stelle?',
+    landing_cta_candidate_desc: 'Durchsuchen Sie Stellenangebote, laden Sie Ihren Lebenslauf hoch und vergleichen Sie Ihr Profil vor der Bewerbung.',
+    landing_cta_candidate_btn: 'Jobs als Kandidat durchsuchen',
+    landing_footer_rights: 'Enterprise-KI-Plattform für Lebenslauf-Screening.',
+    landing_footer_privacy: 'Datenschutz',
+    landing_footer_signin: 'Anmelden',
+    auth_portal_access: 'PORTAL-ZUGANG',
+    auth_demo_candidate_title: '1-Klick Kandidaten-Demo',
+    auth_demo_candidate_desc: 'Sofortiger Testzugang • Keine 2FA erforderlich',
+    auth_demo_candidate_entering: 'Wird geladen...',
+    auth_demo_candidate_btn: 'Demo starten →',
+    auth_staff_login: 'MITARBEITER-LOGIN',
+    auth_demo_staff_title: '1-Klick Mitarbeiter-Demo',
+    auth_demo_staff_desc: 'Sofortiger Arbeitsbereich-Zugang • Keine Einrichtung',
+    auth_demo_staff_waiting: 'Bitte warten...',
+    auth_demo_staff_btn: 'Recruiter →',
+    forgot_title: 'Passwort zurücksetzen',
+    forgot_subtitle: 'Geben Sie Ihre E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.',
+    forgot_success_sent: 'Falls ein Konto mit dieser E-Mail existiert, wurde ein Link gesendet.',
+    forgot_delivery_warning: 'Falls ein Konto existiert, wurde der Link angefordert – der E-Mail-Versand schlägt jedoch derzeit fehl.',
+    forgot_delivery_help: 'Bitte versuchen Sie es bald erneut; wenden Sie sich an den Support, falls das Problem anhält.',
+    forgot_back_to_signin: 'Zurück zur Anmeldung',
+    forgot_send_btn: 'Link zum Zurücksetzen senden',
+    forgot_sending_btn: 'Link wird gesendet...',
+    forgot_remember_password: 'Passwort wieder eingefallen? Anmelden',
+    reset_missing_token: 'Fehlender Reset-Token – bitte nutzen Sie den Link aus Ihrer E-Mail',
+    reset_success_redirecting: 'Passwort aktualisiert – Weiterleitung zur Anmeldung…',
+    reset_new_password_label: 'Neues Passwort',
+    reset_confirm_password_label: 'Neues Passwort bestätigen',
+    reset_show_password: 'Anzeigen',
+    reset_hide_password: 'Ausblenden',
+    reset_submit_btn: 'Passwort aktualisieren',
+    reset_submitting_btn: 'Wird aktualisiert…',
+    reset_mismatch_error: 'Passwörter stimmen nicht überein',
+    reset_length_error: 'Das Passwort muss mindestens 8 Zeichen lang sein',
+    spotlight_search_label: 'Plattform durchsuchen…',
+    nav_more: 'Mehr',
+    nav_more_views: 'Weitere Ansichten',
+    theme_light: 'Hell',
+    theme_dark: 'Dunkel',
+    theme_auto: 'Auto',
+    theme_light_title: 'Heller Modus',
+    theme_dark_title: 'Dunkler Modus (Aurora Cyber)',
+    theme_auto_title: 'System-Automodus',
+    quick_filters: 'Schnellfilter:',
+    filter_needs_review: 'Prüfung erforderlich',
+    filter_top_matches: 'Top-Übereinstimmungen (≥80%)',
+    filter_req_failed: 'Pflichtkriterien nicht erfüllt (0%)',
+    filter_interviewing: 'Im Interview',
+    compare_selected_title: 'Ausgewählte Kandidaten anhand des genehmigten Rasters direkt vergleichen',
+    btn_return_review: 'Zurück zur Prüfung',
+    btn_mark_hired: 'Als eingestellt markieren',
+    btn_record_decline: 'Absage erfassen',
+    cprofile_compose_tooltip: 'Kandidatenkommunikation verfassen und voranzeigen',
+    cprofile_questions_tooltip: 'Maßgeschneiderte Interviewfragen basierend auf Lebenslauf-Lücken generieren',
+    cprofile_scorecard_tooltip: 'Strukturierte Bewertungsmatrix einreichen',
+    cprofile_schedule_tooltip: 'Interview mit Terminkonfliktprüfung ansetzen',
+    cprofile_override_tooltip: 'Punktzahl mit verpflichtender menschlicher Begründung überschreiben',
+    compare_pdf_tooltip: 'Benchmark als PDF drucken oder exportieren',
+    compare_stage_label: 'Phase:',
+    compare_skills_label: 'Identifizierte Fähigkeiten:',
+    compare_threshold_label: 'Schwelle:',
+    compare_evidence_rules_label: 'Nachweisregeln:',
+    compare_low_confidence_flag: 'Geringes Nachweisvertrauen (Menschliche Prüfung erforderlich)',
+    compare_analysis_label: 'Analyse:',
+    compare_recruiter_note_label: 'Notiz des Recruiters:',
+    role_admin_option: 'Administrator',
+    role_recruiter_option: 'Recruiter',
+    role_hiring_manager_option: 'Personalverantwortlicher',
+    role_interviewer_option: 'Interviewer',
+    role_auditor_option: 'Compliance-Auditor',
+    team_resend_invite_tooltip: 'Neues temporäres Passwort erstellen und Einladungs-E-Mail erneut senden',
+    team_remove_member_tooltip: 'Mitglied aus dem Arbeitsbereich entfernen',
+    team_additional_permissions: 'Zusätzliche Berechtigungen',
+    profile_workspace_role_info: 'Arbeitsbereich- und Rolleninformationen',
+    profile_assigned_role_label: 'Zugewiesene Rolle',
+    profile_organization_label: 'Organisation',
+    system_health_title: 'Systemstatus',
+    my_apps_search_placeholder: 'Nach Stellenbezeichnung oder Abteilung suchen...',
+    my_apps_no_matches: 'Keine Bewerbungen entsprechen Ihren aktuellen Filtern.',
+    my_apps_withdraw_placeholder: 'z.B. Anderes Angebot angenommen, Umzug, nicht mehr verfügbar...',
   },
   rw: {
-    nav_dashboard: 'Urukuta rw’Ibanze',
+    nav_dashboard: 'Ahabanza',
     nav_candidates: 'Abakandida',
     nav_compare: 'Kugereranya Abakandida',
-    nav_duplicates: 'Gusuzuma Abisubiyemo',
+    nav_duplicates: 'Gusuzuma Abakandida Bisubiyemo',
     nav_jobs: 'Imyanya y’Akazi',
-    nav_audit: 'Inyandiko z’Igenzura',
-    nav_privacy: 'Umutekano w’Amakuru',
+    nav_audit: 'Igitabo cy’Igenzura',
+    nav_privacy: 'Umutekano w’Amakuru Bwite',
     nav_team: 'Ikipe n’Inshingano',
-    nav_analytics: 'Imibare y’Akazi',
+    nav_analytics: 'Imibare n’Isesengura',
     nav_my_applications: 'Ubusabe Bwanjye',
-    nav_quick_apply: 'Reba Imyanya Ihari',
-    nav_profile: 'Umwirondoro wanjye',
-    profile_title: 'Umwirondoro wanjye',
-    profile_subtitle: 'Konti yawe, CV yawe nuko ugaragarira abakoresha',
-    profile_saved_cv: 'CV yabitswe',
-    profile_no_cv: 'Nta CV yabitswe — shyiramo CV kugira ngo usabe akazi ukanze rimwe.',
+    nav_quick_apply: 'Reba Imyanya Ifunguye',
+    nav_profile: 'Umwirondoro Wanjye',
+    profile_title: 'Umwirondoro Wanjye',
+    profile_subtitle: 'Konti yawe, CV yawe n’uko ugaragara ku bakoresha',
+    profile_saved_cv: 'CV Yabitswe',
+    profile_no_cv: 'Nta CV irabikwa — shyiramo CV kugira ngo ujye usaba akazi ukanda rimwe.',
     profile_upload_cv: 'Shyiraho CV',
-    profile_replace_cv: 'Kora CV nshya',
+    profile_replace_cv: 'Hindura CV',
     profile_remove_cv: 'Kuraho',
-    profile_one_click_hint: 'CV ibitswe ikoreshwa mu gusaba akazi ukanze rimwe. Buri saba rigira isuzuma ryaryo.',
-    profile_skills: 'Ubuhanga',
-    profile_experience: "Incamake y'uburambe",
-    profile_save: 'Bika umwirondoro',
-    profile_saved: 'Umwirondoro wabitswe',
-
-    search_placeholder: 'Shakisha abakandida, akazi, igenzura...',
-    notifications: 'Amatangazo',
-    copilot_title: 'Umufasha wa RecruitAI',
-    copilot_subtitle: 'Ubuhanga bwa AI mu Gushaka Abakozi',
-    theme_toggle: 'Guhindura ibara',
+    profile_one_click_hint: 'CV ibitswe ikoreshwa mu gusaba akazi ukanda rimwe. Buri busabe buhabwa isuzuma ryabwo bwite.',
+    profile_skills: 'Ubuhanga n\'Ubumenyi',
+    profile_experience: 'Incamake y’Uburambe',
+    profile_save: 'Bika Umwirondoro',
+    profile_saved: 'Umwirondoro Wabitswe',
+    search_placeholder: 'Shakisha abakandida, imyanya y’akazi, inyandiko z’igenzura...',
+    notifications: 'Amatangazo n’Ubutumwa',
+    copilot_title: 'RecruitAI Copilot',
+    copilot_subtitle: 'Umufasha mu Gushaka Abakozi Byifashishije AI',
+    theme_toggle: 'Guhindura Urumuri cyangwa Umwijima',
     sign_out: 'Gusohoka',
     active_session: 'Kwinjira Byemejwe',
     spotlight_search: 'Gushakisha Byihuse',
-
-    copilot_welcome: '**Murakaza neza kuri RecruitAI Copilot!**\n\nNdi umufasha wanyu mu gushaka no gusesengura abakandida. Mumbaze ibijyanye no gusuzuma impapuro z’uburambe, gutegura ibipimo ngenderwaho, inshingano, cyangwa umutekano w’amakuru.',
-    copilot_input_placeholder: 'Baza ibijyanye n’abakandida, akazi, inshingano...',
+    copilot_welcome: '**Murakaza neza kuri RecruitAI Copilot!**\n\nNdi umufasha wanyu mu gushaka no gusesengura abakandida. Mumbaze ibijyanye no gusuzuma impapuro z’uburambe (CV), gutegura ibipimo ngenderwaho by\'akazi, inshingano z\'abakozi, cyangwa amategeko yo kurengera amakuru bwite.',
+    copilot_input_placeholder: 'Baza ibijyanye n’abakandida, ibipimo ngenderwaho, inshingano...',
     copilot_ask_btn: 'Baza',
     copilot_clear_btn: 'Siba',
-    qp_match_score: 'Imibare y’Isuzuma',
-    qp_roles: 'Inshingano n’Ububasha',
-    qp_blind_screening: 'Gusuzuma Hatagaragajwe Umwirondoro',
-    qp_create_rubric: 'Gushyiraho Ibipimo',
-    qp_questions: 'Ibibazo by’Ibizamini',
+    qp_match_score: 'Uburyo Amanota Abarwa',
+    qp_roles: 'Uburenganzira bw’Inshingano',
+    qp_blind_screening: 'Isuzuma Rihisha Umwirondoro',
+    qp_create_rubric: 'Gushyiraho Ibipimo Ngenderwaho',
+    qp_questions: 'Ibibazo by’Ikizamini',
     qp_apply_track: 'Gusaba & Gukurikirana',
-
-    total_candidates: 'Abakandida Bose',
-    avg_match_rate: 'Ikigereranyo cy’Ubumenyi',
+    total_candidates: 'Abasabye Bose',
+    avg_match_rate: 'Impuzandengo yo Guhuza n\'Akazi',
     open_requisitions: 'Imyanya Ifunguye',
     active_audits: 'Ibyakozwe Byagenzuwe',
-    pipeline_distribution: 'Uko Abakandida Bahagaze',
-    recent_activity: 'Iheruka mu Igenzura',
-    dashboard_subtitle: 'Amakuru y’ako kanya ku bakandida bakiriwe, amanota bahawe n’aho bageze basuzumwa.',
+    pipeline_distribution: 'Uko Abakandida Bakwirakwiriye mu Byiciro',
+    recent_activity: 'Ibiheruka mu Igenzura',
+    dashboard_subtitle: 'Amakuru y’ako kanya ku bakandida bakiriwe, amanota y’isuzuma rya AI, n’aho bageze mu rugendo rwo guhagarikwa.',
     stage_ingested: 'Bakiriwe',
     stage_screening: 'Bari mu Isuzuma',
     stage_shortlisted: 'Batoranyijwe',
     stage_interviewing: 'Bari mu Bizamini',
     stage_offered: 'Bahawe Akazi',
-    realtime_sync: 'Vugurura',
-
+    realtime_sync: 'Kuvugurura Amakuru',
     pipeline_title: 'Urugendo rwo Gusuzuma Abakandida',
-    pipeline_subtitle: 'Gukurikirana abakandida mu byiciro bitandukanye hakoreshejwe ibipimo bifatika by’uburambe.',
+    pipeline_subtitle: 'Gukurikirana abasaba akazi mu byiciro bitandukanye hakoreshejwe ibipimo bifatika by’uburambe n’ibimenyetso nyabyo.',
     view_kanban: 'Imiterere ya Kanban',
-    view_table: 'Imbonerahamwe',
-    search_candidate_placeholder: 'Shakisha izina cyangwa ubumenyi...',
+    view_table: 'Imbonerahamwe y\'Amakuru',
+    search_candidate_placeholder: 'Shakisha izina ry’umukandida cyangwa ubuhanga...',
     all_departments: 'Amashami Yose',
     match_score: 'Amanota',
     no_candidates_stage: 'Nta mukandida uri muri iki cyiciro',
@@ -4323,16 +4565,15 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     position_applied_col: 'Umwanya Yasabye',
     department_col: 'Ishami',
     stage_col: 'Icyiciro Agezemo',
-    score_col: 'Amanota y’Ubumenyi',
-    actions_col: 'Ibyo Wakora',
-
+    score_col: 'Amanota yo Guhuza n\'Akazi',
+    actions_col: 'Ibikorwa',
     eval_title: 'Isuzuma ry’Umukandida',
-    ocr_stream: 'Inyandiko Yakuwe muri CV',
-    parsed_resume_doc: 'Impapuro z’Uburambe Zasesenguwe',
-    explainable_score: 'Amanota Asobanuwe neza',
-    deterministic_match: 'Isuzuma rishingiye ku bipimo',
+    ocr_stream: 'Inyandiko Yakuwe muri CV (OCR)',
+    parsed_resume_doc: 'Inyandiko ya CV Yasesenguwe',
+    explainable_score: 'Amanota Asobanuye Neza',
+    deterministic_match: 'Isuzuma rishingiye ku bipimo bifatika',
     overridden_badge: 'Yakosowe n’Umuntu',
-    scored_criteria: 'Ibipimo Byasuzumwe',
+    scored_criteria: 'Ibipimo Byasuzumwe n\'Amanota',
     locate_evidence: 'Kureba ikimenyetso muri CV',
     btn_ai_questions: 'Ibibazo bya AI',
     btn_scorecard: 'Ikarita y’Amanota',
@@ -4341,19 +4582,18 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     btn_extend_offer: 'Guha Umukandida Akazi',
     btn_blind_mode: 'Hisha Umwirondoro',
     btn_reveal_pii: 'Garagaza Umwirondoro',
-    profile_candidate_details: 'Umwirondoro w’Umukandida',
-    profile_extracted_skills: 'Ubumenyi n’Ubushobozi Bwagaragaye',
+    profile_candidate_details: 'Amakuru y’Umukandida n’Itumanaho',
+    profile_extracted_skills: 'Ubuhanga n’Ubushobozi Bwagaragaye',
     profile_work_history: 'Uburambe mu Kazi',
     profile_education: 'Amashuri n’Impamyabumenyi',
     profile_quick_actions: 'Ibikorwa by’Ushinzwe Abakozi',
-    profile_ai_match_rationale: 'Ibisobanuro by’Amanota ya AI',
+    profile_ai_match_rationale: 'Ibisobanuro Byimbitse by’Amanota ya AI',
     profile_recruitment_decisions: 'Amateka y’Ibyemezo Byafashwe',
-
     jobs_title: 'Imyanya y’Akazi n’Ibipimo Ngenderwaho',
-    jobs_subtitle: 'Gushyiraho imyanya mishya no gutegura ibipimo bifite uburemere byifashishwa mu isuzuma rya AI.',
+    jobs_subtitle: 'Kugaragaza imyanya ifunguye, amashami agenewe, no gushyiraho ibipimo by\'uburemere bikoreshwa mu isuzuma rya AI risobanutse.',
     btn_create_job: '+ Fungura Umwanya Mushya',
     active_requisitions_badge: 'IMYANYA IFUNGUYE',
-    view_details: 'Reba Byose',
+    view_details: 'Reba Ibisobanuro',
     apply_role: 'Saba uyu Mwanya',
     no_jobs_found: 'Nta myanya y’akazi ifunguye muri aka kanya.',
     rubric_preview_title: 'Isubiramo ry’Ibipimo Ngenderwaho',
@@ -4361,7 +4601,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     rubric_scoring_formula: 'Uburyo Amanota Abarwa',
     rubric_weight_distribution: 'Ikwirakwizwa ry’Uburemere bw’Ibipimo',
     create_job_modal_title: 'Fungura Umwanya Mushya w’Akazi',
-    create_job_title_label: 'Izina ry’Umwanya',
+    create_job_title_label: 'Izina ry’Umwanya w’Akazi',
     create_job_dept_label: 'Ishami',
     create_job_desc_label: 'Ibisobanuro by’Umwanya n’Inshingano',
     create_job_criteria_heading: 'Ibipimo Ngenderwaho by’Isuzuma',
@@ -4369,8 +4609,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     create_job_submit_btn: 'Tangaza Umwanya n’Ibipimo',
     create_job_weight_label: 'Uburemere',
     create_job_category_label: 'Icyiciro',
-
-    decision_modal_title: 'Fata Icyemezo ku Mukandida',
+    decision_modal_title: 'Kwandika Icyemezo cy\'Umuntu ku Mukandida',
     decision_modal_subtitle: 'Guhindura icyiciro cy’umukandida byandikwa mu gitabo cy’igenzura.',
     decision_action_label: 'Icyemezo Gifashwe',
     decision_reason_label: 'Impamvu y’Icyemezo',
@@ -4379,279 +4618,265 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     decision_action_shortlist: 'Toranya Umukandida',
     decision_action_advance: 'Muhe Ikizamini',
     decision_action_hold: 'Mubike ku Ruhande',
-    decision_action_reject: 'Mukure mu bakomeza',
+    decision_action_reject: 'Mukure mu Bakomeza',
     decision_action_withdraw: 'Yikuye mu Busabe',
-    decision_action_review: 'Kugenzura Byimbitse',
-    decision_history_title: 'Ibyemezo Byose Byafashwe',
-
+    decision_action_review: 'Gusuzuma Byimbitse',
+    decision_history_title: 'Igitabo cy’Ibyemezo Byose Byafashwe',
     scorecard_modal_title: 'Tanga Amanota y’Ikizamini',
-    scorecard_tech_rating: 'Ubumenyi mu Bya Tekiniki (1-5)',
-    scorecard_comm_rating: 'Itumanaho n’Imikoranire (1-5)',
-    scorecard_problem_rating: "Gukemura Ibibazo no gusesengura (1-5)",
-    scorecard_recommendation: ' Umusabiye',
-    scorecard_notes: 'Ibyo Umunyamakuru Yabonye',
-    scorecard_submit_btn: 'Bika Ikarita y’Amanota',
+    scorecard_tech_rating: 'Ubumenyi bwa Tekiniki (1-5)',
+    scorecard_comm_rating: 'Itumanaho n’Imikoranire mu Ikipe (1-5)',
+    scorecard_problem_rating: 'Gukemura Ibibazo no Gusesengura (1-5)',
+    scorecard_recommendation: 'Inama yo Guha Akazi',
+    scorecard_notes: 'Ibisobanuro by\'Ukoresha Ikizamini',
+    scorecard_submit_btn: 'Bika Amanota y\'Ikizamini',
     scorecards_submitted_heading: 'Amanota y’Ibizamini Yatanzwe',
-    scorecard_rec_strong_hire: 'Arakwiriye Cyane',
-    scorecard_rec_hire: 'Namuhe Akazi',
-    scorecard_rec_lean_hire: 'Bishoboka ko Aherwa Akazi',
-    scorecard_rec_no_hire: 'Ntahebe Akazi',
-
+    scorecard_rec_strong_hire: 'Arakwiriye Cyane (Strong Hire)',
+    scorecard_rec_hire: 'Ahabwe Akazi (Hire)',
+    scorecard_rec_lean_hire: 'Yahabwa Akazi (Lean Hire)',
+    scorecard_rec_no_hire: 'Ntagahabwe Akazi (Do Not Hire)',
     cprofile_status_label: 'Imiterere',
-    cprofile_no_resume_text: 'Nta CV yanditse mu nyandiko isanzwe yisuzumwe muri iyi sagutanwa.',
-    cprofile_summary_fallback: 'Ifasha suzuma rya AI ryagereranijwe n’ibipimo byemewe byo gutanga akazi.',
+    cprofile_no_resume_text: 'Nta nyandiko isanzwe yakuwe muri CV kuri ubu busabe bw\'akazi.',
+    cprofile_summary_fallback: 'Isuzuma ryakozwe na AI ryifashishije ibipimo ngenderwaho by\'akazi.',
     cprofile_active_badge: 'GIKORA',
-    cprofile_interviewer_fallback: 'Ukora ikizamini',
-    cprofile_scorecard_you: 'Uwe (uwakoresha ubu)',
-    cprofile_tech_short: 'Ubuhanga',
+    cprofile_interviewer_fallback: 'Ukoresha Ikizamini',
+    cprofile_scorecard_you: 'Wowe (Ukoresha ubu)',
+    cprofile_tech_short: 'Tekiniki',
     cprofile_comm_short: 'Itumanaho',
-    cprofile_problem_short: 'Gukemura',
-    cprofile_questions_targeting: 'Gushyira ku rwego ibibazo by’ibisabwa n’ibimenyetso by’isuzuma ry’umukandida',
-    cprofile_questions_analyzing: 'Gusuzuma ibura ry’ubuhanga no gutunganya ibibazo byihariye...',
-    cprofile_targeted_competency: 'Ubuhanga bwihariwe',
+    cprofile_problem_short: 'Gukemura Ibibazo',
+    cprofile_questions_targeting: 'Kureba ibura ry’uburambe n’ibimenyetso by’isuzuma ku mukandida',
+    cprofile_questions_analyzing: 'Gusesengura ibura ry’ubuhanga no gutegura ibibazo byihariye...',
+    cprofile_targeted_competency: 'Ubuhanga Bugamijwe',
     cprofile_question_n: 'Ikibazo {count}',
     cprofile_copy_btn: 'Koporora',
-    cprofile_what_to_look_for: 'Ibyo ugomba kurondera:',
-    cprofile_notes_placeholder: 'Ibisobanuro...',
-    cprofile_reason_qualifications_match: 'Ubwumenyi n’ubushobozi bihuye',
-    cprofile_reason_excellent_technical_fit: 'Ihuza rikomeye mu buhanga',
-    cprofile_reason_experience_gap: 'Ibura ry’urugo cyangwa ubuhanga',
-    cprofile_reason_communication_fit: 'Itumanaho n’imibanire n’itsinda',
-    cprofile_reason_compensation_mismatch: 'Amahitamo ku mushahara cyangwa ku gihe',
-    cprofile_reason_talent_bench: 'Yagumishijwe ku mwanya uzaza',
-    cprofile_reason_candidate_withdrew: 'Umukandida yasabye kureka ubusabe',
-    cprofile_reason_other: 'Impamvu ikomoka ku kazi',
-    cprofile_justification_label: 'Impamvu',
-    cprofile_justification_placeholder: 'Impamvu...',
-    cprofile_override_warning: 'Gusubiza ku rwego amanota birandikwa burundu mu gitabo cy’igenzura kidashobora guhindurwa.',
-    cprofile_adjusted_score: 'Amanota yahinduwe (0 - 100)',
-    cprofile_override_placeholder: 'Yerekanye ubushobozi bukomeye bwo gutunganya sisitemu...',
-    cprofile_annual_compensation: 'Umushahara w’umwaka',
-    cprofile_start_date: 'Itariki yo gutangira',
-    cprofile_uncertain_evidence: 'Iyi nyandiko igena ko igihe cyo kurebwa n’abantu bisabwa kuko ibimenyetso bidasobanutse.',
+    cprofile_what_to_look_for: 'Ibyo kwitaho:',
+    cprofile_notes_placeholder: 'Ibisobanuro n\'Inyandiko...',
+    cprofile_reason_qualifications_match: 'Impamyabumenyi n’Ubushobozi Birahuye',
+    cprofile_reason_excellent_technical_fit: 'Ubumenyi bwa Tekiniki Bukwiriye Cyane',
+    cprofile_reason_experience_gap: 'Icyuho mu Burambe cyangwa mu Buhanga',
+    cprofile_reason_communication_fit: 'Itumanaho n’Imikoranire mu Ikipe',
+    cprofile_reason_compensation_mismatch: 'Ubwumvikane Buke ku Mushahara cyangwa ku Masaha',
+    cprofile_reason_talent_bench: 'Yabitswe ku Mwanya Uzaza',
+    cprofile_reason_candidate_withdrew: 'Umukandida Yikuye mu Busabe',
+    cprofile_reason_other: 'Izindi Mpamvu Zishingiye ku Kazi',
+    cprofile_justification_label: 'Ibisobanuro by\'Impamvu',
+    cprofile_justification_placeholder: 'Sobanura impamvu y\'icyemezo...',
+    cprofile_override_warning: 'Guhindura amanota byandikwa burundu mu gitabo cy’igenzura kidashobora guhindurwa.',
+    cprofile_adjusted_score: 'Amanota Yahinduwe (0 - 100)',
+    cprofile_override_placeholder: 'Yerekanye ubushobozi bukomeye bwo kubaka no gucunga sisitemu...',
+    cprofile_annual_compensation: 'Umushahara n\'Inyungu by\'Umwaka',
+    cprofile_start_date: 'Itariki yo Gutangira Akazi',
+    cprofile_uncertain_evidence: 'Iki gisubizo gisaba gusuzumwa n’umuntu kuko ibimenyetso bidashyitse neza.',
     cprofile_candidate_code: 'Umukandida #{code}',
-    cprofile_applicant_fallback: 'Umusaba',
-    toast_score_recalibrated: 'Amanota y’isuzuma yashyizwe ku {score} %',
-    toast_score_recalibrated_title: 'Amanota yasubijeho ku rwego',
-    toast_score_recalibration_failed: 'Byanze kwandika gusubiza amanota ku rwego',
-    toast_network_recalibration: 'Ikosa rya urubuga mu gusubiza amanota',
-    toast_offer_sent: 'Itangazo ry’akazi rya {salary} ryoherejwe umukandida',
-    toast_offer_sent_title: 'Itangazo ryoherejwe',
-    toast_offer_failed: 'Byanze kohereza itangazo nyarucuro',
-    toast_network_offer: 'Ikosa rya urubuga mu kohereza itangazo',
-    toast_scorecard_recorded: 'Urupapuro rw’ikizamini ({recommendation}) ryanditswe neza',
-    toast_scorecard_title: 'Urupapuro rwabitswe',
-    toast_scorecard_failed: 'Byanze kohereza urupapuro rw’ikizamini',
-    toast_network_scorecard: 'Ikosa rya urubuga mu kubika urupapuro',
-    toast_decision_rationale_required: 'Impamvu y’icyemezo ni ngombwa',
-    toast_decision_recorded: 'Icyemezo "{decision}" cyanditse mu gitabo cy’igenzura',
-    toast_decision_title: 'Icyemezo cyarangiye',
+    cprofile_applicant_fallback: 'Umusaba Akazi',
+    toast_score_recalibrated: 'Amanota y’isuzuma yahinduwe kuri {score}%',
+    toast_score_recalibrated_title: 'Amanota Yahinduwe',
+    toast_score_recalibration_failed: 'Guhindura amanota byanze',
+    toast_network_recalibration: 'Ikosa rya murandasi mu guhindura amanota',
+    toast_offer_sent: 'Amasezerano y’akazi ya {salary} yohererejwe umukandida',
+    toast_offer_sent_title: 'Amasezerano Yoherejwe',
+    toast_offer_failed: 'Byanze kohereza amasezerano y’akazi',
+    toast_network_offer: 'Ikosa rya murandasi mu kohereza amasezerano',
+    toast_scorecard_recorded: 'Ikarita y’ikizamini ({recommendation}) yabitswe neza',
+    toast_scorecard_title: 'Ikarita y’Amanota Yabitswe',
+    toast_scorecard_failed: 'Byanze kubika ikarita y’ikizamini',
+    toast_network_scorecard: 'Ikosa rya murandasi mu kubika ikarita',
+    toast_decision_rationale_required: 'Ibisobanuro by\'impamvu y\'icyemezo birakenewe',
+    toast_decision_recorded: 'Icyemezo "{decision}" cyanditswe mu gitabo cy’igenzura',
+    toast_decision_title: 'Icyemezo Cyafashwe',
     toast_decision_failed: 'Byanze kwandika icyemezo',
-    toast_network_decision: 'Ikosa rya urubuga mu kwandika icyemezo',
-    toast_question_copied: 'Ikibazo cyakopororwe mu bubiko',
-    toast_evidence_located: 'Ibimenyetso byabonetse: "{evidence}"',
-    toast_blind_enabled: 'Isuzuma ritagaragaza umwirondoro ryakoreshejwe: amakuru bwite ahishwe',
+    toast_network_decision: 'Ikosa rya murandasi mu kwandika icyemezo',
+    toast_question_copied: 'Ikibazo cyakoporowe mu bubiko',
+    toast_evidence_located: 'Ikimenyetso cyabonetse: "{evidence}"',
+    toast_blind_enabled: 'Isuzuma rihisha umwirondoro ryakoreshejwe: amakuru bwite ahishwe',
     toast_pii_revealed: 'Amakuru bwite agaragajwe',
-
     compare_title: 'Kugereranya Abakandida Imbonankubone',
-    compare_subtitle: 'Gereranya amanota, ubumenyi n’ibimenyetso by’abakandida mu mbonerahamwe imwe.',
+    compare_subtitle: 'Gereranya amanota y\'abakandida ba mbere, ubushobozi bwa tekiniki, n\'ibimenyetso by\'isuzuma mu mbonerahamwe imwe.',
     compare_badge: 'IMBONERAHAMWE Y’ISUZUMA',
     compare_full_eval: 'Isuzuma Ryose',
     compare_criteria_breakdown: 'Ibipimo Byasuzumwe',
-
-    duplicates_title: 'Gusuzuma Abakandida Bisubiyemo',
-    duplicates_subtitle: 'Gushaka abakandida basabye akazi inshuro zirenze imwe hakoreshejwe imeyili cyangwa izina.',
+    duplicates_title: 'Gusuzuma no Guhuza Abakandida Bisubiyemo',
+    duplicates_subtitle: 'Kuvumbura abakandida batanze ubusabe inshuro zirenze imwe hakoreshejwe imeyili cyangwa amazina.',
     duplicates_merge_btn: 'Komatanya Dosiye',
     duplicates_dismiss_btn: 'Kureka Ibi',
-    duplicates_no_found: 'Nta dosiye zisubiyemo zabonetse.',
-    duplicates_match_confidence: 'Ikizere cy’Isano',
-    duplicates_potential_matches: 'ABASUBIYEMO BABONETSE',
-    dup_merge_failed: 'Komatanya byanze — ongera ugerageze.',
-    dup_merge_error_title: 'Ikosa mu gusuzuma abasubiyemo',
-    dup_merged_toast: 'Dosiye z’abakandida basubiyemo zigeze ku {email} zaratanywe',
-    dup_merged_title: 'Gusuzuma abasubiyemo byarangiye',
-    dup_profiles_count: 'Amadosiye y’abakandida yujuje ibisabwa: {count}',
-    dup_merging: 'Birimo komatanywa…',
-    dup_applications_count: 'Ubusabe bwoherejwe: {count}',
-
-    my_apps_title: 'Urubuga rw’Usaba Akazi',
-    my_apps_subtitle: 'Kurikirana aho ubusabe bwawe bugeze n’ibigiye gukurikiraho mu buryo bw’ako kanya.',
-    my_apps_empty: 'Nta busabe bw’akazi urashyiraho kugeza ubu.',
+    duplicates_no_found: 'Nta dosiye z’abakandida bisubiyemo zabonetse.',
+    duplicates_match_confidence: 'Ikizere cyo Guhura',
+    duplicates_potential_matches: 'ABAKANDIDA BASHOBORA KUBA BISUBIYEMO',
+    dup_merge_failed: 'Komatanya dosiye byanze — ongera ugerageze.',
+    dup_merge_error_title: 'Ikosa mu Guhuza Abisubiyemo',
+    dup_merged_toast: 'Dosiye z’abakandida bisubiyemo kuri {email} zomatanyijwe neza',
+    dup_merged_title: 'Guhuza Abisubiyemo Byarangiye',
+    dup_profiles_count: 'Dosiye z’abakandida zihuye: {count}',
+    dup_merging: 'Birimo gukomatanywa…',
+    dup_applications_count: 'Ubusabe bwatanzwe: {count}',
+    my_apps_title: 'Ahabanza h’Usaba Akazi',
+    my_apps_subtitle: 'Kurikirana aho ubusabe bwawe bugeze, ibyiciro, n’ibigiye gukurikiraho mu buryo bw’ako kanya.',
+    my_apps_empty: 'Nta busabe bw’akazi uratanga kugeza ubu.',
     my_apps_browse_btn: 'Reba Imyanya Ifunguye',
     my_apps_submissions: 'UBUSABE BWATANZWE',
     my_apps_applied_on: 'Yatanzwe ku wa',
     my_apps_general_app: 'Ubusabe Rusange',
-    personalized_welcome: 'Murakaza neza nanone, {name} !',
-    personalized_shortlisted: 'Yagenwa',
-    personalized_interviewing: 'Iri mu bizamini',
-
+    personalized_welcome: 'Murakaza neza nanone, {name}!',
+    personalized_shortlisted: 'Watoranyijwe',
+    personalized_interviewing: 'Uri mu Bizamini',
     team_title: 'Ubuyobozi bw’Abakozi n’Inshingano',
-    team_subtitle: 'Urutonde rutandukanya abakozi b’imbere mu kigo n’abakandida basaba akazi.',
-    tab_internal_staff: 'Abakozi b’Imbere mu Kigo',
+    team_subtitle: 'Urutonde rutandukanya abakozi bo mu kigo n’abakandida basaba akazi.',
+    tab_internal_staff: 'Abakozi bo mu Kigo',
     tab_external_candidates: 'Abasaba Akazi (Abakandida)',
     btn_invite_member: 'Tumira Umukozi Mushya',
     btn_edit_role: 'Hindura Inshingano',
-    promote_btn: 'Muhe Akazi k’Imbere',
-
-    audit_title: 'Inyandiko z’Igenzura n’Umutekano Zidasibwa',
-    audit_subtitle: 'Inyandiko z’amateka zifite ikimenyetso cya SHA-256 zigaragaza buri kintu cyose cyakozwe na AI.',
+    promote_btn: 'Kuzamura mu Nshingano',
+    audit_title: 'Igitabo cy’Igenzura n’Umutekano Kidashobora Guhindurwa',
+    audit_subtitle: 'Inyandiko z’amateka zifite umutekano wa SHA-256 zigaragaza buri kintu cyose cyakozwe na AI cyangwa abantu.',
     sha256_verified: 'Byemejwe na SHA-256',
     timestamp_col: 'Igihe Byakorewe',
     action_col: 'Igikorwa',
     actor_col: 'Uwakoze Igikorwa',
     affected_col: 'Icyakozweho',
     integrity_col: 'Umutekano w’Amakuru',
-
-    privacy_title: 'Umutekano w’Amakuru n’Uburenganzira bwa RGPD',
-    privacy_subtitle: 'Gukuramo amakuru yawe cyangwa gusaba ko konti yawe isibwa burundu.',
+    privacy_title: 'Umutekano w’Amakuru Bwite n’Uburenganzira bwa GDPR',
+    privacy_subtitle: 'Gukuramo amakuru yawe cyangwa gusaba ko konti yawe isibwa burundu (Uburenganzira bwo Kwibagirwa).',
     btn_export_data: 'Kura hano Amakuru Yanjye (JSON)',
-    btn_request_erasure: 'Siba Konti Yanjye Burundu',
+    btn_request_erasure: 'Siba Konti Yanjye n\'Amakuru Yanjye Burundu',
     privacy_portability_title: 'Gukuramo Amakuru Yanjye (Art. 20)',
-    privacy_portability_desc: 'Kura hano amakuru yose yawe muri dosiye ya JSON, harimo CV, amanota n’ibizamini.',
-    privacy_erasure_title: 'Gusiba Amakuru Burundu (Art. 17)',
-    privacy_erasure_desc: 'Siba konti yawe, impapuro zose z’uburambe n’amanota byose bive muri sisitemu burundu.',
-    privacy_erasure_warning: 'Uremeza neza? Iki gikorwa ntigishobora gusubizwa inyuma.',
-
-    cmd_palette_placeholder: 'Shakisha amategeko, abakandida, imyanya...',
+    privacy_portability_desc: 'Kuramo dosiye yuzuye ya JSON ikubiyemo umwirondoro wawe, CV watanze, ibyavuye mu isuzuma rya AI, n\'amanota yose.',
+    privacy_erasure_title: 'Uburenganzira bwo Kwibagirwa (Art. 17)',
+    privacy_erasure_desc: 'Gusiba burundu umwirondoro wawe w\'umukandida, inyandiko zose zashyizweho, inyandiko za OCR, n\'amakuru y\'isuzuma muri sisitemu yose.',
+    privacy_erasure_warning: 'Uremeza neza? Iki gikorwa ntigishobora gusubizwa inyuma kandi gisiba amakuru yawe burundu.',
+    cmd_palette_placeholder: 'Shakisha amabwiriza, abakandida, imyanya, inyandiko...',
     cmd_palette_no_results: 'Nta bisubizo bibonetse.',
-    cmd_cat_navigation: 'Kugendagenda',
-    cmd_cat_analytics: 'Imibare y’Akazi',
-    cmd_cat_requisitions: 'Imyanya',
-    cmd_cat_compliance: 'Kubahiriza amategeko',
-    cmd_cat_administration: 'Ubuyobozi',
-    cmd_palette_navigation: 'Kuyobora',
+    cmd_cat_navigation: 'Kwerekeza',
+    cmd_cat_analytics: 'Isesengura n\'Imibare',
+    cmd_cat_requisitions: 'Imyanya y’Akazi',
+    cmd_cat_compliance: 'Kubahiriza Amategeko',
+    cmd_cat_administration: 'Ubuyobozi bwa Sisitemu',
+    cmd_palette_navigation: 'Kwerekeza',
     cmd_palette_actions: 'Ibikorwa Byihuse',
     notifications_empty: 'Nta matangazo mashya ufite.',
     notifications_mark_all_read: 'Soma byose',
     support_widget_title: 'Umufasha wa RecruitAI',
     support_widget_placeholder: 'Baza ikibazo icyo ari cyo cyose kuri sisitemu...',
     support_widget_send: 'Ohereza',
-
     cancel: 'Kureka',
     save: 'Bika Impinduka',
     confirm: 'Emeza Igikorwa',
     loading: 'Gupakira amakuru ya sisitemu...',
     success: 'Igikorwa cyagenze neza',
-    error: 'Habaye ikibazo',
-
-    first_name: 'Izina ry’ambere',
-    last_name: 'Izina ry’umuryango',
-    email_addr: 'Aderesi ya imeri',
-    phone_number: 'Nimero ya telefoni',
+    error: 'Habaye ikosa',
+    first_name: 'Izina ry’Ibanze',
+    last_name: 'Izina ry’Umuryango',
+    email_addr: 'Aderesi ya Imeyili',
+    phone_number: 'Nimero ya Telefoni',
     upload_resume: 'Inyandiko ya CV (PDF, DOCX, TXT)',
-    gdpr_consent: 'Nemeranya ko CV yanjye ikorwamo ibikorwa hakurikijwe amategeko agenga umutekano w’amakuru (RGPD).',
-    submit_application: 'Ohereza ubusabe',
-    apply_job_missing_title: 'Iyi myanya ntibonetse',
-    apply_job_missing_desc: 'Umwanya washobora kufungwa, kubikwa, cyangwa urubuga rwarangiye. Reba imyanya ihari uhiture imwanya rifunguye.',
+    gdpr_consent: 'Nemeranyije ko CV yanjye isuzumwa hakurikijwe amategeko yo kurengera amakuru bwite (GDPR).',
+    submit_application: 'Ohereza Ubusabe',
+    apply_job_missing_title: 'Uyu mwanya w’akazi ntubonetse',
+    apply_job_missing_desc: 'Umwanya ushobora kuba warafunzwe, warabitswe mu bubiko, cyangwa umurongo ntugikora. Reba imyanya ihari maze uhitemo umwanya ufunguye.',
     apply_browse_open: 'Reba imyanya ifunguye',
     apply_official_badge: 'Ubusabe bwemewe',
-    apply_staff_title: 'Uwinjije nka umunyamuryango w’itsinda rishaka abakozi',
-    apply_staff_desc: 'Uri winjijwe nka umukozi wa ndende. Abakozi ba ndende basuzuma ubusabe aho kwisaba imyanya.',
-    apply_redirecting: 'Kohereza ku rubuga rukurikiranya ubusabe bwawe…',
+    apply_staff_title: 'Winjiye nk’umukozi wo mu itsinda rishaka abakozi',
+    apply_staff_desc: 'Kuri ubu winjiye nk’umukozi w’imbere mu kigo. Abakozi bo mu kigo basuzuma ubusabe bw’abandi aho gusaba imyanya ifunguye.',
+    apply_redirecting: 'Kukwerekeza ku rubuga rukurikirana abakandida…',
     apply_cv_document: 'Inyandiko ya CV',
     apply_use_saved_cv: 'Koresha CV yanjye yabitswe',
-    apply_from_profile: 'Muri profil yawe · nta kwo kwinjiza gikenewe',
-    apply_upload_different: 'Injiza indi CV kuri ubu busabe',
-    apply_click_or_drop: 'Kanda uhiture, cyangwa kurura CV hano',
-    apply_file_hint: 'PDF, DOCX, TXT cyangwa MD · hejuru ya 5 MB',
-    apply_error_no_cv: 'Banza wambikishe inyandiko ya CV yawe.',
-    apply_error_no_consent: 'Banza wemeze uruhushya rwa RGPD kuri isuzuma rya AI.',
-
-    erasure_warning: 'Uremeza neza? Iki gikorwa ni cy’imiterere kandi ntigishobora kugaruka. Ubusabe bwawe bwose, CV n’uburyo bwo kwinjira mu konti bizasibwa.',
-    sign_in: 'Injira',
-    session_enforced: 'Uburenganzira bwa role bugenzurwa bukaze.',
-    role_admin_desc: 'Umuyobozi mukuru wa sisitemu: iteganyagaruka, pipeline y’abakandida n’imicungire y’abakozi.',
+    apply_from_profile: 'Ivuye ku mwirondoro wawe · nta gushyiraho indi bikenewe',
+    apply_upload_different: 'Shyiraho indi CV itandukanye kuri ubu busabe',
+    apply_click_or_drop: 'Kanda hano uhitemo, cyangwa ukurure CV uyishyire hano',
+    apply_file_hint: 'PDF, DOCX, TXT cyangwa MD · uburemere ntarengwa bwa MB 5',
+    apply_error_no_cv: 'Banza ushyireho inyandiko ya CV yawe.',
+    apply_error_no_consent: 'Banza wemeze uburenganzira bwa GDPR ku isuzuma rya AI.',
+    erasure_warning: 'Uremeza neza? Iki gikorwa ni burundu kandi ntigishobora kugarurwa. Ubusabe bwawe bwose, dosiye za CV, n’uburyo bwo kwinjira bizasibwa.',
+    sign_in: 'Injira muri Konti',
+    session_enforced: 'Uburenganzira bw’inshingano bukurikizwa mu buryo bukomeye.',
+    role_admin_desc: 'Umuyobozi mukuru wa sisitemu: ibipimo bya sisitemu, urugendo rw’abakandida n’imicungire y’abakoresha.',
     role_recruiter_desc: 'Ushinzwe gushakisha: pipeline ya ATS, guhindura amanota no gutanga amasezerano.',
     role_hiring_manager_desc: 'Umuyobozi w’ishami: kureba abakandida b’ishami, imipaka n’iteganywa ry’ibizamini.',
     role_interviewer_desc: 'Usuzuma mu buryo bw’imikorere: gusuzuma abakandida, ibibazo no gutanga amanota.',
     role_auditor_desc: 'Umugenzuzi w’ibikorwa: kureba gusa amateka y’igenzura adashobora guhindurwa.',
     role_candidate_desc: 'Umukandida: gukurikirana ubusabe, reba imyanya n’ubwisanzure bwa RGPD.',
-
-    nav_settings: 'Igenamiterere ry’urubuga',
-    nav_system_health: 'Igenamiterere ry’urubuga Health',
+    nav_settings: 'Igenamiterere ry’Ibiro',
+    nav_system_health: 'Ubuzima bwa Sisitemu',
     active_role: 'Role ikora:',
-    brand_tagline: " ",
-    workspace_overview: 'Ishusho rusange',
-    btn_review_applications: 'Suzuma ubusabe',
-    kpi_across_jobs: 'Ku myanya ikora',
-    kpi_shortlisted_pool: 'Abatoranijwe',
+    brand_tagline: 'Gushaka Abakozi Byifashishije AI',
+    workspace_overview: 'Ishusho Rusange y\'Ibiro',
+    btn_review_applications: 'Suzuma Ubusabe bw\'Akazi',
+    kpi_across_jobs: 'Ku myanya yose ikora',
+    kpi_shortlisted_pool: 'Abatoranyijwe Bose',
     kpi_active_rubrics: 'Ibipimo ngenderwaho bikora',
-    kpi_passed_threshold: 'Barenze urugero',
-    kpi_sha_logs: 'Ibitekerezo SHA-256',
-    stage_needs_review: 'Ikeneye kurebwa',
-    stage_rejected: 'Byanze / Hanze y’umushinga',
+    kpi_passed_threshold: 'Barenze urugero rusabwa',
+    kpi_sha_logs: 'Inyandiko z’Igenzura za SHA-256',
+    stage_needs_review: 'Bakeneye Gusuzumwa n\'Umuntu',
+    stage_rejected: 'Ntibujuje Ibisabwa',
     stage_new: 'Gishya',
-    stage_interview_scheduled: 'Ikizamini cyateganijwe',
-    stage_hired: 'Yemewe akazi',
-    stage_withdrawn: 'Yavanyweho',
+    stage_on_hold: 'Bashyizwe ku Ruhande',
+    stage_interview_scheduled: 'Bateganyirijwe Ikizamini',
+    stage_hired: 'Barangije Guhabwa Akazi',
+    stage_withdrawn: 'Bikuye mu Busabe',
     processing_queued: 'Mu murongo',
     processing_in_progress: 'Birakorwa',
     processing_completed: 'Byarangiye',
     processing_failed: 'Byanze',
-    stage_on_hold: 'Birindira',
     audit_just_now: 'Nonaha',
     audit_verified: '✓ YEMEWE',
-    telemetry_quality_title: 'Igipimo cy’umwuga n’ubudbwavuye mu isuzuma (§6.10)',
-    telemetry_quality_chip: 'Ibipimo byagenzuwe',
-    telemetry_quality_hint: 'Gukurikirana kw’ikimenyetso cya AI, guhindurwa n’abantu n’imikorere ya sisitemu',
-    metric_low_confidence: 'Ibimenyetso bidafite umwuga',
-    metric_low_confidence_hint: 'Umwuga < 80% (isuzuma rirakenewe)',
-    metric_manual_corrections: 'Ibiwandikisho byakorewe intoki',
-    metric_manual_corrections_hint: 'Profil zasubitswe n’umushakisha',
-    metric_score_overrides: 'Amanota yahinduwe',
-    metric_score_overrides_hint: 'Amanota yatunganijwe n’umuntu',
-    metric_processing_failures: 'Ibyazo by’umushinga',
-    metric_processing_failures_hint: 'Kongera gereranya biraboneka',
-    metric_upcoming_interviews: 'Ibizamini biri imbere',
-    metric_upcoming_interviews_hint: 'Biteganywe kandi bikora',
-    metric_failed_emails: 'Imeri y_byanze (7 iminsi)',
-    metric_failed_emails_hint: 'Imikorere y’ohereza imeri',
+    telemetry_quality_title: 'Ubwizeramurimo n’Ubwiza bw’Isuzuma (§6.10)',
+    telemetry_quality_chip: 'Ibipimo Byagenzuwe',
+    telemetry_quality_hint: 'Gukurikirana ku buryo bwikora ikizere cy’isuzuma, ibyahinduwe n’abantu n’ubuzima bwa sisitemu',
+    metric_low_confidence: 'Amanota y\'Ikizere Gike',
+    metric_low_confidence_hint: 'Ikizere < 80% (Gusuzumwa n\'umuntu birakenewe)',
+    metric_manual_corrections: 'Ibyakosowe n’Umuntu',
+    metric_manual_corrections_hint: 'Imyirondoro yakosowe n’ushinzwe gushaka abakozi',
+    metric_score_overrides: 'Amanota Yahinduwe n’Umuntu',
+    metric_score_overrides_hint: 'Amanota yongeye gukosorwa n’umuntu',
+    metric_processing_failures: 'Ibyanze mu Isuzuma',
+    metric_processing_failures_hint: 'Kongera kugerageza birashoboka',
+    metric_upcoming_interviews: 'Ibizamini Biteganyijwe',
+    metric_upcoming_interviews_hint: 'Biteganyijwe kandi birakora',
+    metric_failed_emails: 'Imeyili Zanze (Iminsi 7)',
+    metric_failed_emails_hint: 'Ubwizeramurimo bwo kohereza ubutumwa',
     metric_failed_emails_latest: 'Iheruka: {template}',
-    telemetry_email_banner: '{count} imeri byanze mu minsi 7 ishize — abandi banyamuryango ntibamenyeshejwe. Reba ibyazo by’ohereza',
-    telemetry_email_banner_one: 'Imeri 1 yanze mu minsi 7 ishize — uwayoherejwe ntibamenyeshejwe. Reba ibyazo by’ohereza',
-    telemetry_email_review: 'Reba ibyazo by’ohereza',
-
-    metric_visible_apps: 'Ubusabe bwagaragarira',
-    metric_needs_review: 'Ikeneye kurebwa',
-    metric_avg_match: 'Impuzandengo y’umwanya',
-    metric_shortlisted: 'Abatoranijwe',
-    metric_rejected: 'Byanze',
-    filters: 'Muyunguruzi',
-    filter_job: 'Umwanya',
+    telemetry_email_banner: 'Imeyili {count} zanze koherezwa mu minsi 7 ishize — bamwe mu bagenerwabutumwa ntibamenyeshejwe. Reba amakosa yo kohereza',
+    telemetry_email_banner_one: 'Imeyili 1 yanze koherezwa mu minsi 7 ishize — umugenerwabutumwa ntiyamenye. Reba amakosa yo kohereza',
+    telemetry_email_review: 'Reba amakosa yo kohereza',
+    metric_visible_apps: 'Ubusabe bugaragara',
+    metric_needs_review: 'Bukeneye kurebwa',
+    metric_avg_match: 'Impuzandengo yo guhuza n\'akazi',
+    metric_shortlisted: 'Abatoranyijwe',
+    metric_rejected: 'Abataratoranyijwe',
+    filters: 'Akayunguruzo',
+    filter_job: 'Umwanya w\'Akazi',
     filter_stage: 'Icyiciro',
-    filter_recruiter: 'Umushakisha',
-    filter_min_score: 'Amanota ntarengwa (%)',
-    filter_max_score: 'Amanota ntarengwa (%)',
-    filter_required_criteria: 'Ibipimo ngenderwaho',
-    filter_processing: 'Umushinga',
-    filter_tag: 'Ikimenyetso',
-    filter_applied_from: 'Yasabiye kuva',
-    filter_applied_to: 'Yasabiye kugera',
+    filter_recruiter: 'Ushinzwe Gushaka Abakozi',
+    filter_min_score: 'Amanota yo hasi (%)',
+    filter_max_score: 'Amanota yo hejuru (%)',
+    filter_required_criteria: 'Ibipimo ngenderwaho by\'itegeko',
+    filter_processing: 'Itondekanya ry\'Isuzuma',
+    filter_tag: 'Icyapa / Tag',
+    filter_applied_from: 'Gusaba kuva ku itariki',
+    filter_applied_to: 'Gusaba kugeza ku itariki',
     filter_all_jobs: 'Imyanya yose',
     filter_all_stages: 'Ibyiciro byose',
-    filter_all_recruiters: 'Abashakisha bose',
-    filter_any_status: 'Imiterere iyo ari yo',
-    filter_missing_required: 'Ibipimo ngenderwaho bibura',
-    filter_uncertain_evidence: 'Ibimenyetso bidasobanutse',
-    filter_any_tag: 'Ikimenyetso icyo ari cyo',
-    filter_clear_all: 'Siba muyunguruzi yose',
+    filter_all_recruiters: 'Abashinzwe abakozi bose',
+    filter_any_status: 'Imiterere iyo ari yo yose',
+    filter_missing_required: 'Ibibura mu bipimo by\'itegeko',
+    filter_uncertain_evidence: 'Ibimenyetso bidashyitse',
+    filter_any_tag: 'Icyapa icyo ari cyo cyose',
+    filter_clear_all: 'Kuriha akayunguruzo kose',
     bulk_selected: '{count} byatoranyijwe:',
-    bulk_shortlist: 'Tora',
-    bulk_advance: 'Shyira imbere',
-    bulk_hold: 'Shyira ku mugereka',
-    bulk_review: 'Subira mu kurebwa',
-    bulk_reject: 'Jyanya',
-    bulk_withdraw: 'Kura',
-    bulk_clear_selection: 'Siba ihitamo',
-    bulk_confirm_title: 'Emeza igikorwa “{action}” ku busabe {count}',
-    bulk_confirm_desc: 'Ibi birandika umwanzuro kuri buri busabe watoranyijwe kuri konti yawe kandi bigashyirwa mu mateka y’igenzura. Ntibishobora kugarukaho mu buryo bwihishe.',
-    bulk_confirm_aria: 'Emeza icyemezo cy’imwe',
+    bulk_shortlist: 'Toranya',
+    bulk_advance: 'Komeza mu Cyiciro Gikurikira',
+    bulk_hold: 'Bika ku Ruhande',
+    bulk_review: 'Subiza mu Gusuzumwa',
+    bulk_reject: 'Kudatoranya',
+    bulk_withdraw: 'Kwikura mu Busabe',
+    bulk_clear_selection: 'Siba ibyatoranyijwe',
+    bulk_confirm_title: 'Emeza igikorwa rusange cya “{action}” ku busabe {count}',
+    bulk_confirm_desc: 'Ibi birandika umwanzuro kuri buri busabe bwatoranyijwe kandi byandikwe mu gitabo cy’igenzura. Ntibishobora guhindurwa mu ibanga.',
+    bulk_confirm_aria: 'Emeza icyemezo rusange',
     bulk_reason_label: 'Impamvu (irakenewe)',
-    bulk_reason_placeholder: 'Mpamvu iki cyemezo cy’imwe kirakoreshwa?',
-    bulk_error_required: 'Impamvu ngenderwaho irakenewe ku cyemezo cy’imwe.',
-    bulk_error_failed: 'Icyo gikorwa cy’imwe cyaranze.',
-    bulk_error_network: 'Ikosa rya murandasi — icyo gikorwa cy’imwe nticyakoreshejwe.',
-    bulk_applying: 'Gukoresha…',
+    bulk_reason_placeholder: 'Kuki iki cyemezo rusange gifashwe?',
+    bulk_error_required: 'Impamvu ngenderwaho irakenewe ku byemezo rusange.',
+    bulk_error_failed: 'Igikorwa rusange cyanze.',
+    bulk_error_network: 'Ikosa rya murandasi — igikorwa rusange nticyakozwe.',
+    bulk_applying: 'Birimo gukorwa…',
     bulk_confirm_action: 'Emeza {action}',
     pagination_showing: '{from}–{to} muri {total}',
     pagination_prev: '← Ibanjirije',
@@ -4661,7 +4886,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aria_select_all: 'Hitamo ubusabe bwose bureba',
     aria_pipeline_pagination: 'Igaragariza pipeline ku rupapuro',
     applicants_count: 'Abasabye {count}',
-
     status_closed: 'Gufungwa',
     jobs_search_placeholder: 'Shakisha umutwe, ibisobanuro, ishami…',
     aria_search_requisitions: 'Shakisha imyanya',
@@ -4686,11 +4910,11 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aria_apply_instant: 'Saba ako kanya ukoresheje CV ibitswe muri profil yawe',
     aria_duplicate_requisition: 'Koporora iyi myanya',
     aria_close_requisition: 'Funga iyi myanya',
-    aria_close_dialog: 'Funga ekranu',
+    aria_close_dialog: 'Funga idirishya',
     aria_remove_criterion: 'Kuraho igipimo',
-    aria_audit_pagination: 'Igaragariza iteka ku rupapuro',
+    aria_audit_pagination: 'Ipaji z’igitabo cy’igenzura',
     edit_rubric_title: 'Hindura igipimo — {title}',
-    rubric_approved_warning: 'Iki gipimo cyemejwe. Kubika kizakora verisiyo nshya ya DRAFT — iyo uri yo ikomeza gutanga amanota kugeza iyo nshya yemejwe, kandi amanota yashyizeho ntayaciyemo umuco.',
+    rubric_approved_warning: 'Iki gipimo cyaremejwe. Kubika bizakora verisiyo nshya y\'agateganyo (DRAFT) — verisiyo isanzweho irakomeza gutanga amanota kugeza igihe inshya izemerezwa, kandi ibyavuye mu isuzuma byatambutse ntibihinduka.',
     criteria_count: 'Ibipimo ({count})',
     add_criterion: '+ Ongeraho igipimo',
     criterion_description: 'Ibisobanuro by’igipimo',
@@ -4698,24 +4922,24 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     criterion_preferred: 'Birifuza',
     change_reason_label: 'Impamvu y’impinduka',
     change_reason_optional: 'Impamvu y’impinduka (ubushake)',
-    change_reason_placeholder: 'Mpamvu iki gipimo cyahindutse? (kirandikwa mu iteka ry’igenzura)',
+    change_reason_placeholder: 'Kuki iki gipimo gihinduka? (byandikwa mu gitabo cy’igenzura)',
     save_rubric: 'Bika igipimo',
     location_label: 'Aho giherereye',
     employment_type_label: 'Ubwoko bw’akazi',
     closes_at_label: 'Igihe cyo gusaba kirangira (ubushake)',
-    employment_full_time: 'Akazi kazwi gusa',
-    employment_part_time: 'Akazi gatoya',
-    employment_contract: 'Amasezerano',
-    employment_internship: 'Akazi ko kwigisha',
+    employment_full_time: 'Akazi k’Igihe Cyose',
+    employment_part_time: 'Akazi k’Igihe Igice',
+    employment_contract: 'Amasezerano y’Igihe Gito',
+    employment_internship: 'Imenyerezamwuga',
     desc_placeholder: 'Inshingano, ibisabwa muri sisitemu, n’ubushobozi...',
     criterion_example: 'urugero: Sisitemu zitandukanye (Go/Rust)',
     title_placeholder: 'urugero: Umwubatsi Mukuru wa Frontend',
-    dept_engineering: 'Ingengo',
-    dept_product: 'Ibicuruzwa & Imiterere',
-    dept_data_ai: 'Amakuru & AI',
-    dept_sales: 'Kugurisha & Kwamamaza',
-    dept_operations: 'Ibikorwa & Ubwananyu',
-    location_placeholder: 'urugero: Kigali / Kure',
+    dept_engineering: 'Ubuhanga n’Ikoranabuhanga',
+    dept_product: 'Ibicuruzwa n’Imiterere (Product)',
+    dept_data_ai: 'Amakuru n’Ubuhanga bwa AI',
+    dept_sales: 'Ubucuruzi n’Iyamamazabikorwa',
+    dept_operations: 'Ibikorwa n’Imicungire y’Abakozi (HR)',
+    location_placeholder: 'urugero: Kigali / Aho Uri Hose',
     toast_applied_saved_cv: 'Wasabye “{title}” ukoresheje CV yawe yabitswe',
     toast_one_click_title: 'Kanda rimwe usabe',
     toast_one_click_failed: 'Kwisaba kanda rimwe byanze',
@@ -4746,7 +4970,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     toast_close_failed: 'Byanze gufunga umwanya',
     toast_network_close: 'Ikosa rya murandasi mu gufunga umwanya',
     toast_incomplete_response: 'Seriveri yatanze igisubizo kituzuye',
-
     my_apps_score_hint: 'Icyiciro cya % ni amanota ya nyuma ya AI yerekeye igipimo cya buri mwanya — bigenga gutoranya, ariko ntibigenga umwanzuro w’imwe.',
     my_apps_empty_tip: 'Inama: bika CV yawe kuri profil yawe kandi buri mwanya rifunguye rizaba risaba kanda rimwe.',
     my_apps_profile_link: 'profil',
@@ -4754,8 +4977,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     match_band_strong: 'Umwanya mwinshi',
     match_band_good: 'Umwanya mwiza',
     match_band_building: 'Arahuza',
-
-    profile_workspace_candidate: 'Ikigega cya umukandida',
+    profile_workspace_candidate: 'Ahabanza h’Umukandida',
     profile_workspace_account: 'Konti y’ikigega',
     profile_display_name: 'Izina ryerekanwa',
     profile_name_placeholder: 'Izina ryawe ryuzuye',
@@ -4778,20 +5000,19 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     profile_cv_save_failed: 'Byanze kubika CV',
     profile_cv_remove_failed: 'Byanze gukuraho CV',
     profile_cv_saved_on: 'kibitswe kuwa {date}',
+    aria_upload_cv: 'Injiza CV',
     profile_personalized_greeting: 'Kora uko bikurikira, {firstName}! Amakuru yabitswe atuma ubusabe bwarakoze vuba.',
     profile_completion_status: '{completed}/{total} byafatanye — ongeraho CV n’ubushobozi kugira ngo ubusabe bwarakoresha bikande rimwe',
-    profile_completion_hint: 'Kora profil yawe kugira ngo ubusabe burakwira mu buryo bukurikira imyanya yose yasarwa.',
-    aria_upload_cv: 'Injiza CV',
-
+    profile_completion_hint: 'Uzuza umwirondoro wawe kugira ngo usabe akazi mu buryo bworoshye ku myanya yose ifunguye.',
     audit_search_actor: 'Shakisha kuri imeri y’uwakoze…',
-    audit_search_actor_aria: 'Shakisha iteka kuri imeri y’uwakoze',
+    audit_search_actor_aria: 'Shakisha mu gitabo cy’igenzura ukoresheje imeyili y’uwakoze igikorwa',
     audit_search_action: 'Ikorwa urugero DECISION',
-    audit_search_action_aria: 'Shakisha iteka kuri ikikorwa',
+    audit_search_action_aria: 'Shakisha mu gitabo cy’igenzura ukoresheje igikorwa',
     filter_show_archived: 'Erekana ibikorerwa byihishijwe',
-    cprofile_archive_btn: 'Bika kandida mu bihisho',
-    cprofile_restore_btn: 'Kugarura bifura mu bihisho',
-    cprofile_archived_badge: 'Yihishojwe',
-    audit_search_record_aria: 'Shakisha ikobooko kuri ID ya kandida, ikipe, cyangwa kuwa',
+    cprofile_archive_btn: 'Bika umukandida mu bubiko',
+    cprofile_restore_btn: 'Kura umukandida mu bubiko',
+    cprofile_archived_badge: 'Yabitswe mu Bubiko',
+    audit_search_record_aria: 'Shakisha mu gitabo cy’igenzura ukoresheje ID y’umukandida, ubusabe, cyangwa umwanya',
     audit_record_scope_badge: 'Umwanya: {type} ({count} amateka yahuje)',
     audit_from_date: 'Itariki y’itangiriro',
     audit_from_date_aria: 'Itariki y’itangiriro',
@@ -4799,201 +5020,194 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     audit_to_date_aria: 'Itariki y’impera',
     btn_search: 'Shakisha',
     audit_sealed: '✓ KIDASIBWA',
-    audit_logs_count: 'Ibitekerezo {count}',
-
+    audit_logs_count: 'INNYANDIKO Z\'IGENZURA {count}',
     team_accounts_badge: 'Konti zose {count}',
-    team_domain_title: 'Ikimenyetso cya urubuga',
-    team_domain_desc: 'Abakozi bafite imeri kuri domaine yawe yemejwe binjira muri uru rubuga mu buryo bwikora igihe bwinjira.',
+    team_domain_title: 'Umwirondoro w\'Ibiro',
+    team_domain_desc: 'Abakozi bafite imeyili kuri domaine yemejwe y\'ikigo binjira muri ibi biro mu buryo bwikora igihe biyandikishije.',
     team_domain_verified: '✓ {domain}',
     team_domain_not_verified: 'NTIYEMEJWE',
-    team_domain_placeholder: 'isociete.com',
+    team_domain_placeholder: 'ikigo.rw',
     team_btn_start_verification: 'Tangira kwemeza',
-    team_btn_working: 'Birakorwa…',
-    team_dns_step: '1. Ongeraho iyi TXT muri ruganda rwa DNS yawe:',
-    team_btn_verify_now: 'Kanda kuri kwegemeza',
-    team_btn_checking_dns: 'Kureba DNS…',
-    team_notice_staff: 'Erekana abakozi b’imbere gusa: abashakisha, abayobozi n’abayobozi ba sisitemu.',
-    team_notice_candidates: 'Erekana abasabye b’hanze bafite konti. Kugira ngo usuzume CV zabo, fungura Pipeline y’Abakandida.',
+    team_btn_working: 'Birimo gukorwa…',
+    team_dns_step: '1. Ongeraho iyi nyandiko ya TXT muri serivisi ya DNS yawe:',
+    team_btn_verify_now: 'Emeza ubu',
+    team_btn_checking_dns: 'Gusuzuma DNS…',
+    team_notice_staff: 'Kugaragaza abakozi b\'imbere mu kigo bemewe gusa: abashaka abakozi, abayobozi b\'amashami, n\'abayobozi ba sisitemu.',
+    team_notice_candidates: 'Kugaragaza abakandida basaba akazi biyandikishije. Kugira ngo usuzume CV zabo, fungura Urugendo rw\'Abakandida.',
     team_col_employee: 'Umukozi / Umunyamuryango',
     team_col_candidate_name: 'Izina ry’umukandida',
-    team_col_classification: 'Icyiciro',
-    team_col_assigned_role: 'Role yahawe',
+    team_col_classification: 'Icyiciro cy\'Umukozi',
+    team_col_assigned_role: 'Inshingano Yahawe',
     team_col_account_status: 'Imiterere ya konti',
     team_col_permissions: 'Uburenganzira bwa RBAC',
-    team_col_portal_access: 'Uburenganzira bwa portali',
+    team_col_portal_access: 'Uburenganzira bwo Kwinjira',
     team_col_actions: 'Ibikorwa',
     team_empty_staff: 'Nta mukozi w’imbere abonetse.',
     team_empty_candidates: 'Nta konti y’abasabye b’hanze yanditse.',
     team_staff_user: 'Umukozi wa sisitemu',
     team_applicant: 'Usabye',
-    team_badge_internal: 'ABAKOZI B’IMBERE',
-    team_badge_external: 'USABYE W’HANZE',
-    team_applicant_portal: 'Portali y’usabye (Kwisaba & Gukurikirana)',
-    team_view_applications: 'Reba ubusabe',
-    team_promote: 'Kuzamura',
-    team_promote_title: 'Kuzamura mu bakozi b’imbere',
-    team_edit_role_title: 'Hindura role ya umunyamuryango',
-    team_select_role: 'Hitamo role & uburenganzira *',
-    team_invite_title: 'Hamagara umukozi',
-    team_full_name: 'Izina ryuzuye',
+    team_badge_internal: 'UMUKOZI WO MU KIGO',
+    team_badge_external: 'USABA AKAZI',
+    team_applicant_portal: 'Ahabanza h\'Usaba Akazi (Gusaba & Gukurikirana)',
+    team_view_applications: 'Reba Ubusabe',
+    team_promote: 'Kuzamura mu Nshingano',
+    team_promote_title: 'Kuzamura mu Bakozi bo mu Kigo',
+    team_edit_role_title: 'Hindura Inshingano z\'Umukozi',
+    team_select_role: 'Hitamo Inshingano n\'Ububasha *',
+    team_invite_title: 'Tumira Umukozi Mushya',
+    team_full_name: 'Izina Ryuzuye',
     team_full_name_placeholder: 'urugero: Jane Doe',
-    team_work_email: 'Imeri y’akazi *',
-    team_work_email_placeholder: 'jane@isociete.com',
-    team_role_assignment: 'Gutanga role *',
-    team_send_invite: 'Ohereza itangazo',
-    team_role_admin: 'Admin (Nyobora urubuga rwose)',
-    team_role_recruiter: 'Umushakisha (ATS & ukuyobora abakandida)',
-    team_role_manager: 'Umuyobozi w’ishami (Umunyamuryango w’ishami)',
-    team_role_interviewer: 'Usuzuma (Usuzuma mu bw’imikorere)',
-    team_role_auditor: 'Umugenzuzi w’ibikorwa (Inspekora y’igenzura)',
-    team_role_candidate: 'Umukandida (Portali y’usabye gusa)',
-    toast_role_updated_title: 'Role yavuguruwe',
-    toast_role_updated: 'Role ya {name} yahindutse {role}',
-    toast_role_failed: 'Byanze guhindura role',
-    toast_role_network: 'Ikosa rya murandasi mu guhindura role',
-    toast_invited_title: 'Umukozi yahamagawe',
-    toast_invited: 'Itangazo ryoherejwe kuri {email}',
-    toast_invite_failed: 'Byanze guhamagara umukozi',
-    toast_invite_network: 'Ikosa rya murandasi mu kohereza itangazo',
-    team_domain_claim_failed: 'Byanze gutangira kureba domaine.',
-    team_domain_network: 'Ikosa rya murandasi mu kutangira kureba domaine.',
-    team_verify_failed: 'Kwemeza byanze.',
-    team_verify_network: 'Ikosa rya murandasi mu kwemeza.',
-    team_domain_already: 'Iyi domaine yemewe already.',
+    team_work_email: 'Imeyili y\'Akazi *',
+    team_work_email_placeholder: 'urugero: umukozi@ikigo.rw',
+    team_role_assignment: 'Inshingano Zihabwa Umukozi *',
+    team_send_invite: 'Ohereza Ubutumire',
+    team_role_admin: 'Umuyobozi Mukuru (Nyir\'Urubuga n\'Ibiro Byose)',
+    team_role_recruiter: 'Ushinzwe Abakozi (Umuyobozi w\'Abakandida na ATS)',
+    team_role_manager: 'Umuyobozi w\'Ishami Rishaka Abakozi',
+    team_role_interviewer: 'Ukoresha Ikizamini (Isuzuma rya Tekiniki)',
+    team_role_auditor: 'Umugenzuzi w’Ibyubahirizwa (Compliance Auditor)',
+    team_role_candidate: 'Umukandida (Ahabanza h\'Usaba Akazi Gusa)',
+    toast_role_updated_title: 'Inshingano Zarahinduwe',
+    toast_role_updated: 'Inshingano ya {name} yahinduwe {role}',
+    toast_role_failed: 'Byanze guhindura inshingano',
+    toast_role_network: 'Ikosa rya murandasi mu guhindura inshingano',
+    toast_invited_title: 'Umukozi Yatumiriwe Kwinjira',
+    toast_invited: 'Ubutumire bwoherejwe kuri {email}',
+    toast_invite_failed: 'Byanze gutumira umukozi',
+    toast_invite_network: 'Ikosa rya murandasi mu kohereza ubutumire',
+    team_domain_claim_failed: 'Byanze gutangira gusaba domaine.',
+    team_domain_network: 'Ikosa rya murandasi mu gusaba domaine.',
+    team_verify_failed: 'Kwemeza domaine byanze.',
+    team_verify_network: 'Ikosa rya murandasi mu kwemeza domaine.',
+    team_domain_already: 'Iyi domaine yaremejwe kera.',
     team_user_fallback: 'Umukoresha',
-
-    settings_title: 'Igenamiterere ry’urubuga',
-    settings_subtitle: 'Shiraho umwanya w’akazi, politiki y’imikorere, n’ikimenyetso cya kigo (spec §6.11/§6.12). Buri mpinduka irandikwa mu iteka ry’igenzura.',
-    settings_tab_workflow: 'Umwanya & impamvu',
-    settings_tab_retention: 'Politiki y’imikorere',
-    settings_tab_branding: 'Ikimenyetso cya kigo',
-    settings_reasons_title: 'Urutonde rw’impamvu z’icyemezo (§6.7)',
-    settings_reasons_desc: 'Impamvu z’icyemezo zishobora guhindurwa zitangwa ku bashakisha igihe cyo kwandika icyemezo. Ibyiciro bidafite akamaro cyangwa bidaharanira abantu ntibigomba kongerwamo.',
-    settings_no_reasons: 'Nta mpamvu zihariye zirahari.',
-    settings_reason_code_placeholder: 'CODE (urugero: LACKS_EXPERIENCE)',
-    settings_reason_label_placeholder: 'Izina rerekanwa',
+    settings_title: 'Igenamiterere ry’Ibiro',
+    settings_subtitle: 'Gena imigendekere y’akazi, politiki yo kubika amakuru, n’ikirango cy’ikigo. Buri mpinduka yandikwa mu gitabo cy’igenzura.',
+    settings_tab_workflow: 'Imiterere y\'Akazi & Impamvu',
+    settings_tab_retention: 'Politiki yo Kubika Amakuru',
+    settings_tab_branding: 'Ikirango cy\'Ikigo',
+    settings_reasons_title: 'Urutonde rw\'Impamvu z\'Ibyemezo (§6.7)',
+    settings_reasons_desc: 'Impamvu zishobora gushyirwaho zihabwa abashinzwe abakozi mu gihe bafata icyemezo cy\'isuzuma. Impamvu zibogama cyangwa zidafite aho zihuriye n\'akazi zirabujijwe.',
+    settings_no_reasons: 'Nta mpamvu zihariye zirashyirwaho.',
+    settings_reason_code_placeholder: 'KODE (urugero: LACKS_EXPERIENCE)',
+    settings_reason_label_placeholder: 'Izina rigaragara',
     settings_add_reason: 'Ongeraho impamvu',
-    settings_categories_title: 'Ibyiciro by’imyanya (§6.12)',
-    settings_no_categories: 'Nta byiciro bihariye birahari.',
-    settings_category_placeholder: 'Icyiciro gishya (urugero: Ingengo)',
-    settings_boundaries_title: 'Impaka z’amanota (§6.12)',
-    settings_strong_match: 'Umwanya mwinshi ≥ (%)',
-    settings_manual_review: 'Kurebwa n’intoki ≤ (%)',
-    settings_save_workflow: 'Bika igenamiterere ry’umwanya',
-    settings_retention_desc: 'Igihe cy’imikorere kuri buri miterere y’ubusabe mu minsi (spec §6.11). Isubizweho = kubika gushika ku gikorwa cy’intoki.',
+    settings_categories_title: 'Ibyiciro by\'Imyanya y\'Akazi (§6.12)',
+    settings_no_categories: 'Nta byiciro byihariye birashyirwaho.',
+    settings_category_placeholder: 'Icyiciro gishya (urugero: Ikoranabuhanga)',
+    settings_boundaries_title: 'Imipaka y\'Amanota y\'Isuzuma (§6.12)',
+    settings_strong_match: 'Guhuza cyane n\'akazi ≥ (%)',
+    settings_manual_review: 'Gusuzumwa n\'umuntu ≤ (%)',
+    settings_save_workflow: 'Bika igenamiterere ry\'imigendekere y\'akazi',
+    settings_retention_desc: 'Igihe cyo kubika amakuru kuri buri miterere y\'ubusabe mu minsi (§6.11). Iyo ntacyo ushyizemo = bibikwa kugeza bikozweho n\'umuntu.',
     settings_days_suffix: '(iminsi)',
-    settings_anonymize: 'Kubahisha izina aho kusiba burundu ubusabe bwarenze igihe',
-    settings_save_retention: 'Bika politiki y’imikorere',
-    settings_display_name: 'Izina ryerekanwa ry’urubuga',
-    settings_logo_url: 'URL y’ikimenyetso (ubushake)',
-    settings_primary_color: 'Ibara ry’imbere',
-    settings_save_branding: 'Bika ikimenyetso cya kigo',
-    settings_saving: 'Kubika…',
-    settings_saved_workflow: 'Igenamiterere ry’umwanya ryabitswe.',
-    settings_saved_branding: 'Ikimenyetso cya kigo cyabitswe.',
-    settings_saved_retention: 'Politiki y’imikorere yabitswe.',
-    settings_failed_workflow: 'Byanze kubika igenamiterere ry’umwanya.',
-    settings_failed_branding: 'Byanze kubika ikimenyetso cya kigo.',
-    settings_failed_retention: 'Byanze kubika politiki y’imikorere.',
+    settings_anonymize: 'Guhisha umwirondoro aho gusiba burundu ubusabe bwarengeje igihe',
+    settings_save_retention: 'Bika politiki yo kubika amakuru',
+    settings_display_name: 'Izina ry\'Ibiro Rigaragara',
+    settings_logo_url: 'Aderesi (URL) y\'Ikirango cy\'Ikigo',
+    settings_primary_color: 'Ibara ry\'Ibanze',
+    settings_save_branding: 'Bika ikirango cy\'ikigo',
+    settings_saving: 'Kubika birimo gukorwa…',
+    settings_saved_workflow: 'Imiterere y\'akazi yabitswe neza.',
+    settings_saved_branding: 'Ikirango cy\'ikigo cyabitswe neza.',
+    settings_saved_retention: 'Politiki yo kubika amakuru yabitswe neza.',
+    settings_failed_workflow: 'Byanze kubika imiterere y\'akazi.',
+    settings_failed_branding: 'Byanze kubika ikirango cy\'ikigo.',
+    settings_failed_retention: 'Byanze kubika politiki yo kubika amakuru.',
     settings_remove_reason: 'Kuraho impamvu {code}',
     settings_remove_category: 'Kuraho icyiciro {category}',
-
-    analytics_metrics_badge: 'IBIPIMO §6.10',
-    analytics_subtitle: 'Igihe cy’isuzuma, impinduka ku byiciro, kuraswa kw’abasuzuma n’ibiranga kuri myanya yemerewe.',
+    analytics_metrics_badge: 'IBIPIMO BY\'AKAZI (§6.10)',
+    analytics_subtitle: 'Igihe cy\'isuzuma, impinduka mu byiciro, amanota y\'abasuzuma, n\'umutwaro w\'akazi ku myanya yemerewe.',
     analytics_filter_from: 'Kuva',
     analytics_filter_to: 'Kugera',
     analytics_filter_job: 'Umwanya',
     analytics_filter_department: 'Ishami',
     analytics_filter_recruiter: 'Umushakisha',
     analytics_filter_stage: 'Icyiciro',
-    analytics_loading: 'Gupakira ibipimo…',
-    analytics_metric_applications: 'Ubusabe',
-    analytics_metric_time_to_screen: 'Igihe cy’isuzuma',
-    analytics_metric_interviewer_completion: 'Kurangiza kw’abasuzuma',
-    analytics_metric_processing_failures: 'Ibyazo by’umushinga',
-    analytics_metric_low_confidence: 'Umwuga muke',
-    analytics_metric_active_recruiters: 'Abashakisha bakora',
+    analytics_loading: 'Gupakira imibare n\'isesengura…',
+    analytics_metric_applications: 'Ubusabe Bwose',
+    analytics_metric_time_to_screen: 'Igihe cy\'Isuzuma',
+    analytics_metric_interviewer_completion: 'Ibizamini Byakozwe',
+    analytics_metric_processing_failures: 'Ibyanze mu Isuzuma',
+    analytics_metric_low_confidence: 'Ikizere Gike',
+    analytics_metric_active_recruiters: 'Abashinzwe Abakozi Bakora',
     analytics_hint_screened: '{count} byasuzumwe',
-    analytics_hint_median: 'impuzandengo, gukora → isuzuma',
-    analytics_hint_scorecards: '{submitted}/{total} ibipimo',
-    analytics_hint_failed_processing: 'gukora CV byanze',
-    analytics_hint_needs_review: 'gusaba kurebwa n’intoki',
-    analytics_hint_open_workload: 'biriko birakorwa',
-    analytics_restricted_note: 'Icyitonderwa: amakuru amwe yasabye angana y’uburenganzira bw’ishami yanjye kandi yavanyweho.',
-    analytics_stage_distribution: 'Igaragariza ku byiciro',
-    analytics_time_in_stage: 'Igihe mu cyiciro',
-    analytics_recruiter_workload: 'Ibikorwa by’abashakisha',
-    analytics_empty_period: 'Nta busabe mu gihe cyatoranyijwe.',
-    analytics_empty_open: 'Nta busabe rifunguye.',
-    analytics_empty_assigned: 'Nta busabe rifunguye ryahawe.',
+    analytics_hint_median: 'impuzandengo, kurema → isuzuma',
+    analytics_hint_scorecards: 'amakarita y\'amanota {submitted}/{total}',
+    analytics_hint_failed_processing: 'isuzuma rya CV ryahuye n\'ikosa',
+    analytics_hint_needs_review: 'bikeneye gusuzumwa n\'umuntu',
+    analytics_hint_open_workload: 'bafite ubusabe barimo gukurikirana',
+    analytics_restricted_note: 'Icyitonderwa: amakuru amwe ntabwo ari mu mashami wemerewe kureba bityo yakumiriwe.',
+    analytics_stage_distribution: 'Ikwirakwizwa ku Byiciro',
+    analytics_time_in_stage: 'Igihe Ubusabe Bumara mu Cyiciro',
+    analytics_recruiter_workload: 'Umutwaro w\'Akazi ku Bashinzwe Abakozi',
+    analytics_empty_period: 'Nta busabe bw\'akazi bwabonetse muri icyo gihe cyahiswemo.',
+    analytics_empty_open: 'Nta busabe bw\'akazi buhari muri aka kanya.',
+    analytics_empty_assigned: 'Nta busabe bw\'akazi bwahariwe uyu mukozi.',
     analytics_col_stage: 'Icyiciro',
     analytics_col_count: 'Umubare',
-    analytics_col_median: 'Impuzandengo',
-    analytics_definitions: 'Ibisobanuro by’ibipimo',
-    analytics_error: 'Byanze gupakira ibipimo',
-
-    email_title: 'Imikorere y’ohereza imeri',
-    email_subtitle: 'Imeri ya sisitemu yoherejwe kandi ibanze mu minsi 7 ishize (spec §6.9). Kanda ku murongo urebe ikosa rya mbere.',
-    email_back: '← Subira ku kibaho',
-    email_empty_title: 'Nta meri yoherejwe byanze',
-    email_empty_desc: 'Buri meri ya sisitemu mu minsi 7 ishize yanditse nka YOHEREJWE (cyangwa nta na yo yoherejwe).',
-    email_failed_heading: 'Ibyoherejwe byanze — {total} byose',
-    email_total_suffix: 'byose',
-    email_col_when: 'Ighe',
-    email_col_recipient: 'Uwo cyoherejwe',
-    email_col_template: 'Inyandimwe',
+    analytics_col_median: 'Impuzandengo (Median)',
+    analytics_definitions: 'Ibisobanuro by\'Ibipimo',
+    analytics_error: 'Byanze gupakira imibare n\'isesengura',
+    email_title: 'Ubuzima bwo Kohereza Imeyili',
+    email_subtitle: 'Imeyili za sisitemu zanze koherezwa mu minsi 7 ishize (§6.9). Kanda ku murongo urebe ikosa ryateye ikibazo.',
+    email_back: '← Subira ahabanza',
+    email_empty_title: 'Nta meyili yigeze yanga koherezwa',
+    email_empty_desc: 'Buri meyili ya sisitemu mu minsi 7 ishize yoherejwe neza (cyangwa nta yari yoherejwe).',
+    email_failed_heading: 'Imeyili Zanze Koherezwa — {total} zose',
+    email_total_suffix: 'zose',
+    email_col_when: 'Igihe',
+    email_col_recipient: 'Uwo yoherejweho',
+    email_col_template: 'Inyandikorugero',
     email_col_status: 'Imiterere',
     email_status_failed: 'BYANZE',
     email_hide_error: '▲ hisha ikosa',
-    email_show_error: '▼ eresha ikosa',
-    email_no_detail: 'Nta bisobanuro by’ikosa rya mbere byanditse kuri iyi meri.',
-    btn_retry_delivery: '↻ Gerageza kandi',
-    email_retrying: 'Kugerageza…',
-    email_retry_ok: 'Kugerageza byagenze neza — imeri yagejejwe.',
-    email_retry_failed: 'Kugerageza byanze: {detail}',
-    email_retry_network: 'Ikosa rya murandasi — kugerageza nticyageragejwe.',
-    email_ops_badge: 'ITEGANYAGARIKA OPS',
-    email_all_templates: 'Inyandimwe zose',
-
-    privacy_requests_title: 'Ibisaba ku makuru (kwandika, kureba, kwiruka)',
-    privacy_requests_desc: 'Tanga isaba ryemewe. Kirandikwa, kirakurikiranwa kandi kigendereza ku itsinda ryacu ry’umutekano w’amakuru kugira ngo rirebe — uzahamagarwa n’umusanzu.',
+    email_show_error: '▼ garagaza ikosa',
+    email_no_detail: 'Nta makuru y\'ikosa ry\'umutanga-serivisi yanditswe kuri iyi meyili.',
+    btn_retry_delivery: '↻ Ongera ugerageze kohereza',
+    email_retrying: 'Kohereza birimo kugeragezwa…',
+    email_retry_ok: 'Kongera kohereza byagenze neza — imeyili yagejejwe ku mugenerwabutumwa.',
+    email_retry_failed: 'Kongera kohereza byanze: {detail}',
+    email_retry_network: 'Ikosa rya murandasi — ntibyashobotse kongera kohereza.',
+    email_ops_badge: 'IBIPIMO BYA SISITEMU',
+    email_all_templates: 'Inyandikorugero zose',
+    privacy_requests_title: 'Ubusabe ku Makuru Bwite (Gukosora, Kubona Kopi, cyangwa Kwikura)',
+    privacy_requests_desc: 'Tanga ubusabe bwemewe ku makuru yawe. Burandikwa, bugakurikiranwa kandi bugashyikirizwa itsinda rishinzwe umutekano w\'amakuru — uzamenyeshwa ibyemezo byafashwe.',
     privacy_request_correction: 'Kosora amakuru yanjye',
-    privacy_request_correction_hint: 'Tubwire iki kitari icyo kandi igihe cyagombaga kuba iki (urugero: nimero ya telefoni ikosa, izina ryanditse nabi).',
-    privacy_request_access: 'Habona kop inyandiko y’amakuru yanjye',
-    privacy_request_access_hint: 'Tuzategura kandi tukoohereze amakuru bwite dufite ku buryo bwawe.',
+    privacy_request_correction_hint: 'Tubwire amakuru atari yo n\'uko yakagombye kwandikwa (urugero: nimero ya telefoni idahwitse, izina ryanditse nabi).',
+    privacy_request_access: 'Habwa kopi y\'amakuru yanjye',
+    privacy_request_access_hint: 'Tuzategura kandi tukoohereze amakuru yawe bwite dufite muri sisitemu.',
     privacy_request_withdrawal: 'Kura uruhushya rwanjye',
-    privacy_request_withdrawal_hint: 'Saba ko duhagarika ibikorwa ku busabe bwawe. Gushaka abakozi kurikira bizahagarara.',
-    privacy_request_deletion: 'Saba kurebwa kwa gusibwa',
-    privacy_request_deletion_hint: 'Kugira ngo usibe burundu ako kanya, koresha urubuga rwa “Droite à l’Oubli” hejuru — ibi bisaba itsinda ry’umutekano ryemeze gusiba ibyanditse byihariye.',
-    privacy_change_placeholder: 'Amakuru yawe yagombaga kuba iki mu buryo bwo kwibandaho?',
-    privacy_context_placeholder: 'Amakuru y’inyongera (ubushake)',
-    privacy_submit_request: 'Ohereza isaba',
-    privacy_submitting: 'Kwohereza…',
-    privacy_past_requests: 'Ibisaba byawe byashize',
-    privacy_network_error: 'Ikosa rya murandasi — isaba ntiryoherejwe.',
-    privacy_submit_failed: 'Byanze kohereza isaba.',
-    privacy_request_recorded: 'Isaba ryawe ryanditse.',
-    privacy_portability_toast_title: 'Koporora amakuru ya RGPD',
-    privacy_erasure_toast_title: 'Uburenganzira bwo kwibagirwa',
-    privacy_erasure_success: 'Konti yawe n’amakuru yawe bwite byasibwe burundu',
-    privacy_export_failed: 'Byanze kohereza amakuru',
-    privacy_erasure_failed: 'Byanze kohereza isaba ryo gusibwa',
-
-    compare_matrix_title: 'Imbonerahamwe y’abakandida',
-    compare_matrix_subtitle: 'Kugereranya amanota y’imikorere, ibyiciro by’ishakisha n’ubushobozi.',
+    privacy_request_withdrawal_hint: 'Saba ko duhagarika gusesengura ubusabe bwawe. Isuzuma ry\'akazi rihagarara ako kanya.',
+    privacy_request_deletion: 'Saba gusuzuma gusiba amakuru amwe n\'amwe',
+    privacy_request_deletion_hint: 'Kugira ngo usibe konti yawe n\'amakuru yose burundu ako kanya, koresha \'Uburenganzira bwo Kwibagirwa\' hejuru.',
+    privacy_change_placeholder: 'Amakuru yawe wagombaga kwandikwa ate aho kuba uko ari ubu?',
+    privacy_context_placeholder: 'Ibisobanuro by\'inyongera (ubushake)',
+    privacy_submit_request: 'Ohereza ubusabe',
+    privacy_submitting: 'Kohereza birimo gukorwa…',
+    privacy_past_requests: 'Ubusabe bwawe bwatambutse',
+    privacy_network_error: 'Ikosa rya murandasi — ubusabe ntabwo bwoherejwe.',
+    privacy_submit_failed: 'Byanze kohereza ubusabe.',
+    privacy_request_recorded: 'Ubusabe bwawe bwakiriwe kandi bwanditswe.',
+    privacy_portability_toast_title: 'Gukuramo Amakuru (GDPR)',
+    privacy_erasure_toast_title: 'Uburenganzira bwo Kwibagirwa',
+    privacy_erasure_success: 'Konti yawe n\'amakuru yawe bwite byasibwe burundu muri sisitemu.',
+    privacy_export_failed: 'Byanze gukuramo amakuru.',
+    privacy_erasure_failed: 'Byanze kohereza ubusabe bwo gusiba amakuru.',
+    compare_matrix_title: 'Imbonerahamwe yo Kugereranya Abakandida Imbonankubone',
+    compare_matrix_subtitle: 'Kugereranya ako kanya amanota y\'isuzuma, ibyiciro by\'akazi, n\'ubushobozi bw\'abakandida.',
     compare_col_candidate: 'Umukandida',
-    compare_col_requisition: 'Umwanya',
-    compare_col_match_score: 'Amanota y’umwanya',
-    compare_col_stage: 'Icyiciro cya none',
-    compare_col_skills: 'Ubushobozi bw’ingenzi',
-    compare_col_action: 'Ikorwa',
+    compare_col_requisition: 'Umwanya w\'Akazi',
+    compare_col_match_score: 'Amanota',
+    compare_col_stage: 'Icyiciro Agezemo',
+    compare_col_skills: 'Ubuhanga bw\'Ingenzi',
+    compare_col_action: 'Igikorwa',
     compare_view: 'Reba',
-    compare_restricted_badge: 'KENYEGURA KUREBA KENEGUWE',
+    compare_restricted_badge: 'HAKENEWE URUHUSHYA RW\'ISUZUMA',
     compare_restricted_title: 'Igikoresho cy’igereranya kirazwe abasuzuma',
     compare_restricted_desc: 'Kugereranya hakurya-hakurya kubanza ku Bashakisha, Abayobozi b’Ishami n’Abasuzuma.',
     compare_restricted_cta: 'Subira ku Kibaho cy’Ibanze',
     compare_return_dashboard: 'Subira ku kibaho',
-
     error_generic_title: 'Habaye ikibazo!',
     btn_try_again: 'Gerageza kandi',
     apply_legacy_title: 'Ohereza ubusabe',
@@ -5032,63 +5246,154 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     interview_submitting: 'Kohereza amatangazo ya kalendari...',
     interview_back: 'Subira ku mukandida',
     interview_error: 'Ntibyakunze gutegura ikigambiriro. Ongera ugerageze.',
-
     copilot_thinking: 'Aratekereza…',
-    copilot_error_network: 'Ikosa rya murandasi. Suzuma umuryango wawe hanyuma gerageza kandi.',
-    copilot_error_service: 'Serivisi y’ubufasha ntiboneka ubu. Mugerageze ako kanya gato.',
-    copilot_input_label: 'Andika umuburo kuri Copilote RecruitAI',
-    copilot_reset_title: 'Kuraho ikiganiro',
-    copilot_greeting: 'Muraho',
-    copilot_acknowledge: 'Byumvikanye',
-    copilot_handoff_note: 'Kuri ibi byose bidakora na RecruitAI, itsinda ryacu ry’abantu irashobora kubafasha — uyu mufasha aguma yibanda ku rubuga.',
-    copilot_chip_more: 'Mbimenyeshe byinshi',
+    copilot_error_network: 'Ikosa rya murandasi. Suzuma umurongo wawe wa interineti hanyuma wongere ugerageze.',
+    copilot_error_service: 'Serivisi y\'ubufasha ntiboneka muri aka kanya. Ongera ugerageze mu mwanya muto.',
+    copilot_input_label: 'Andika ubutumwa kuri RecruitAI Copilot',
+    copilot_reset_title: 'Tangira Ikiganiro Gishya',
+    copilot_greeting: 'Muraho neza',
+    copilot_acknowledge: 'Byumvikanye neza',
+    copilot_handoff_note: 'Kuri ibindi bibazo bitari ibya RecruitAI, itsinda ryacu ry\'abakozi rirahari ngo ribafashe — uyu mufasha yibanda ku mikorere ya sisitemu gusa.',
+    copilot_chip_more: 'Mbwira byinshi',
     copilot_chip_apply: 'Nasaba nte akazi?',
-    copilot_chip_track: 'Kurikirana ubusabe bwanjye',
-    copilot_chip_permissions: 'Uburenganzira bw’ inshingano',
-
-    feedback_thanks: 'Murakoze kubitanga! Ibi bifasha kwigisha AI.',
-    feedback_question: 'Amanota ya AI yari yagaragara?',
-    feedback_placeholder: 'Icyo uvuga (ubushake)...',
-    feedback_yes: 'Yego, yagaragara',
-    feedback_no: 'Oya, hindura icyemezo',
-    toast_telemetry_refreshed: 'Ibipimo bya pipeline byavuguruwe muri database',
-    toast_telemetry_title: 'Ibipimo byavuguruwe',
-    btn_rerun_screening: 'Subiramo Isuzume',
-    btn_screening_queued: 'Mu rutonde…',
-    toast_screening_queued: 'Isuzume isubirwa mu rutonde — ibyakubye imbere birubahirirwa ku mpandana.',
-    toast_screening_failed: 'Ntibyatanzwe mu rutonde.',
-    screening_history_title: 'Amateka y’Isuzume',
-    screening_history_empty: 'Nta suzume ahari.',
-    screening_history_latest: 'IGIHE KIBANZE',
-    screening_history_col_rubric: 'Rubric',
-    btn_message_candidate: 'Ubutumwa',
-    message_modal_title: 'Ohereza ubutumwa ku nkikandida',
-    message_modal_hint: 'Reba ubutumwa bwawe mbere yo kohereza. Ibyo ngibanga n’ibikorwa bya AI ntuboherejerwa ku bakandida.',
-    message_template_label: 'Modeli y’ubutumwa',
-    message_template_general: 'Amakuru rusange',
-    message_template_ack: 'Ubwemezo bw’akwemera',
-    message_template_invite: 'Kwitonderwa gahunda',
-    message_template_reschedule: 'Guhindura ikigero',
-    message_template_rejection: 'Kanga',
-    message_subject_label: 'Umutwe',
-    message_subject_placeholder: 'Umutwe w’ubutumwa',
+    copilot_chip_track: 'Gukurikirana ubusabe bwanjye',
+    copilot_chip_permissions: 'Uburenganzira bw\'inshingano',
+    feedback_thanks: 'Murakoze ku bisobanuro byanyu! Bifasha guteza imbere AI yacu.',
+    feedback_question: 'Amanota ya AI yari asobanutse kandi ahuye n\'ukuri?',
+    feedback_placeholder: 'Igitekerezo cyawe (ubushake)...',
+    feedback_yes: 'Yego, yari ahwitse',
+    feedback_no: 'Oya, hakenewe gukosorwa',
+    toast_telemetry_refreshed: 'Ibipimo by\'urugendo rw\'abakandida byavuguruwe mu bubikoshingiro',
+    toast_telemetry_title: 'Ibipimo Byavuguruwe',
+    btn_rerun_screening: 'Ongera Ususume',
+    btn_screening_queued: 'Kuri gahunda…',
+    toast_screening_queued: 'Isuzuma ryashyizwe kuri gahunda — ibyavuyemo mbere birabikwa ngo ubyifashishe mu kugereranya.',
+    toast_screening_failed: 'Ntibyashobotse gushyira isuzuma kuri gahunda.',
+    screening_history_title: 'Amateka y’Isuzuma',
+    screening_history_empty: 'Nta suzuma rirakorwa kugeza ubu.',
+    screening_history_latest: 'IHERUKA',
+    screening_history_col_rubric: 'Ibipimo Ngenderwaho',
+    btn_message_candidate: 'Ohereza Ubutumwa',
+    message_modal_title: 'Ohereza ubutumwa ku mukandida',
+    message_modal_hint: 'Suzuma ubutumwa bwawe mbere yo kohereza. Inyandiko z’imbere mu kigo n’amakuru ya AI ntibyoherezwa ku bakandida.',
+    message_template_label: 'Inyandikorugero y\'Ubutumwa',
+    message_template_general: 'Amakuru Rusange',
+    message_template_ack: 'Kumenyesha ko Ubusabe Bwakiriwe',
+    message_template_invite: 'Ubutumire mu Kizamini',
+    message_template_reschedule: 'Guhindura Igihe cy\'Ikizamini',
+    message_template_rejection: 'Ibaruwa yo Kudatoranywa',
+    message_subject_label: 'Umutwe w\'Ubutumwa',
+    message_subject_placeholder: 'Andika umutwe w\'ubutumwa',
     message_body_label: 'Ubutumwa',
-    message_body_placeholder: 'Andika ubutumwa bwawe…',
-    message_placeholders_hint: 'Imyirwana: {{candidateName}}, {{jobTitle}}',
-    message_preview_label: 'Reba',
-    message_preview_btn: 'Reba',
+    message_body_placeholder: 'Andika ubutumwa bwawe hano…',
+    message_placeholders_hint: 'Amagambo asimbuzwa: {{candidateName}}, {{jobTitle}}',
+    message_preview_label: 'Isuzuma ry\'Ubutumwa',
+    message_preview_btn: 'Suzuma',
     message_send_btn: 'Ohereza',
-    toast_message_sent: 'Ubutumwa bwoherezwe — imimerere y’akwizera yubatswe.',
-    toast_message_failed: 'Ubutumwa nt bwahwejejwe.',
-    team_badge_suspended: 'Byahagaritswe',
+    toast_message_sent: 'Ubutumwa bwoherejwe — amakuru yo kugezwayo yanditswe neza.',
+    toast_message_failed: 'Byanze kohereza ubutumwa.',
+    team_badge_suspended: 'Yarahagaritswe',
     team_suspend: 'Hagarika',
     team_reactivate: 'Garura',
-    team_suspend_confirm: 'Hagarika {name}? Ijamba rya we ryanasibwa vuba.',
-    team_reactivate_confirm: 'Garura {name}?',
-    toast_status_updated: 'Imimerere ya konti yavuguruwe kuri {name}.',
-    toast_status_failed: 'Imimerere ya konti nt yavuguruwe.',
+    team_suspend_confirm: 'Hagarika {name}? Ububasha bwe bwo kwinjira buhagarikwa ako kanya.',
+    team_reactivate_confirm: 'Garura {name} mu kazi?',
+    toast_status_updated: 'Imiterere ya konti ya {name} yavuguruwe.',
+    toast_status_failed: 'Byanze kuvugurura imiterere ya konti.',
     criterion_category: 'Icyiciro',
-    criterion_threshold: 'Hejuru runini (urugero: imyaka 5)',
-    criterion_evidence: 'Ibyemezwa (ibishobora kuba ubuhati)'
-  }
+    criterion_threshold: 'Urugero rwo hasi rusabwa (urugero: imyaka 5)',
+    criterion_evidence: 'Ibimenyetso byemewe (ibifatika nk\'ikimenyetso)',
+    landing_badge: 'Gushaka Abakozi Byifashishije AI Isobamuye',
+    landing_hero_title_1: 'Suzuma abakandida ukoresheje',
+    landing_hero_title_highlight: 'AI iboneye kandi isobanutse',
+    landing_hero_desc: 'Gusuzuma CV bishingiye ku bimenyetso bifatika n\'ibipimo ngenderwaho — aho gukoresha amanota y\'amayobera. Menya impamvu umukandida akwiriye, ibibura, n\'aho ibimenyetso bituruka.',
+    landing_start_free: 'Tangira gushaka abakozi ku buntu',
+    landing_sign_in: 'Injira muri konti yawe',
+    landing_feat1_title: 'Amanota asobanutse neza',
+    landing_feat1_desc: 'Buri gisubizo cy\'isuzuma kigaragaza ibipimo byujujwe, ibibura, n\'ibimenyetso byashingiweho hafashwe icyemezo.',
+    landing_feat2_title: 'Umutekano w\'amakuru bwite ku rwego rwo hejuru',
+    landing_feat2_desc: 'Amakuru bwite y\'umuntu ahishwa mbere y\'isuzuma rya AI. Abakandida bagenzura amakuru yabo.',
+    landing_feat3_title: 'Isuzuma ryizewe kandi ridafite kubogama',
+    landing_feat3_desc: 'CV zisuzumwa hakurikijwe ibipimo by\'akazi gusa. Amazina, amashuri, n\'aho umuntu atuye bikurwaho mbere yo gutanga amanota.',
+    landing_cta_candidate_title: 'Urashaka akazi gashya?',
+    landing_cta_candidate_desc: 'Reba imyanya ifunguye, shyiraho CV yawe, maze urebe uko uhuye n\'ibisabwa kuri buri mwanya mbere yo gusaba.',
+    landing_cta_candidate_btn: 'Reba imyanya y\'akazi nk\'umukandida',
+    landing_footer_rights: 'Sisitemu yo gusuzuma CV z\'akazi yifashishije AI.',
+    landing_footer_privacy: 'Umutekano w\'Amakuru',
+    landing_footer_signin: 'Kwinjira',
+    auth_portal_access: 'KWINJIRA MU BUBAKO',
+    auth_demo_candidate_title: 'Igerageza ry\'Usaba Akazi (Kanda Rimwe)',
+    auth_demo_candidate_desc: 'Kwinjira mu igerageza ako kanya • Nta 2FA isabwa',
+    auth_demo_candidate_entering: 'Kwinjira birimo gukorwa...',
+    auth_demo_candidate_btn: 'Tangira Igerageza →',
+    auth_staff_login: 'KWINJIRA KW\'ABAKOZI',
+    auth_demo_staff_title: 'Igerageza ry\'Umukozi (Kanda Rimwe)',
+    auth_demo_staff_desc: 'Kwinjira mu biro ako kanya • Nta kintu bisaba gutegura',
+    auth_demo_staff_waiting: 'Tegereza gato...',
+    auth_demo_staff_btn: 'Ushinzwe Abakozi →',
+    forgot_title: 'Guhindura ijambobanga ryawe',
+    forgot_subtitle: 'Shyiramo imeyili ya konti yawe maze tukwoherereze umurongo wo guhindura ijambobanga.',
+    forgot_success_sent: 'Niba iyo konti ibaho kuri iyo meyili, umurongo wo guhindura ijambobanga woherejwe.',
+    forgot_delivery_warning: 'Niba hari konti ifite iyo meyili, ubusabe bwakiriwe — ariko uburyo bwo kohereza imeyili burimo ikosa muri aka kanya.',
+    forgot_delivery_help: 'Ongera ugerageze mu kanya gato; bikomeje kwanga, hamagara ubufasha bwa tekiniki.',
+    forgot_back_to_signin: 'Subira ahabanza kwinjira',
+    forgot_send_btn: 'Ohereza umurongo wo guhindura',
+    forgot_sending_btn: 'Kohereza umurongo birimo gukorwa...',
+    forgot_remember_password: 'Wibutse ijambobanga ryawe? Injira',
+    reset_missing_token: 'Kode yo guhindura ijambobanga irabura — koresha umurongo wohererejwe muri imeyili',
+    reset_success_redirecting: 'Ijambobanga ryahinduwe neza — kukwerekeza ku kwinjira…',
+    reset_new_password_label: 'Ijambobanga rishya',
+    reset_confirm_password_label: 'Emeza ijambobanga rishya',
+    reset_show_password: 'Garagaza',
+    reset_hide_password: 'Hisha',
+    reset_submit_btn: 'Hindura ijambobanga',
+    reset_submitting_btn: 'Guhindura ijambobanga birimo gukorwa…',
+    reset_mismatch_error: 'Amagambobanga ntabwo ahuye',
+    reset_length_error: 'Ijambobanga rigomba kugira byibuze inyuguti 8',
+    spotlight_search_label: 'Shakisha kuri sisitemu…',
+    nav_more: 'Ibindi',
+    nav_more_views: 'Izindi Mbuga z\'Akazi',
+    theme_light: 'Urumuri',
+    theme_dark: 'Umwijima',
+    theme_auto: 'Bwikora',
+    theme_light_title: 'Uburyo bw\'Urumuri',
+    theme_dark_title: 'Uburyo bw\'Umwijima (Aurora Cyber)',
+    theme_auto_title: 'Uburyo bwikora bwa sisitemu',
+    quick_filters: 'Akayunguruzo kihuse:',
+    filter_needs_review: 'Bakeneye Gusuzumwa',
+    filter_top_matches: 'Aba Mbere Bahuje n\'Akazi (≥80%)',
+    filter_req_failed: 'Abatarujuje Ibisabwa by\'Itegeko (0%)',
+    filter_interviewing: 'Bari mu Bizamini',
+    compare_selected_title: 'Gereranya abakandida batoranyijwe imbonankubone hakurikijwe ibipimo byemejwe',
+    btn_return_review: 'Subiza mu Gusuzumwa',
+    btn_mark_hired: 'Emeza ko Yahawe Akazi',
+    btn_record_decline: 'Andika Kwikura mu Busabe',
+    cprofile_compose_tooltip: 'Andika no gusuzuma ubutumwa bugenewe umukandida',
+    cprofile_questions_tooltip: 'Tegura ibibazo by\'ibizamini bya tekiniki n\'imyitwarire bishingiye ku bibura muri CV',
+    cprofile_scorecard_tooltip: 'Tanga amanota y\'ikizamini yiteguwe neza',
+    cprofile_schedule_tooltip: 'Teganya igihe cy\'ikizamini usuzuma ko nta yindi gahunda ihari',
+    cprofile_override_tooltip: 'Hindura amanota usobanura impamvu nyakuri y\'umuntu',
+    compare_pdf_tooltip: 'Gucapa cyangwa gukuramo ibipimo byo kugereranya muri PDF',
+    compare_stage_label: 'Icyiciro:',
+    compare_skills_label: 'Ubuhanga bwagaragaye:',
+    compare_threshold_label: 'Urugero rusabwa:',
+    compare_evidence_rules_label: 'Amategeko y\'ibimenyetso:',
+    compare_low_confidence_flag: 'Ikizere Gike cy\'Ibimenyetso (Bisaba Gusuzumwa n\'Umuntu)',
+    compare_analysis_label: 'Isesengura:',
+    compare_recruiter_note_label: 'Icyo Ushinzwe Abakozi Yabonye:',
+    role_admin_option: 'Umuyobozi Mukuru (Admin)',
+    role_recruiter_option: 'Ushinzwe Gushaka Abakozi (Recruiter)',
+    role_hiring_manager_option: 'Umuyobozi w\'Ishami Rishaka Abakozi',
+    role_interviewer_option: 'Ukoresha Ikizamini (Interviewer)',
+    role_auditor_option: 'Umugenzuzi w\'Ibyubahirizwa (Auditor)',
+    team_resend_invite_tooltip: 'Kora ijambobanga rishya ry\'agateganyo maze wongere wohereze imeyili yo gutumira',
+    team_remove_member_tooltip: 'Kuraho umukozi mu biro by\'akazi',
+    team_additional_permissions: 'Ubundi bubasha bw\'inyongera',
+    profile_workspace_role_info: 'Amakuru y\'Ibiro n\'Inshingano',
+    profile_assigned_role_label: 'Inshingano Yahawe',
+    profile_organization_label: 'Ikigo / Umuryango',
+    system_health_title: 'Ubuzima bwa Sisitemu',
+    my_apps_search_placeholder: 'Shakisha ku mwanya w\'akazi cyangwa ishami...',
+    my_apps_no_matches: 'Nta busabe bw\'akazi buhuye n\'ayunguruzo wahisemo.',
+    my_apps_withdraw_placeholder: 'urugero: Nabonye akandi kazi, nimitse aho ntuye, sinkibonetse...',
+  },
 };

@@ -535,9 +535,9 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                               onClick={() => handleResendInvite(user)}
                               disabled={resendingEmail === user.email}
                               className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded text-xs font-semibold transition disabled:opacity-50"
-                              title="Generate a fresh temporary password and resend invitation email"
+                              title={t('team_resend_invite_tooltip')}
                             >
-                              {resendingEmail === user.email ? 'Sending...' : 'Resend Invite'}
+                              {resendingEmail === user.email ? t('loading') : t('team_send_invite')}
                             </button>
                           )}
                           <button
@@ -560,9 +560,9 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                             type="button"
                             onClick={() => setDeleteTargetUser(user)}
                             className="px-2 py-1 rounded text-xs font-semibold border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition"
-                            title="Remove member from workspace"
+                            title={t('team_remove_member_tooltip')}
                           >
-                            Remove
+                            {t('profile_remove_cv')}
                           </button>
                         </div>
                       ) : (
@@ -647,14 +647,14 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
               </div>
             </form>
             <div className="border-t dark:border-[#30424A] border-slate-100 pt-3 space-y-2">
-              <p className="font-semibold">Additional permissions</p>
+              <p className="font-semibold">{t('team_additional_permissions')}</p>
               <div className="max-h-36 overflow-y-auto space-y-1">
                 {permissionChoices.map(({ key, value }) => <label key={value} className="flex items-center gap-2">
                   <input type="checkbox" checked={selectedPermissions.includes(value)} onChange={(e) => setSelectedPermissions((p) => e.target.checked ? [...p, value] : p.filter((x) => x !== value))} />
                   <span>{key}</span>
                 </label>)}
               </div>
-              <button type="button" onClick={handleSavePermissions} disabled={savingPermissions} className="px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white rounded-lg font-semibold">{savingPermissions ? t('loading') : 'Save permissions'}</button>
+              <button type="button" onClick={handleSavePermissions} disabled={savingPermissions} className="px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white rounded-lg font-semibold">{savingPermissions ? t('loading') : t('save')}</button>
             </div>
           </div>
         </div>
@@ -706,16 +706,16 @@ export default function TeamClient({ initialUsers, verifiedDomain, pendingDomain
                   onChange={(e) => setInviteRole(e.target.value)}
                   className="w-full dark:bg-[#0F171D] bg-slate-50 dark:border-[#30424A] border-slate-200 border rounded-lg px-3 py-2 font-medium focus:outline-none focus:border-[var(--accent)]"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="Recruiter">Recruiter</option>
-                  <option value="HiringManager">Hiring Manager</option>
-                  <option value="Interviewer">Interviewer</option>
-                  <option value="ComplianceAuditor">Compliance Auditor</option>
+                  <option value="Admin">{t('role_admin_option')}</option>
+                  <option value="Recruiter">{t('role_recruiter_option')}</option>
+                  <option value="HiringManager">{t('role_hiring_manager_option')}</option>
+                  <option value="Interviewer">{t('role_interviewer_option')}</option>
+                  <option value="ComplianceAuditor">{t('role_auditor_option')}</option>
                 </select>
               </div>
 
               <details className="border-t dark:border-[#30424A] pt-2">
-                <summary className="cursor-pointer font-semibold">Additional permissions</summary>
+                <summary className="cursor-pointer font-semibold">{t('team_additional_permissions')}</summary>
                 <div className="max-h-36 overflow-y-auto mt-2 space-y-1">
                   {permissionChoices.map(({ key, value }) => <label key={value} className="flex items-center gap-2">
                     <input type="checkbox" checked={invitePermissions.includes(value)} onChange={(e) => setInvitePermissions((p) => e.target.checked ? [...p, value] : p.filter((x) => x !== value))} />

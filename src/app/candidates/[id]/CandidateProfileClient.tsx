@@ -587,7 +587,7 @@ export default function CandidateProfileClient({
                 setShowMessageModal(true);
               }}
               className="btn btn-secondary btn-sm !text-xs"
-              title="Compose and preview candidate communication"
+              title={t('cprofile_compose_tooltip')}
             >
               <span>{t('btn_message_candidate')}</span>
             </button>
@@ -598,7 +598,7 @@ export default function CandidateProfileClient({
             <button
               onClick={handleGenerateQuestions}
               className="btn btn-secondary btn-sm !text-xs"
-              title="Generate customized behavioral and technical interview questions based on CV gaps"
+              title={t('cprofile_questions_tooltip')}
             >
               <span>{t('btn_ai_questions')}</span>
             </button>
@@ -609,7 +609,7 @@ export default function CandidateProfileClient({
             <button
               onClick={() => setShowScorecardModal(true)}
               className="btn btn-secondary btn-sm !text-xs font-bold text-[var(--accent)]"
-              title="Submit structured scorecard evaluation"
+              title={t('cprofile_scorecard_tooltip')}
             >
               <span>{t('btn_scorecard')}</span>
             </button>
@@ -620,7 +620,7 @@ export default function CandidateProfileClient({
             <Link
               href={`/candidates/${app.id}/interview`}
               className="btn btn-secondary btn-sm !text-xs font-semibold"
-              title="Schedule structured interview session with conflict check"
+              title={t('cprofile_schedule_tooltip')}
             >
               <span>{t('btn_schedule')}</span>
             </Link>
@@ -631,7 +631,7 @@ export default function CandidateProfileClient({
             <button
               onClick={() => setOverrideModalOpen(true)}
               className="btn btn-secondary btn-sm !text-xs text-amber-700 dark:text-amber-300"
-              title="Override score with mandatory human rationale"
+              title={t('cprofile_override_tooltip')}
             >
               <span>{t('btn_recalibrate')}</span>
             </button>
@@ -644,34 +644,34 @@ export default function CandidateProfileClient({
                 <button
                   onClick={() => openDecisionDialog('REVIEW')}
                   className="btn btn-secondary btn-sm !text-xs font-bold text-amber-600"
-                  title="Return application to review status"
+                  title={t('btn_return_review')}
                 >
-                  <span>Return to Review</span>
+                  <span>{t('btn_return_review')}</span>
                 </button>
               ) : isOffered ? (
                 <>
                   <button
                     onClick={() => openDecisionDialog('ADVANCE')}
                     className="btn btn-primary btn-sm !text-xs font-bold !bg-emerald-600 hover:!bg-emerald-500"
-                    title="Confirm candidate acceptance and mark as Hired"
+                    title={t('btn_mark_hired')}
                   >
-                    <span>Mark as Hired</span>
+                    <span>{t('btn_mark_hired')}</span>
                   </button>
                   <button
                     onClick={() => openDecisionDialog('REJECT')}
                     className="btn btn-danger btn-sm !text-xs"
-                    title="Record candidate decline or rescission"
+                    title={t('btn_record_decline')}
                   >
-                    <span>Decline / Rescind</span>
+                    <span>{t('btn_record_decline')}</span>
                   </button>
                 </>
               ) : isHired ? (
                 <span className="chip chip-success font-bold text-xs">
-                  Hired
+                  {t('stage_hired')}
                 </span>
               ) : isWithdrawn ? (
                 <span className="chip font-bold text-xs text-[var(--muted)]">
-                  Withdrawn
+                  {t('stage_withdrawn')}
                 </span>
               ) : isShortlisted || isInterviewing ? (
                 <>

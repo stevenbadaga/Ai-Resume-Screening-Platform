@@ -2,8 +2,11 @@
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 
 export default function ForgotPasswordPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -21,35 +24,34 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
       if (!res.ok && res.status !== 429) {
-        setError('Something went wrong — please try again');
+        setError(t('error'));
         return;
       }
-      // The endpoint never reveals whether the email has an account
-      // (anti-enumeration) — but it DOES report platform-wide email health.
-      // A failing mail provider would otherwise make this flow a dead end
-      // with an on-its-way message nobody received.
       const data = await res.json().catch(() => ({}));
       setEmailSystemHealthy(data?.emailSystemHealthy !== false);
       setSubmitted(true);
     } catch {
-      setError('Network error — please try again');
+      setError(t('bulk_error_network'));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md flex justify-end mb-3">
+        <LanguageSelector />
+      </div>
       <div className="w-full max-w-md bg-white dark:bg-[#11141D] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-white/10 p-8 space-y-6">
         <div className="text-center space-y-3 pt-1">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E11D48] via-[#F43F5E] to-[#FB7185] flex items-center justify-center text-white text-2xl font-extrabold mx-auto shadow-lg shadow-rose-900/20 ring-4 ring-rose-500/20">
             R
           </div>
           <h1 className="text-2xl font-extrabold dark:text-white text-slate-900 tracking-tight">
-            Reset your password
+            {t('forgot_title')}
           </h1>
           <p className="text-xs dark:text-slate-400 text-slate-500">
-            Enter your account email and we&apos;ll send you a reset link.
+            {t('forgot_subtitle')}
           </p>
         </div>
 
@@ -60,7 +62,7 @@ export default function ForgotPasswordPage() {
                 <svg className="w-4 h-4 shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>If an account exists for that email, a reset link is on its way.</span>
+                <span>{t('forgot_success_sent')}</span>
               </div>
             ) : (
               <div className="p-3.5 bg-amber-950/70 border border-amber-800 rounded-xl text-amber-200 font-bold text-center space-y-3">
@@ -68,16 +70,16 @@ export default function ForgotPasswordPage() {
                   <svg className="w-4 h-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <span>If an account exists for that email, a reset link was requested — but our email delivery is failing right now, so it may never arrive.</span>
+                  <span>{t('forgot_delivery_warning')}</span>
                 </p>
                 <p className="font-medium opacity-90">
-                  Please try again shortly; if it keeps failing, contact support so delivery can be restored.
+                  {t('forgot_delivery_help')}
                 </p>
               </div>
             )}
             <div className="text-center">
               <Link href="/auth/signin" className="text-rose-600 dark:text-rose-400 font-bold hover:underline">
-                Back to sign in
+                {t('forgot_back_to_signin')}
               </Link>
             </div>
           </div>
@@ -85,7 +87,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
               <label htmlFor="forgot-email" className="block dark:text-slate-400 text-slate-600 font-bold uppercase tracking-wider mb-1.5">
-                Email
+                {t('email_addr')}
               </label>
               <input
                 type="email"
@@ -114,12 +116,12 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full py-3 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-600 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-lg shadow-rose-900/20 hover:-translate-y-0.5"
             >
-              {loading ? 'Sending…' : 'Send reset link'}
+              {loading ? t('forgot_sending_btn') : t('forgot_send_btn')}
             </button>
 
             <div className="pt-2 text-center text-xs dark:text-slate-400 text-slate-500">
               <Link href="/auth/signin" className="text-rose-600 dark:text-rose-400 font-bold hover:underline">
-                Back to sign in
+                {t('forgot_remember_password')}
               </Link>
             </div>
           </form>

@@ -21,7 +21,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/lib/i18n/LanguageContext', () => ({
-  useLanguage: () => ({ language: 'en' }),
+  useLanguage: () => ({ language: 'en', t: (k: string) => k }),
 }));
 
 vi.mock('next-auth/react', () => ({

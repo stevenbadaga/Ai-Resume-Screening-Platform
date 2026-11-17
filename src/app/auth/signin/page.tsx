@@ -385,7 +385,8 @@ const DEMO_STEPS = [
 ];
 
 function SignInForm() {
-  const { language } = useLanguage();
+  const { language, t: tRaw } = useLanguage();
+  const t = typeof tRaw === 'function' ? tRaw : ((k: string) => k);
   const copy = SIGN_IN_COPY[language] || SIGN_IN_COPY.en;
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1112,7 +1113,7 @@ function SignInForm() {
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                   {copy.applicantBadge}
                 </span>
-                <span className="text-[11px] text-slate-400 font-mono">PORTAL ACCESS</span>
+                <span className="text-[11px] text-slate-400 font-mono">{t('auth_portal_access')}</span>
               </div>
 
               <div>
@@ -1128,8 +1129,8 @@ function SignInForm() {
               {step === 'credentials' && (
                 <div className="p-3 rounded-2xl bg-rose-50/70 dark:bg-rose-950/25 border border-rose-200/70 dark:border-rose-900/40 flex items-center justify-between gap-3 text-xs transition-all">
                   <div className="min-w-0">
-                    <p className="font-bold text-rose-950 dark:text-rose-100 text-[11px] tracking-tight">1-Click Candidate Demo</p>
-                    <p className="text-[10px] text-rose-700/80 dark:text-rose-300/75 truncate">Instant test login • No 2FA required</p>
+                    <p className="font-bold text-rose-950 dark:text-rose-100 text-[11px] tracking-tight">{t('auth_demo_candidate_title')}</p>
+                    <p className="text-[10px] text-rose-700/80 dark:text-rose-300/75 truncate">{t('auth_demo_candidate_desc')}</p>
                   </div>
                   <button
                     type="button"
@@ -1140,10 +1141,10 @@ function SignInForm() {
                     {demoLoading === 'candidate' ? (
                       <>
                         <span className="w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                        <span>Entering...</span>
+                        <span>{t('auth_demo_candidate_entering')}</span>
                       </>
                     ) : (
-                      <span>Launch Demo →</span>
+                      <span>{t('auth_demo_candidate_btn')}</span>
                     )}
                   </button>
                 </div>
@@ -1177,7 +1178,7 @@ function SignInForm() {
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                   {copy.staffBadge}
                 </span>
-                <span className="text-[11px] text-slate-400 font-mono">STAFF LOGIN</span>
+                <span className="text-[11px] text-slate-400 font-mono">{t('auth_staff_login')}</span>
               </div>
 
               <div>
@@ -1193,8 +1194,8 @@ function SignInForm() {
               {step === 'credentials' && (
                 <div className="p-3 rounded-2xl bg-rose-50/70 dark:bg-rose-950/25 border border-rose-200/70 dark:border-rose-900/40 flex items-center justify-between gap-2 text-xs transition-all">
                   <div className="min-w-0">
-                    <p className="font-bold text-rose-950 dark:text-rose-100 text-[11px] tracking-tight">1-Click Staff Demo</p>
-                    <p className="text-[10px] text-rose-700/80 dark:text-rose-300/75 truncate">Instant workspace access • Zero setup</p>
+                    <p className="font-bold text-rose-950 dark:text-rose-100 text-[11px] tracking-tight">{t('auth_demo_staff_title')}</p>
+                    <p className="text-[10px] text-rose-700/80 dark:text-rose-300/75 truncate">{t('auth_demo_staff_desc')}</p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
@@ -1206,10 +1207,10 @@ function SignInForm() {
                       {demoLoading === 'recruiter' ? (
                         <>
                           <span className="w-2.5 h-2.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                          <span>Wait...</span>
+                          <span>{t('auth_demo_staff_waiting')}</span>
                         </>
                       ) : (
-                        <span>Recruiter →</span>
+                        <span>{t('auth_demo_staff_btn')}</span>
                       )}
                     </button>
                     <button
@@ -1221,10 +1222,10 @@ function SignInForm() {
                       {demoLoading === 'admin' ? (
                         <>
                           <span className="w-2.5 h-2.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                          <span>Wait...</span>
+                          <span>{t('auth_demo_staff_waiting')}</span>
                         </>
                       ) : (
-                        <span>Admin →</span>
+                        <span>{t('role_admin_option')} →</span>
                       )}
                     </button>
                   </div>

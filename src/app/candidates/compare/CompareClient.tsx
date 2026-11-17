@@ -174,11 +174,10 @@ export default function CompareClient({
           {/* Blind Screening Toggle (§7 Bias Mitigation) */}
           <button
             onClick={() => setBlindMode(!blindMode)}
-            className={`btn btn-sm inline-flex items-center gap-1.5 ${
-              blindMode
+            className={`btn btn-sm inline-flex items-center gap-1.5 ${blindMode
                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30 font-bold'
                 : 'btn-secondary'
-            }`}
+              }`}
             title={t('blind_screening_hint') || 'Hide candidate names and personal identifiers to mitigate unconscious bias'}
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -192,7 +191,7 @@ export default function CompareClient({
           </button>
 
           {/* Export / Print */}
-          <button onClick={printReport} className="btn btn-secondary btn-sm inline-flex items-center gap-1.5" title="Print or export benchmark as PDF">
+          <button onClick={printReport} className="btn btn-secondary btn-sm inline-flex items-center gap-1.5" title={t('compare_pdf_tooltip')}>
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
@@ -302,13 +301,12 @@ export default function CompareClient({
                       {/* Match Score Badge */}
                       <div className="text-right shrink-0">
                         <span
-                          className={`px-2.5 py-1 rounded-lg font-mono font-black text-sm border inline-block ${
-                            score >= 80
+                          className={`px-2.5 py-1 rounded-lg font-mono font-black text-sm border inline-block ${score >= 80
                               ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                               : score >= 60
-                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
-                              : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
-                          }`}
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
+                                : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                            }`}
                         >
                           {score}%
                         </span>
@@ -323,13 +321,13 @@ export default function CompareClient({
                     {/* Quick Metadata */}
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--border)] text-[11px]">
                       <div>
-                        <span className="text-[10px] font-mono text-[var(--muted)] uppercase">Stage:</span>
+                        <span className="text-[10px] font-mono text-[var(--muted)] uppercase">{t('compare_stage_label')}</span>
                         <p className="font-semibold text-[var(--foreground)] truncate">
                           {app.stage || app.status || 'NEW'}
                         </p>
                       </div>
                       <div>
-                        <span className="text-[10px] font-mono text-[var(--muted)] uppercase">Skills Identified:</span>
+                        <span className="text-[10px] font-mono text-[var(--muted)] uppercase">{t('compare_skills_label')}</span>
                         <p className="font-semibold font-mono text-[var(--accent)] truncate">
                           {skillsCount > 0 ? `${skillsCount} skills` : 'In profile'}
                         </p>
@@ -356,11 +354,10 @@ export default function CompareClient({
           <div className="flex items-center gap-2 border-b border-[var(--border)] pb-2 overflow-x-auto">
             <button
               onClick={() => setActiveTab('criteria')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'criteria'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'criteria'
                   ? 'bg-[var(--accent)] text-white shadow-xs'
                   : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
-              }`}
+                }`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -370,11 +367,10 @@ export default function CompareClient({
             </button>
             <button
               onClick={() => setActiveTab('skills')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'skills'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'skills'
                   ? 'bg-[var(--accent)] text-white shadow-xs'
                   : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
-              }`}
+                }`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -383,11 +379,10 @@ export default function CompareClient({
             </button>
             <button
               onClick={() => setActiveTab('experience')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'experience'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${activeTab === 'experience'
                   ? 'bg-[var(--accent)] text-white shadow-xs'
                   : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
-              }`}
+                }`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
@@ -454,11 +449,10 @@ export default function CompareClient({
                               <div className="flex items-center justify-between">
                                 <span className="font-bold truncate">{displayName}</span>
                                 <div className="flex items-center gap-1.5">
-                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
-                                    score >= 80 ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
-                                    score >= 60 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' :
-                                    'bg-rose-500/20 text-rose-600 dark:text-rose-400'
-                                  }`}>
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${score >= 80 ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
+                                      score >= 60 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' :
+                                        'bg-rose-500/20 text-rose-600 dark:text-rose-400'
+                                    }`}>
                                     {score}%
                                   </span>
                                   <span className="chip chip-info !py-0 !px-1.5 !text-[9px]">
@@ -506,12 +500,12 @@ export default function CompareClient({
                                 <div className="space-y-1 pt-1 text-[10px] text-[var(--muted)] border-t border-[var(--border)]/60">
                                   {criterion.threshold && (
                                     <p>
-                                      <strong className="text-[var(--foreground)]">Threshold:</strong> {criterion.threshold}
+                                      <strong className="text-[var(--foreground)]">{t('compare_threshold_label')}</strong> {criterion.threshold}
                                     </p>
                                   )}
                                   {criterion.evidenceRules && (
                                     <p>
-                                      <strong className="text-[var(--foreground)]">Evidence rules:</strong> {criterion.evidenceRules}
+                                      <strong className="text-[var(--foreground)]">{t('compare_evidence_rules_label')}</strong> {criterion.evidenceRules}
                                     </p>
                                   )}
                                 </div>
@@ -544,13 +538,12 @@ export default function CompareClient({
                                   {/* Result & Score Badge */}
                                   <div className="flex items-center justify-between gap-2">
                                     <span
-                                      className={`px-2 py-0.5 rounded-md font-mono font-bold text-[10px] border flex items-center gap-1 ${
-                                        isMatch
+                                      className={`px-2 py-0.5 rounded-md font-mono font-bold text-[10px] border flex items-center gap-1 ${isMatch
                                           ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                                           : isPartial
-                                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
-                                          : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
-                                      }`}
+                                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
+                                            : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                                        }`}
                                     >
                                       <span className="inline-flex items-center">
                                         {isMatch ? (
@@ -586,7 +579,7 @@ export default function CompareClient({
                                       <svg className="w-3 h-3 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                       </svg>
-                                      <span>Low Evidence Confidence (Human Review Flagged)</span>
+                                      <span>{t('compare_low_confidence_flag')}</span>
                                     </div>
                                   )}
 
@@ -604,14 +597,14 @@ export default function CompareClient({
                                   {/* AI Interpretation */}
                                   {interpretation && (
                                     <p className="text-[10px] text-[var(--muted)] leading-relaxed">
-                                      <span className="font-semibold text-[var(--foreground)]">Analysis:</span> {interpretation}
+                                      <span className="font-semibold text-[var(--foreground)]">{t('compare_analysis_label')}</span> {interpretation}
                                     </p>
                                   )}
 
                                   {/* Reviewer Override / Correction (§6.5) */}
                                   {reviewerCorrection && (
                                     <div className="text-[10px] bg-[var(--accent-soft)] border border-[var(--accent-ring)] p-1.5 rounded text-[var(--accent)]">
-                                      <strong>Recruiter Note:</strong> {reviewerCorrection}
+                                      <strong>{t('compare_recruiter_note_label')}</strong> {reviewerCorrection}
                                     </div>
                                   )}
                                 </td>
