@@ -28,6 +28,10 @@ export const VERIFICATION_CODE_TTL_MINUTES = 10;
 export const VERIFICATION_CODE_MAX_ATTEMPTS = 5;
 /** Minimum delay between two codes for the same user+purpose (60s). */
 export const VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS = 60;
+/** Maximum OTP verification codes permitted per login session (strict defense-in-depth). */
+export const LOGIN_MFA_MAX_CODES_PER_SESSION = 2;
+/** Login MFA session window duration in minutes (15 minutes). */
+export const LOGIN_MFA_SESSION_WINDOW_MINUTES = 15;
 
 export function generateNumericCode(): { code: string; codeHash: string } {
   // Cryptographically random 6-digit code — 1,000,000 possibilities.
@@ -52,18 +56,84 @@ export function codesMatch(submitted: string, codeHash: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+export type IssueVerificationCodeResult =
+  | {
+      ok: true;
+      code: string;
+      sessionCodesSent: number;
+      maxSessionCodes: number;
+    }
+  | {
+      ok: false;
+      retryAfterSeconds: number;
+      reason: 'COOLDOWN' | 'SESSION_LIMIT_EXCEEDED';
+      sessionLimitReached?: boolean;
+      error: string;
+    };
+
 /**
- * Issue a fresh code for a user+purpose. Invalidates all previous codes in
- * the scope first (a new code always supersedes older ones), prunes expired
- * rows, and enforces a cooldown against code-request spam (email bombing).
+ * Issue a fresh code for a user+purpose. Enforces strict session limits
+ * (at most LOGIN_MFA_MAX_CODES_PER_SESSION codes per login session), invalidates
+ * previous unconsumed codes in scope, prunes expired rows outside the session
+ * window, and enforces a cooldown against code-request spam.
  *
- * @returns { ok: true, code } on success; { ok: false, retryAfterSeconds }
- * when the resend cooldown is still active.
+ * @returns { ok: true, code, sessionCodesSent, maxSessionCodes } on success;
+ * { ok: false, retryAfterSeconds, reason, error } when cooldown or session limit is exceeded.
  */
 export async function issueVerificationCode(
   userId: string,
   purpose: VerificationCodePurpose
-): Promise<{ ok: true; code: string } | { ok: false; retryAfterSeconds: number }> {
+): Promise<IssueVerificationCodeResult> {
+  const now = Date.now();
+  const sessionWindowStart = new Date(now - LOGIN_MFA_SESSION_WINDOW_MINUTES * 60_000);
+
+  let sessionCodesCount = 0;
+  if (purpose === 'LOGIN_MFA') {
+    // Check for the most recent solved code so previously completed login sessions don't penalize a new login
+    const lastSolved = await prisma.verificationCode.findFirst({
+      where: { userId, purpose, verifiedAt: { not: null } },
+      orderBy: { verifiedAt: 'desc' },
+      select: { verifiedAt: true },
+    });
+
+    const currentSessionStart =
+      lastSolved?.verifiedAt && lastSolved.verifiedAt > sessionWindowStart
+        ? lastSolved.verifiedAt
+        : sessionWindowStart;
+
+    // Count codes created in the current login session
+    sessionCodesCount =
+      Number(
+        await prisma.verificationCode.count({
+          where: {
+            userId,
+            purpose,
+            createdAt: { gt: currentSessionStart },
+          },
+        })
+      ) || 0;
+
+    if (sessionCodesCount >= LOGIN_MFA_MAX_CODES_PER_SESSION) {
+      // Find the oldest code in this session to compute remaining time until the session window rolls over
+      const oldestInSession = await prisma.verificationCode.findFirst({
+        where: { userId, purpose, createdAt: { gt: currentSessionStart } },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true },
+      });
+      const oldestTime = oldestInSession?.createdAt?.getTime() ?? now;
+      const remainingMs = Math.max(0, oldestTime + LOGIN_MFA_SESSION_WINDOW_MINUTES * 60_000 - now);
+      const retryAfterSeconds = Math.max(1, Math.ceil(remainingMs / 1000));
+
+      return {
+        ok: false,
+        retryAfterSeconds,
+        reason: 'SESSION_LIMIT_EXCEEDED',
+        sessionLimitReached: true,
+        error: 'Maximum of 2 verification codes per login session reached. Please wait before trying again.',
+      };
+    }
+  }
+
   // Contain request floods: at most one code per cooldown window per scope.
   const latest = await prisma.verificationCode.findFirst({
     where: { userId, purpose },
@@ -71,11 +141,13 @@ export async function issueVerificationCode(
     select: { createdAt: true },
   });
   if (latest) {
-    const elapsedSeconds = (Date.now() - latest.createdAt.getTime()) / 1000;
+    const elapsedSeconds = (now - latest.createdAt.getTime()) / 1000;
     if (elapsedSeconds < VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS) {
       return {
         ok: false,
         retryAfterSeconds: Math.ceil(VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS - elapsedSeconds),
+        reason: 'COOLDOWN',
+        error: 'A code was just sent. Please wait before requesting another.',
       };
     }
   }
@@ -84,19 +156,19 @@ export async function issueVerificationCode(
   // there is exactly one live code per user+purpose at any time.
   await prisma.verificationCode.updateMany({
     where: { userId, purpose, usedAt: null },
-    data: { usedAt: new Date() },
+    data: { usedAt: new Date(now) },
   });
 
-  // Opportunistic cleanup: expired rows and rows invalidated (superseded or
-  // guess-exhausted) without ever being solved are garbage. Solved rows are
-  // kept until expiry — their verifiedAt is the proof-of-solve that downstream
-  // steps (session issuance) check for the next few minutes.
+  // Opportunistic cleanup: expired rows and superseded rows outside the session
+  // window are cleaned up. Recent rows within the session window are retained
+  // so session code quotas can be verified accurately.
   await prisma.verificationCode.deleteMany({
     where: {
       userId,
       purpose,
+      createdAt: { lt: sessionWindowStart },
       OR: [
-        { expiresAt: { lt: new Date() } },
+        { expiresAt: { lt: new Date(now) } },
         { usedAt: { not: null }, verifiedAt: null },
       ],
     },
@@ -108,12 +180,18 @@ export async function issueVerificationCode(
       userId,
       purpose,
       codeHash,
-      expiresAt: new Date(Date.now() + VERIFICATION_CODE_TTL_MINUTES * 60_000),
+      expiresAt: new Date(now + VERIFICATION_CODE_TTL_MINUTES * 60_000),
       maxAttempts: VERIFICATION_CODE_MAX_ATTEMPTS,
     },
   });
 
-  return { ok: true, code };
+  const maxSessionCodes = purpose === 'LOGIN_MFA' ? LOGIN_MFA_MAX_CODES_PER_SESSION : 5;
+  return {
+    ok: true,
+    code,
+    sessionCodesSent: sessionCodesCount + 1,
+    maxSessionCodes,
+  };
 }
 
 /**

@@ -34,6 +34,8 @@ beforeEach(() => {
   const vc = prismaMock.verificationCode as unknown as Record<string, ReturnType<typeof vi.fn>>;
   if (!vc.findMany) vc.findMany = vi.fn();
   vc.findMany.mockResolvedValue([] as never);
+  if (!vc.count) vc.count = vi.fn();
+  vc.count.mockResolvedValue(0 as never);
 });
 
 describe('generateNumericCode', () => {
@@ -63,7 +65,12 @@ describe('issueVerificationCode', () => {
 
     const result = await issueVerificationCode('user-1', 'LOGIN_MFA');
 
-    expect(result).toEqual({ ok: true, code: expect.stringMatching(/^\d{6}$/) });
+    expect(result).toMatchObject({
+      ok: true,
+      code: expect.stringMatching(/^\d{6}$/),
+      sessionCodesSent: 1,
+      maxSessionCodes: 2,
+    });
     expect(prismaMock.verificationCode.updateMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', purpose: 'LOGIN_MFA', usedAt: null },
       data: { usedAt: expect.any(Date) },
@@ -90,7 +97,7 @@ describe('issueVerificationCode', () => {
 
     const result = await issueVerificationCode('user-1', 'EMAIL_VERIFICATION');
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       ok: false,
       retryAfterSeconds: VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS - 20,
     });
@@ -109,6 +116,61 @@ describe('issueVerificationCode', () => {
     expect(prismaMock.verificationCode.updateMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', purpose: 'LOGIN_MFA', usedAt: null },
       data: { usedAt: expect.any(Date) },
+    });
+  });
+
+  it('allows second login MFA code and increments sessionCodesSent to 2', async () => {
+    const { issueVerificationCode } = await import('@/lib/verificationCode');
+    prismaMock.verificationCode.findFirst
+      .mockResolvedValueOnce(null) // lastSolved
+      .mockResolvedValueOnce({ createdAt: new Date(Date.now() - 120_000) }); // latest outside cooldown
+    prismaMock.verificationCode.count.mockResolvedValue(1); // 1 code already sent in this session
+    prismaMock.verificationCode.create.mockResolvedValue({});
+
+    const result = await issueVerificationCode('user-1', 'LOGIN_MFA');
+
+    expect(result).toMatchObject({
+      ok: true,
+      code: expect.stringMatching(/^\d{6}$/),
+      sessionCodesSent: 2,
+      maxSessionCodes: 2,
+    });
+  });
+
+  it('blocks third login MFA code when session limit of 2 codes is reached', async () => {
+    const { issueVerificationCode } = await import('@/lib/verificationCode');
+    prismaMock.verificationCode.findFirst
+      .mockResolvedValueOnce(null) // lastSolved
+      .mockResolvedValueOnce({ createdAt: new Date(Date.now() - 100_000) }); // oldest in session
+    prismaMock.verificationCode.count.mockResolvedValue(2); // 2 codes already sent in this session
+
+    const result = await issueVerificationCode('user-1', 'LOGIN_MFA');
+
+    expect(result).toMatchObject({
+      ok: false,
+      reason: 'SESSION_LIMIT_EXCEEDED',
+      sessionLimitReached: true,
+      error: expect.stringContaining('Maximum of 2 verification codes per login session'),
+    });
+    expect(prismaMock.verificationCode.create).not.toHaveBeenCalled();
+  });
+
+  it('resets session count when previous login code was successfully solved', async () => {
+    const { issueVerificationCode } = await import('@/lib/verificationCode');
+    const solvedTime = new Date(Date.now() - 60_000);
+    prismaMock.verificationCode.findFirst
+      .mockResolvedValueOnce({ verifiedAt: solvedTime }) // lastSolved
+      .mockResolvedValueOnce(null); // latest
+    prismaMock.verificationCode.count.mockResolvedValue(0); // 0 codes after solvedTime
+    prismaMock.verificationCode.create.mockResolvedValue({});
+
+    const result = await issueVerificationCode('user-1', 'LOGIN_MFA');
+
+    expect(result).toMatchObject({
+      ok: true,
+      code: expect.stringMatching(/^\d{6}$/),
+      sessionCodesSent: 1,
+      maxSessionCodes: 2,
     });
   });
 });

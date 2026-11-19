@@ -54,6 +54,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
   codeHint: string;
   resendCode: string;
   codeResent: string;
+  codeLimitReached: string;
+  resendLimitReached: string;
   backToCredentials: string;
   codeDeliveryFailed: string;
   tooManyAttempts: string;
@@ -114,6 +116,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeHint: 'The code expires in 10 minutes. Check your spam folder if it is not in your inbox.',
     resendCode: 'Resend code',
     codeResent: 'New code sent. Check your inbox.',
+    codeLimitReached: 'Maximum verification code limit reached (2 codes per login session). To protect your account, please wait before requesting another.',
+    resendLimitReached: 'Code limit reached (2/2 sent)',
     backToCredentials: '← Use a different account',
     codeDeliveryFailed: 'The email could not be sent right now. Please try again shortly.',
     tooManyAttempts: 'Too many attempts. Please try again later.',
@@ -174,6 +178,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeHint: 'Le code expire dans 10 minutes. Vérifiez votre dossier spam s’il n’est pas dans votre boîte.',
     resendCode: 'Renvoyer le code',
     codeResent: 'Nouveau code envoyé. Consultez votre boîte de réception.',
+    codeLimitReached: 'Limite de codes de vérification atteinte (2 codes par session de connexion). Pour votre sécurité, veuillez patienter avant de réessayer.',
+    resendLimitReached: 'Limite atteinte (2/2 envoyés)',
     backToCredentials: '← Utiliser un autre compte',
     codeDeliveryFailed: 'L’e-mail n’a pas pu être envoyé pour le moment. Veuillez réessayer sous peu.',
     tooManyAttempts: 'Trop de tentatives. Veuillez réessayer plus tard.',
@@ -234,6 +240,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeHint: 'El código caduca en 10 minutos. Revise su carpeta de spam si no está en la bandeja.',
     resendCode: 'Reenviar código',
     codeResent: 'Nuevo código enviado. Revise su bandeja de entrada.',
+    codeLimitReached: 'Límite de códigos de verificación alcanzado (2 códigos por sesión). Por seguridad, espere antes de solicitar otro.',
+    resendLimitReached: 'Límite alcanzado (2/2 enviados)',
     backToCredentials: '← Usar otra cuenta',
     codeDeliveryFailed: 'No se pudo enviar el correo ahora mismo. Inténtelo de nuevo en breve.',
     tooManyAttempts: 'Demasiados intentos. Inténtelo más tarde.',
@@ -294,6 +302,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeHint: 'Der Code läuft in 10 Minuten ab. Prüfen Sie Ihren Spam-Ordner, falls er nicht im Posteingang ist.',
     resendCode: 'Code erneut senden',
     codeResent: 'Neuer Code gesendet. Überprüfen Sie Ihren Posteingang.',
+    codeLimitReached: 'Maximales Verifizierungscode-Limit erreicht (2 Codes pro Login-Sitzung). Zu Ihrer Sicherheit warten Sie bitte, bevor Sie es erneut versuchen.',
+    resendLimitReached: 'Codelimit erreicht (2/2 gesendet)',
     backToCredentials: '← Anderes Konto verwenden',
     codeDeliveryFailed: 'Die E-Mail konnte gerade nicht gesendet werden. Bitte gleich erneut versuchen.',
     tooManyAttempts: 'Zu viele Versuche. Bitte später erneut versuchen.',
@@ -354,6 +364,8 @@ const SIGN_IN_COPY: Record<SupportedLanguage, {
     codeHint: 'Kode irengera umunota 10. Reba n’ububiko bw’ibaruwa bashobora kuyikubiyemo.',
     resendCode: 'Ongera uwohereze kode',
     codeResent: 'Kode nshya yoherejwe. Reba uko utunganya.',
+    codeLimitReached: 'Umubare ntarengwa wa kode wagereweho (kode 2 kuri buri kwinjira). Ku bw’umutekano wawe, tegereza mbere yo kongera kugerageza.',
+    resendLimitReached: 'Kode ntarengwa (2/2 zoherejwe)',
     backToCredentials: '← Koresha konti ikomeye',
     codeDeliveryFailed: 'Imeyili ntishobora koherezwa ubu. Ongera ugerageze minyote.',
     tooManyAttempts: 'Ongeraneza bwinshi. Ongera ugerageze nyuma.',
@@ -412,6 +424,7 @@ function SignInForm() {
   const [step, setStep] = useState<'credentials' | 'code' | 'totp'>('credentials');
   const [code, setCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'verifying' | 'resent' | 'delivery-failed'>('idle');
+  const [sessionCodesSent, setSessionCodesSent] = useState(0);
   const [demoLoading, setDemoLoading] = useState<'candidate' | 'recruiter' | 'admin' | null>(null);
   const [demoProgress, setDemoProgress] = useState(20);
   const [demoStepText, setDemoStepText] = useState(DEMO_STEPS[0]);
@@ -419,7 +432,7 @@ function SignInForm() {
 
   // Pre-warm the demo endpoint silently so subsequent clicks hit warm memory cache
   useEffect(() => {
-    fetch('/api/auth/demo-login').catch(() => {});
+    fetch('/api/auth/demo-login').catch(() => { });
   }, []);
 
   const handleOneClickDemo = async (role: 'candidate' | 'recruiter' | 'admin') => {
@@ -590,11 +603,20 @@ function SignInForm() {
           setStep('totp');
         } else {
           setStep('code');
+          setSessionCodesSent(typeof data.sessionCodesSent === 'number' ? data.sessionCodesSent : 1);
         }
         setCodeStatus('idle');
       } else if (data.error === 'EMAIL_NOT_VERIFIED') {
         setEmailNotVerified(true);
       } else if (res.status === 429) {
+        if (data.sessionLimitReached || data.error === 'SESSION_LIMIT_EXCEEDED') {
+          setError(copy.codeLimitReached);
+          setSessionCodesSent(2);
+          if (typeof data?.retryAfterSeconds === 'number') {
+            setCooldownSeconds(data.retryAfterSeconds);
+          }
+          return;
+        }
         if (
           !isRetry &&
           typeof data?.retryAfterSeconds === 'number' &&
@@ -699,6 +721,10 @@ function SignInForm() {
   const handleResendCode = async () => {
     if (step === 'totp') return;
     if (!email || !password || codeStatus === 'verifying' || cooldownSeconds > 0) return;
+    if (sessionCodesSent >= 2) {
+      setError(copy.codeLimitReached);
+      return;
+    }
     setError('');
     try {
       const res = await fetch('/api/auth/login/challenge', {
@@ -707,11 +733,23 @@ function SignInForm() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 429 && typeof data?.retryAfterSeconds === 'number') {
-        setCooldownSeconds(data.retryAfterSeconds);
-        setCodeStatus('resent');
+      if (res.status === 429) {
+        if (data.sessionLimitReached || data.error === 'SESSION_LIMIT_EXCEEDED') {
+          setError(copy.codeLimitReached);
+          setSessionCodesSent(2);
+          if (typeof data?.retryAfterSeconds === 'number') {
+            setCooldownSeconds(data.retryAfterSeconds);
+          }
+          return;
+        }
+        if (typeof data?.retryAfterSeconds === 'number') {
+          setCooldownSeconds(data.retryAfterSeconds);
+          setCodeStatus('resent');
+        }
       } else if (res.ok && res.status !== 503) {
         setCodeStatus('resent');
+        const nextCount = typeof data?.sessionCodesSent === 'number' ? data.sessionCodesSent : sessionCodesSent + 1;
+        setSessionCodesSent(nextCount);
       } else {
         setCodeStatus('delivery-failed');
       }
@@ -902,14 +940,25 @@ function SignInForm() {
             Auto-refreshes every 30s
           </span>
         ) : (
-          <button
-            type="button"
-            onClick={handleResendCode}
-            disabled={cooldownSeconds > 0}
-            className="hover:underline disabled:opacity-50 disabled:no-underline font-medium text-rose-600 dark:text-rose-400"
-          >
-            {cooldownSeconds > 0 ? `${copy.resendCode} (${cooldownSeconds}s)` : copy.resendCode}
-          </button>
+          <div className="flex items-center gap-2">
+            {sessionCodesSent > 0 && (
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                {sessionCodesSent >= 2 ? copy.resendLimitReached : `(${sessionCodesSent}/2)`}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleResendCode}
+              disabled={cooldownSeconds > 0 || sessionCodesSent >= 2}
+              className="hover:underline disabled:opacity-50 disabled:no-underline font-medium text-rose-600 dark:text-rose-400"
+            >
+              {sessionCodesSent >= 2
+                ? copy.resendLimitReached
+                : cooldownSeconds > 0
+                ? `${copy.resendCode} (${cooldownSeconds}s)`
+                : copy.resendCode}
+            </button>
+          </div>
         )}
       </div>
     </form>
@@ -933,8 +982,8 @@ function SignInForm() {
       {justRegistered && !error && !emailNotVerified && step === 'credentials' && (
         <div
           className={`p-3.5 rounded-xl border text-xs font-semibold text-center space-y-2 ${emailDeliveryFailed
-              ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
-              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+            ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+            : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
             }`}
         >
           {emailDeliveryFailed ? (
@@ -1072,8 +1121,8 @@ function SignInForm() {
             type="button"
             onClick={() => setPortalType('applicant')}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${portalType === 'applicant'
-                ? 'bg-white dark:bg-[#181E2C] text-rose-600 dark:text-rose-400 shadow-sm border border-slate-200/60 dark:border-white/10'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-white dark:bg-[#181E2C] text-rose-600 dark:text-rose-400 shadow-sm border border-slate-200/60 dark:border-white/10'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1086,8 +1135,8 @@ function SignInForm() {
             type="button"
             onClick={() => setPortalType('staff')}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${portalType === 'staff'
-                ? 'bg-white dark:bg-[#181E2C] text-rose-600 dark:text-rose-400 shadow-sm border border-slate-200/60 dark:border-white/10'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-white dark:bg-[#181E2C] text-rose-600 dark:text-rose-400 shadow-sm border border-slate-200/60 dark:border-white/10'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

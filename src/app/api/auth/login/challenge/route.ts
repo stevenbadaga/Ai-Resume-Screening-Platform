@@ -143,20 +143,30 @@ export async function POST(req: Request) {
       });
     }
 
-    // Second factor: email a fresh 6-digit code. If email delivery is down,
-    // say so honestly — a code that never arrives must not look like a
-    // normal wait (spec §6.9 honesty policy).
+    // Second factor: email a fresh 6-digit code. Enforces maximum 2 OTP codes per login session.
+    // If email delivery is down, say so honestly (spec §6.9 honesty policy).
     const issued = await issueVerificationCode(user.id, 'LOGIN_MFA');
     if (!issued.ok) {
-      // retryAfterSeconds also in the body so the UI can render a real
-      // countdown (same contract as resend-verification).
+      if (issued.reason === 'SESSION_LIMIT_EXCEEDED' || issued.sessionLimitReached) {
+        return NextResponse.json(
+          {
+            error: 'SESSION_LIMIT_EXCEEDED',
+            message: 'Maximum of 2 verification codes per login session reached. Please wait before trying again to protect your account.',
+            sessionLimitReached: true,
+            maxCodes: 2,
+            sessionCodesSent: 2,
+            retryAfterSeconds: issued.retryAfterSeconds,
+          },
+          { status: 429, headers: { 'Retry-After': String(issued.retryAfterSeconds || 900) } }
+        );
+      }
       return NextResponse.json(
         { error: 'A code was just sent. Please wait before requesting another.', retryAfterSeconds: issued.retryAfterSeconds },
         { status: 429, headers: { 'Retry-After': String(issued.retryAfterSeconds) } }
       );
     }
 
-    console.log(`[AUTH MFA] 6-digit verification code for ${email}: ${issued.code}`);
+    console.log(`[AUTH MFA] 6-digit verification code for ${email}: ${issued.code} (${issued.sessionCodesSent}/${issued.maxSessionCodes})`);
 
     const recorded = await sendRecordedEmail({
       to: email,
@@ -167,10 +177,22 @@ export async function POST(req: Request) {
     if (!recorded.delivered) {
       console.warn(`[AUTH MFA] Email delivery failed for ${email} (${recorded.error}), but code was logged above.`);
       // Advance to code screen so administrators/users are never locked out when cloud email providers fail
-      return NextResponse.json({ success: true, email, next: 'code' });
+      return NextResponse.json({
+        success: true,
+        email,
+        next: 'code',
+        sessionCodesSent: issued.sessionCodesSent,
+        maxCodes: issued.maxSessionCodes,
+      });
     }
 
-    return NextResponse.json({ success: true, email, next: 'code' });
+    return NextResponse.json({
+      success: true,
+      email,
+      next: 'code',
+      sessionCodesSent: issued.sessionCodesSent,
+      maxCodes: issued.maxSessionCodes,
+    });
   } catch (error) {
     console.error('Login challenge error:', error);
     return safeErrorResponse('Internal server error during login.');
