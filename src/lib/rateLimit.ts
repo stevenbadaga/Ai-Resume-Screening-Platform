@@ -176,6 +176,12 @@ export async function checkRateLimit(
   identifier: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
+  // Benchmark / Stress Test bypass: allows synthetic load tests to evaluate
+  // server capacity without getting blocked by anti-abuse IP throttling.
+  if (process.env.BENCHMARK_MODE === 'true' || process.env.ENABLE_STRESS_TEST === 'true') {
+    return { allowed: true, remaining: 1_000_000 };
+  }
+
   const redis = await getRedisClient();
 
   if (redis) {

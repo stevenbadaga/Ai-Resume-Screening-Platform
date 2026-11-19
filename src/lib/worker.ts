@@ -71,7 +71,10 @@ const worker = new Worker('ResumeProcessingQueue', async job => {
     await scoreCandidateProfile(job.data.applicationId, rubricId);
   }
   console.log(`Job ${job.id} completed successfully`);
-}, { connection });
+}, {
+  connection,
+  concurrency: Math.max(1, parseInt(process.env.WORKER_CONCURRENCY || '2', 10)),
+});
 
 worker.on('failed', (job, err) => {
   if (job) {

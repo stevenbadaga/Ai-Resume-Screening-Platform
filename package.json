@@ -13,6 +13,8 @@
         "cleanup-accounts": "tsx scripts/cleanupAccounts.ts",
         "verify-audit-chain": "tsx scripts/verifyAuditChain.ts",
         "sweep-stale-runs": "tsx scripts/sweepStaleRuns.ts",
+        "worker": "tsx src/lib/worker.ts",
+        "stress-test": "tsx scripts/stressTest.ts",
         "backup": "bash scripts/backup.sh",
         "restore": "bash scripts/restore.sh",
         "postinstall": "prisma generate"

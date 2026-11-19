@@ -68,7 +68,7 @@ if (process.env.NODE_ENV === 'test' && rawDatabaseUrl.includes('mock')) {
       connectionString,
       connectionTimeoutMillis: 20_000,
       idleTimeoutMillis: 30_000,
-      max: 10,
+      max: parseInt(process.env.DATABASE_POOL_MAX || '20', 10),
     });
   }
 
